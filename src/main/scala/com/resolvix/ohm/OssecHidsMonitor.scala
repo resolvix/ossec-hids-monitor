@@ -5,6 +5,7 @@ import java.util
 
 import com.resolvix.ohm.api.{ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
+import org.apache.commons.cli
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -162,6 +163,30 @@ object OssecHidsMonitor {
     }
   }
 
+  private val commandLineOptions: cli.Options = {
+    val helpOption: cli.Option = cli.Option.builder("h")
+      .longOpt("help")
+      .desc("Display this information")
+      .build()
+
+    val fromOption: cli.Option = cli.Option.builder("f")
+      .longOpt("from")
+      .desc("Start of the period over which OSSEC HIDS alerts "
+        + "are to be processed")
+      .build()
+
+    val toOption: cli.Option = cli.Option.builder("t")
+      .longOpt("to")
+      .desc("End of the period over which OSSEC HIDS alerts "
+        + "are to be processed")
+      .build()
+
+    (new cli.Options)
+      .addOption(helpOption)
+      .addOption(fromOption)
+      .addOption(toOption)
+  }
+
   private def determineFromDateTime(
     dateTime: String
   ): LocalDateTime = {
@@ -174,16 +199,46 @@ object OssecHidsMonitor {
     LocalDateTime.now()
   }
 
-  def dispatch(): Unit = {
+  def displayHelp(): Unit = {
+    val helpFormatter: cli.HelpFormatter = new cli.HelpFormatter
+    helpFormatter.printHelp("ossec-hids-monitor", "", commandLineOptions, "", true)
+  }
+
+  def dispatch(
+    args: Array[String]
+  ): Unit = {
     //
     //
     //
-    val fromDateTime: LocalDateTime = determineFromDateTime("")
+    val commandLineParser: cli.CommandLineParser = new cli.DefaultParser()
 
     //
     //
     //
-    val toDateTime: LocalDateTime = determineToDateTime("")
+    val commandLine: cli.CommandLine = commandLineParser.parse(
+      commandLineOptions,
+      args
+    )
+
+    if (commandLine.hasOption("help")) {
+      displayHelp()
+      return
+    }
+
+    //
+    //
+    //
+    val fromDateTime: LocalDateTime = determineFromDateTime(
+      commandLine.getOptionValue("from")
+    )
+
+    //
+    //
+    //
+    val toDateTime: LocalDateTime = determineToDateTime(
+      commandLine.getOptionValue("to")
+    )
+
 
     //
     //
@@ -194,7 +249,7 @@ object OssecHidsMonitor {
 
     val ossecHidsDAO: OssecHidsDAO = null
 
-    (new OssecHidsMonitor(ossecHidsDAO)).execute(
+    new OssecHidsMonitor(ossecHidsDAO).execute(
       modules,
       configuration,
       fromDateTime,
@@ -205,7 +260,7 @@ object OssecHidsMonitor {
   def main(
     args: Array[String]
   ): Unit = {
-
+    dispatch(args)
   }
 }
 
