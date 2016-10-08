@@ -2,6 +2,7 @@ package com.resolvix.ohm.dao.api
 
 import java.time.{LocalDateTime, Period}
 
+import com.resolvix.ohm.{Category, Location, Signature, SignatureCategoryMaplet}
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 
 import scala.util.Try
@@ -16,6 +17,14 @@ trait OssecHidsDAO {
     fromDateTime: LocalDateTime,
     toDateTime: LocalDateTime
   ): Try[List[Alert]]
+
+  def getCategories: Try[List[Category]]
+
+  def getLocations: Try[List[Location]]
+
+  def getSignatures: Try[List[Signature]]
+
+  def getSignatureCategoryMaplets: Try[List[SignatureCategoryMaplet]]
 
   def getModuleAlertStatusesById(
     id: Int

@@ -3,13 +3,13 @@ package com.resolvix.ohm
 import java.time.{LocalDateTime, Period}
 import java.util
 
-import com.resolvix.ohm.api.{Alert => AlertT, Module => ModuleT, ModuleAlertStatus}
+import com.resolvix.ohm.api.{ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object OssecHidsMonitor {
@@ -162,12 +162,51 @@ object OssecHidsMonitor {
     }
   }
 
+  private def determineFromDateTime(
+    dateTime: String
+  ): LocalDateTime = {
+    LocalDateTime.now()
+  }
+
+  private def determineToDateTime(
+    dateTime: String
+  ): LocalDateTime = {
+    LocalDateTime.now()
+  }
+
+  def dispatch(): Unit = {
+    //
+    //
+    //
+    val fromDateTime: LocalDateTime = determineFromDateTime("")
+
+    //
+    //
+    //
+    val toDateTime: LocalDateTime = determineToDateTime("")
+
+    //
+    //
+    //
+    val modules: List[ModuleHandle] = List[ModuleHandle]()
+
+    val configuration: Map[String, Any] = Map[String, Any]()
+
+    val ossecHidsDAO: OssecHidsDAO = null
+
+    (new OssecHidsMonitor(ossecHidsDAO)).execute(
+      modules,
+      configuration,
+      fromDateTime,
+      toDateTime
+    )
+  }
+
   def main(
     args: Array[String]
   ): Unit = {
 
   }
-
 }
 
 class OssecHidsMonitor(
@@ -179,28 +218,49 @@ class OssecHidsMonitor(
   //
   //
   //
-  val fromDateTime: LocalDateTime = determineFromDateTime("")
-
-  //
-  //
-  //
-  val toDateTime: LocalDateTime = determineToDateTime("")
-
-  //
-  //
-  //
-  val alerts: List[Alert] = ossecHidsDAO.getAlertsForPeriod(
-    0x01,
-    fromDateTime,
-    toDateTime
-  ) match {
-    case Success(alerts: List[_]) =>
-      alerts.asInstanceOf[List[Alert]]
+  private val categories: List[Category] = ossecHidsDAO.getCategories match {
+    case Success(categories: List[Category]) =>
+      categories
 
     case Failure(t: Throwable) =>
-      List[Alert]()
-
+      List[Category]()
   }
+
+  //
+  //
+  //
+  private val categoryMap: Map[Int, Category]
+    = categories.map(
+      (c: Category) => (c.getId, c)
+    ).toMap
+
+  //
+  //
+  //
+  private val signatures: List[Signature] = ossecHidsDAO.getSignatures match {
+    case Success(signatures: List[Signature]) =>
+      signatures
+
+    case Failure(t: Throwable) =>
+      List[Signature]()
+  }
+
+  //
+  //
+  //
+  private val signatureMap: Map[Int, Signature]
+    = signatures.map(
+      (s: Signature) => (s.getRuleId, s)
+    ).toMap
+
+  //
+  //
+  //
+
+  crossReferenceSignaturesAndCategories(
+    signatureMap,
+    categoryMap
+  )
 
   private val updateModuleAlertStatus: PartialFunction[(api.Alert, api.Module, String, Int), Try[Boolean]]
     = new PartialFunction[(api.Alert, api.Module, String, Int), Try[Boolean]] {
@@ -224,16 +284,78 @@ class OssecHidsMonitor(
       }
     }
 
-  def determineFromDateTime(
-    dateTime: String
-  ): LocalDateTime = {
-    LocalDateTime.now()
+  def crossReferenceSignaturesAndCategories(
+    signatureMap: Map[Int, Signature],
+    categoryMap: Map[Int, Category]
+  ): Unit = {
+    val signatureCategoryMaplets: List[SignatureCategoryMaplet]
+      = ossecHidsDAO.getSignatureCategoryMaplets match {
+        case Success(signatureCategoryMaplets: List[SignatureCategoryMaplet])   =>
+          signatureCategoryMaplets
+
+        case Failure(t: Throwable) =>
+          List[SignatureCategoryMaplet]()
+      }
+
+    val signatureCategoryListMap: mutable.Map[Int, ListBuffer[Category]]
+      = mutable.Map[Int, ListBuffer[Category]]()
+
+    val categorySignatureListMap: mutable.Map[Int, ListBuffer[Signature]]
+      = mutable.Map[Int, ListBuffer[Signature]]()
+
+    for (scm: SignatureCategoryMaplet <- signatureCategoryMaplets) {
+      for (
+        s: Signature <- signatureMap.get(scm.getRuleId);
+        c: Category <- categoryMap.get(scm.getCategoryId)
+      ) {
+        val slb: ListBuffer[Signature] = categorySignatureListMap
+          .getOrElseUpdate(scm.getCategoryId, ListBuffer[Signature]())
+
+        val clb: ListBuffer[Category] = signatureCategoryListMap
+          .getOrElseUpdate(scm.getRuleId, ListBuffer[Category]())
+
+        slb :+ s
+        clb :+ c
+      }
+    }
+
+    for (s: Signature <- signatures) {
+      val clb: ListBuffer[Category] = signatureCategoryListMap(s.getId)
+      s.setCategories(clb.toList)
+    }
+
+    for (c: Category <- categories) {
+      val slb: ListBuffer[Signature] = categorySignatureListMap(c.getId)
+      c.setSignatures(slb.toList)
+    }
   }
 
-  def determineToDateTime(
-    dateTime: String
-  ): LocalDateTime = {
-    LocalDateTime.now()
+  def execute(
+    modules: List[ModuleHandle],
+    configuration: Map[String, Any],
+    fromDateTime: LocalDateTime,
+    toDateTime: LocalDateTime
+  ): Unit = {
+    //
+    //
+    //
+    val alerts: List[Alert] = ossecHidsDAO.getAlertsForPeriod(
+      0x01,
+      fromDateTime,
+      toDateTime
+    ) match {
+      case Success(alerts: List[_]) =>
+        alerts.asInstanceOf[List[Alert]]
+
+      case Failure(t: Throwable) =>
+        List[Alert]()
+    }
+
+    process(
+      alerts,
+      modules,
+      configuration
+    )
   }
 
   def process(
@@ -241,7 +363,6 @@ class OssecHidsMonitor(
     modules: List[ModuleHandle],
     configuration: Map[String, Any]
   ): Unit = {
-
 
     for (module: api.Module <- modules) {
       module.initialise(
