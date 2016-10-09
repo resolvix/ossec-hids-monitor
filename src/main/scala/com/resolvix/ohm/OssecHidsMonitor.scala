@@ -1,6 +1,7 @@
 package com.resolvix.ohm
 
 import java.time._
+import java.time.chrono.ChronoLocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util
@@ -173,13 +174,25 @@ object OssecHidsMonitor {
     }
   }
 
+  //
+  //
+  //
   private final val DefaultZoneId: ZoneId = ZoneId.systemDefault()
 
+  //
+  //
+  //
   private final val DefaultZoneOffset: ZoneOffset = ZonedDateTime.now(DefaultZoneId).getOffset
 
+  //
+  //
+  //
   private final val IsoDateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
-  private val commandLineOptions: cli.Options = {
+  //
+  //
+  //
+  private final val commandLineOptions: cli.Options = {
     val helpOption: cli.Option = cli.Option.builder("h")
       .longOpt("help")
       .desc("Display this information")
@@ -234,10 +247,40 @@ object OssecHidsMonitor {
     }
   }
 
+  private def earlierOf[S <: ChronoLocalDateTime[_], T <: ChronoLocalDateTime[_], U <: ChronoLocalDateTime[_]](
+    lhs: S, rhs: T
+  ): U ={
+    if (lhs.compareTo(rhs) <= 0x00) {
+      lhs.asInstanceOf[U]
+    } else {
+      rhs.asInstanceOf[U]
+    }
+  }
+
   private def determineToDateTime(
     dateTime: String
   ): Try[LocalDateTime] = {
-    Success(LocalDateTime.now())
+    try {
+      dateTime match {
+        case "now" =>
+          Success(LocalDateTime.now())
+
+        case s: String =>
+          Success(
+            earlierOf(
+              LocalDate.parse(s, IsoDateFormatter)
+                .plusDays(1)
+                .atStartOfDay(),
+              LocalDateTime.now()
+            )
+          )
+
+
+      }
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
   }
 
   def displayHelp(): Unit = {
@@ -291,8 +334,7 @@ object OssecHidsMonitor {
       case Failure(t: Throwable) =>
         throw t
     }
-
-
+    
     //
     //
     //
