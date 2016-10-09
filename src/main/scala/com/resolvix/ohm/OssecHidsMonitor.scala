@@ -1,6 +1,8 @@
 package com.resolvix.ohm
 
-import java.time.{LocalDateTime, Period}
+import java.time._
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util
 
 import com.resolvix.ohm.api.{ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
@@ -9,7 +11,7 @@ import org.apache.commons.cli
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -153,15 +155,29 @@ object OssecHidsMonitor {
     }
 
     override def process(
-      alert: api.Alert
+      alert: AlertT,
+      location: Option[Location],
+      signature: Option[Signature]
+    )(
+      implicit ec: ExecutionContext
     ): Try[Future[ModuleAlertStatus]] = {
-      module.process(alert)
+      module.process(
+        alert,
+        location,
+        signature
+      )
     }
 
     override def terminate(): Try[Boolean] = {
       module.terminate()
     }
   }
+
+  private final val DefaultZoneId: ZoneId = ZoneId.systemDefault()
+
+  private final val DefaultZoneOffset: ZoneOffset = ZonedDateTime.now(DefaultZoneId).getOffset
+
+  private final val IsoDateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
   private val commandLineOptions: cli.Options = {
     val helpOption: cli.Option = cli.Option.builder("h")
@@ -189,14 +205,39 @@ object OssecHidsMonitor {
 
   private def determineFromDateTime(
     dateTime: String
-  ): LocalDateTime = {
-    LocalDateTime.now()
+  ): Try[LocalDateTime] = {
+
+    try {
+      dateTime match {
+        case "today" =>
+          Success(
+            LocalDateTime.now()
+              .truncatedTo(ChronoUnit.DAYS)
+          )
+
+        case "yesterday" =>
+          Success(
+            LocalDateTime.now()
+              .minusDays(1)
+              .truncatedTo(ChronoUnit.DAYS)
+          )
+
+        case s: String =>
+          Success(
+            LocalDate.parse(s, IsoDateFormatter)
+              .atStartOfDay()
+          )
+      }
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
   }
 
   private def determineToDateTime(
     dateTime: String
-  ): LocalDateTime = {
-    LocalDateTime.now()
+  ): Try[LocalDateTime] = {
+    Success(LocalDateTime.now())
   }
 
   def displayHelp(): Unit = {
@@ -230,14 +271,26 @@ object OssecHidsMonitor {
     //
     val fromDateTime: LocalDateTime = determineFromDateTime(
       commandLine.getOptionValue("from")
-    )
+    ) match {
+      case Success(localDateTime: LocalDateTime) =>
+        localDateTime
+
+      case Failure(t: Throwable) =>
+        throw t
+    }
 
     //
     //
     //
     val toDateTime: LocalDateTime = determineToDateTime(
       commandLine.getOptionValue("to")
-    )
+    ) match {
+      case Success(localDateTime: LocalDateTime) =>
+        localDateTime
+
+      case Failure(t: Throwable) =>
+        throw t
+    }
 
 
     //
@@ -269,6 +322,25 @@ class OssecHidsMonitor(
 ) {
 
   import OssecHidsMonitor.ModuleHandle
+
+  //
+  //
+  //
+  private val locations: List[Location] = ossecHidsDAO.getLocations match {
+    case Success(locations: List[Location]) =>
+      locations
+
+    case Failure(t: Throwable) =>
+      List[Location]()
+  }
+
+  //
+  //
+  //
+  private val locationMap: Map[Int, Location]
+    = locations.map(
+      (l: Location) => (l.getId, l)
+    ).toMap
 
   //
   //
@@ -442,14 +514,23 @@ class OssecHidsMonitor(
               List[ModuleAlertStatus]()
           }
 
-        //
-        //  if alertStatuses contains a member with a moduleId that
-        //  is equal to the current moduleId, the process has been
-        //  executed against that event and should not be executed
-        //  again
-        //
-        if (true) {
-          moduleHandle.process(alert) match {
+        val moduleAlertStatus: Option[ModuleAlertStatus]
+          = moduleAlertStatuses.collectFirst[ModuleAlertStatus]({
+          case (moduleAlertStatus: ModuleAlertStatus)
+            if moduleAlertStatus.getModuleId == moduleHandle.getId =>
+              moduleAlertStatus
+        })
+
+        if (moduleAlertStatus.isEmpty) {
+
+          val location: Option[Location] = locationMap.get(alert.getLocationId)
+          val signature: Option[Signature] = signatureMap.get(alert.getRuleId)
+
+          moduleHandle.process(
+            alert,
+            location,
+            signature
+          ) match {
             case Success(futureModuleAlertStatus: Future[api.ModuleAlertStatus]) =>
               moduleHandle.appendFutureModuleAlertStatus(
                 alert,

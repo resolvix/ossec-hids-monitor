@@ -5,4 +5,6 @@ package com.resolvix.ohm.api
   */
 trait ModuleAlertStatus {
 
+  def getModuleId: Int = ???
+
 }

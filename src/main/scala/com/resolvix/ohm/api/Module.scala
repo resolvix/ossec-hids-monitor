@@ -1,6 +1,8 @@
 package com.resolvix.ohm.api
 
-import scala.concurrent.Future
+import com.resolvix.ohm.{Category, Location, Signature}
+
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 /**
@@ -19,7 +21,11 @@ trait Module {
   ): Try[Boolean]
 
   def process(
-    alert: Alert
+    alert: Alert,
+    location: Option[Location],
+    signature: Option[Signature]
+  )(
+    implicit ec: ExecutionContext
   ): Try[Future[ModuleAlertStatus]]
 
   def terminate(): Try[Boolean]
