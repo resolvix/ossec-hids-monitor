@@ -5,9 +5,13 @@ import java.time.chrono.ChronoLocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util
+import java.util.NoSuchElementException
 
 import com.resolvix.ohm.api.{ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
+import com.resolvix.ohm.module.jira.JiraModule
+import com.resolvix.ohm.module.sink.SinkModule
+import com.resolvix.ohm.module.text.TextModule
 import org.apache.commons.cli
 
 import scala.collection.mutable
@@ -177,6 +181,59 @@ object OssecHidsMonitor {
   //
   //
   //
+  private final val CommandLineOptions: cli.Options = {
+    val helpOption: cli.Option = cli.Option.builder("h")
+      .longOpt("help")
+      .desc("Display this information")
+      .build()
+
+    val listOption: cli.Option = cli.Option.builder("l")
+      .longOpt("list")
+      .desc("List available modules")
+      .build()
+
+    val fromOption: cli.Option = cli.Option.builder("f")
+      .longOpt("from")
+      .desc("Start of the period over which OSSEC HIDS alerts "
+        + "are to be processed")
+      .hasArg()
+      .build()
+
+    val toOption: cli.Option = cli.Option.builder("t")
+      .longOpt("to")
+      .desc("End of the period over which OSSEC HIDS alerts "
+        + "are to be processed")
+      .hasArg()
+      .build()
+
+    (new cli.Options)
+      .addOption(helpOption)
+      .addOption(listOption)
+      .addOption(fromOption)
+      .addOption(toOption)
+  }
+
+  def onFailure: PartialFunction[Throwable, Unit] = {
+    case (t: Throwable) =>
+
+  }
+
+  def onSuccess: PartialFunction[ModuleAlertStatus, Unit] = {
+    case (moduleAlertStatus: ModuleAlertStatus) =>
+
+  }
+
+  def update: PartialFunction[ModuleAlertStatus, Try[Boolean]] = {
+    case (moduleAlertStatus: ModuleAlertStatus) => Success(true)
+  }
+
+  def logFailure: PartialFunction[Throwable, Try[Boolean]] = {
+    case (t: Throwable) => Success(true)
+  }
+
+  //
+  //
+  //
   private final val DefaultZoneId: ZoneId = ZoneId.systemDefault()
 
   //
@@ -192,29 +249,40 @@ object OssecHidsMonitor {
   //
   //
   //
-  private final val commandLineOptions: cli.Options = {
-    val helpOption: cli.Option = cli.Option.builder("h")
-      .longOpt("help")
-      .desc("Display this information")
-      .build()
+  private final val Modules: List[api.Module] = {
 
-    val fromOption: cli.Option = cli.Option.builder("f")
-      .longOpt("from")
-      .desc("Start of the period over which OSSEC HIDS alerts "
-        + "are to be processed")
-      .build()
+    val jiraModule: JiraModule = new JiraModule
+    val sinkModule: SinkModule = new SinkModule
+    val textModule: TextModule = new TextModule
 
-    val toOption: cli.Option = cli.Option.builder("t")
-      .longOpt("to")
-      .desc("End of the period over which OSSEC HIDS alerts "
-        + "are to be processed")
-      .build()
-
-    (new cli.Options)
-      .addOption(helpOption)
-      .addOption(fromOption)
-      .addOption(toOption)
+    List[api.Module](
+      new ModuleHandle(
+        jiraModule,
+        false,
+        onSuccess,
+        onFailure,
+        update,
+        logFailure
+      ),
+      new ModuleHandle(
+        sinkModule,
+        false,
+        onSuccess,
+        onFailure,
+        update,
+        logFailure
+      ),
+      new ModuleHandle(
+        textModule,
+        false,
+        onSuccess,
+        onFailure,
+        update,
+        logFailure
+      )
+    )
   }
+
 
   private def determineFromDateTime(
     dateTime: String
@@ -240,20 +308,16 @@ object OssecHidsMonitor {
             LocalDate.parse(s, IsoDateFormatter)
               .atStartOfDay()
           )
+
+        case _ =>
+          Success(
+            LocalDateTime.now()
+              .truncatedTo(ChronoUnit.DAYS)
+          )
       }
     } catch {
       case t: Throwable =>
         Failure(t)
-    }
-  }
-
-  private def earlierOf[S <: ChronoLocalDateTime[_], T <: ChronoLocalDateTime[_], U <: ChronoLocalDateTime[_]](
-    lhs: S, rhs: T
-  ): U ={
-    if (lhs.compareTo(rhs) <= 0x00) {
-      lhs.asInstanceOf[U]
-    } else {
-      rhs.asInstanceOf[U]
     }
   }
 
@@ -275,7 +339,10 @@ object OssecHidsMonitor {
             )
           )
 
-
+        case _ =>
+          Success(
+            LocalDateTime.now()
+          )
       }
     } catch {
       case t: Throwable =>
@@ -285,7 +352,17 @@ object OssecHidsMonitor {
 
   def displayHelp(): Unit = {
     val helpFormatter: cli.HelpFormatter = new cli.HelpFormatter
-    helpFormatter.printHelp("ossec-hids-monitor", "", commandLineOptions, "", true)
+    helpFormatter.printHelp("ossec-hids-monitor", "", CommandLineOptions, "", true)
+  }
+
+  def displayModules(): Unit = {
+    for (module: api.Module <- Modules) {
+      println(
+        module.getHandle
+          + " "
+          + module.getDescriptor
+        )
+    }
   }
 
   def dispatch(
@@ -300,7 +377,7 @@ object OssecHidsMonitor {
     //
     //
     val commandLine: cli.CommandLine = commandLineParser.parse(
-      commandLineOptions,
+      CommandLineOptions,
       args
     )
 
@@ -308,6 +385,14 @@ object OssecHidsMonitor {
       displayHelp()
       return
     }
+
+    if (commandLine.hasOption("list")) {
+      displayModules()
+      return
+    }
+
+
+    val x: String = commandLine.getOptionValue("f")
 
     //
     //
@@ -334,7 +419,7 @@ object OssecHidsMonitor {
       case Failure(t: Throwable) =>
         throw t
     }
-    
+
     //
     //
     //
@@ -350,6 +435,16 @@ object OssecHidsMonitor {
       fromDateTime,
       toDateTime
     )
+  }
+
+  private def earlierOf[S <: ChronoLocalDateTime[_], T <: ChronoLocalDateTime[_], U <: ChronoLocalDateTime[_]](
+    lhs: S, rhs: T
+  ): U ={
+    if (lhs.compareTo(rhs) <= 0x00) {
+      lhs.asInstanceOf[U]
+    } else {
+      rhs.asInstanceOf[U]
+    }
   }
 
   def main(
@@ -489,13 +584,27 @@ class OssecHidsMonitor(
     }
 
     for (s: Signature <- signatures) {
-      val clb: ListBuffer[Category] = signatureCategoryListMap(s.getId)
-      s.setCategories(clb.toList)
+      try {
+        val clb: ListBuffer[Category] = signatureCategoryListMap(s.getId)
+        s.setCategories(clb.toList)
+      } catch {
+        case e: NoSuchElementException =>
+          //
+          //  Do nothing
+          //
+      }
     }
 
     for (c: Category <- categories) {
-      val slb: ListBuffer[Signature] = categorySignatureListMap(c.getId)
-      c.setSignatures(slb.toList)
+      try {
+        val slb: ListBuffer[Signature] = categorySignatureListMap(c.getId)
+        c.setSignatures(slb.toList)
+      } catch {
+        case e: NoSuchElementException =>
+          //
+          //  Do nothing
+          //
+      }
     }
   }
 

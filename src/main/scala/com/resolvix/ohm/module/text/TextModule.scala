@@ -11,7 +11,7 @@ class TextModule
 {
   override def getDescriptor: String = "Module for rendering OSSEC HIDS alerts to a text-based report."
 
-  override def getHandle: String = ???
+  override def getHandle: String = "TEXT"
 
   override def getId: Int = ???
 

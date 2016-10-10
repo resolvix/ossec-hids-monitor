@@ -29,5 +29,4 @@ trait Module {
   ): Try[Future[ModuleAlertStatus]]
 
   def terminate(): Try[Boolean]
-
 }
