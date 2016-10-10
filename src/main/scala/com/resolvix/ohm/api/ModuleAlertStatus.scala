@@ -5,6 +5,12 @@ package com.resolvix.ohm.api
   */
 trait ModuleAlertStatus {
 
-  def getModuleId: Int = ???
+  def getId: Int
+
+  def getModuleId: Int
+
+  def getReference: String
+
+  def getStatusId: Int
 
 }

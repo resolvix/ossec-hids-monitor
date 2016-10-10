@@ -220,7 +220,16 @@ object OssecHidsMonitor {
 
   def onSuccess: PartialFunction[ModuleAlertStatus, Unit] = {
     case (moduleAlertStatus: ModuleAlertStatus) =>
-
+      println(
+        "AID: "
+          + moduleAlertStatus.getId
+          + ", MID: "
+          + moduleAlertStatus.getModuleId
+          + ", REF: "
+          + moduleAlertStatus.getReference
+          + ", SID: "
+          + moduleAlertStatus.getStatusId
+      )
   }
 
   def update: PartialFunction[ModuleAlertStatus, Try[Boolean]] = {
@@ -423,7 +432,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    val modules: List[ModuleHandle] = List[ModuleHandle]()
+    val modules: List[api.Module] = List[api.Module]()
 
     val configuration: Map[String, Any] = Map[String, Any]()
 
@@ -437,14 +446,30 @@ object OssecHidsMonitor {
     )
   }
 
-  private def earlierOf[S <: ChronoLocalDateTime[_], T <: ChronoLocalDateTime[_], U <: ChronoLocalDateTime[_]](
-    lhs: S, rhs: T
+  private def earlierOf[
+    S <: ChronoLocalDateTime[_],
+    T <: ChronoLocalDateTime[_],
+    U <: ChronoLocalDateTime[_]
+  ](
+    lhs: S,
+    rhs: T
   ): U ={
     if (lhs.compareTo(rhs) <= 0x00) {
       lhs.asInstanceOf[U]
     } else {
       rhs.asInstanceOf[U]
     }
+  }
+
+  def getModules: List[api.Module] = {
+    Modules
+  }
+
+  def getModules(
+    filter: Function[api.Module, Boolean]
+  ): List[api.Module] = {
+    (for (module: api.Module <- Modules if filter.apply(module))
+      yield { module }).toList
   }
 
   def main(
@@ -609,7 +634,7 @@ class OssecHidsMonitor(
   }
 
   def execute(
-    modules: List[ModuleHandle],
+    modules: List[api.Module],
     configuration: Map[String, Any],
     fromDateTime: LocalDateTime,
     toDateTime: LocalDateTime
@@ -638,7 +663,7 @@ class OssecHidsMonitor(
 
   def process(
     alerts: List[api.Alert],
-    modules: List[ModuleHandle],
+    modules: List[api.Module],
     configuration: Map[String, Any]
   ): Unit = {
 
@@ -650,7 +675,7 @@ class OssecHidsMonitor(
 
     for (
       alert: api.Alert <- alerts;
-      moduleHandle: ModuleHandle <- modules
+      module: api.Module <- modules
     ) {
 
       try {
@@ -668,7 +693,7 @@ class OssecHidsMonitor(
         val moduleAlertStatus: Option[ModuleAlertStatus]
           = moduleAlertStatuses.collectFirst[ModuleAlertStatus]({
           case (moduleAlertStatus: ModuleAlertStatus)
-            if moduleAlertStatus.getModuleId == moduleHandle.getId =>
+            if moduleAlertStatus.getModuleId == module.getId =>
               moduleAlertStatus
         })
 
@@ -677,24 +702,27 @@ class OssecHidsMonitor(
           val location: Option[Location] = locationMap.get(alert.getLocationId)
           val signature: Option[Signature] = signatureMap.get(alert.getRuleId)
 
-          moduleHandle.process(
-            alert,
-            location,
-            signature
-          ) match {
-            case Success(futureModuleAlertStatus: Future[api.ModuleAlertStatus]) =>
-              moduleHandle.appendFutureModuleAlertStatus(
+          module match {
+            case moduleHandle: ModuleHandle =>
+              moduleHandle.process(
                 alert,
-                futureModuleAlertStatus
-              )
+                location,
+                signature
+              ) match {
+                case Success(futureModuleAlertStatus: Future[api.ModuleAlertStatus]) =>
+                  moduleHandle.appendFutureModuleAlertStatus(
+                    alert,
+                    futureModuleAlertStatus
+                  )
 
-            case Failure(t: Throwable) =>
-              updateModuleAlertStatus(
-                alert,
-                moduleHandle,
-                "",
-                0x00
-              )
+                case Failure(t: Throwable) =>
+                  updateModuleAlertStatus(
+                    alert,
+                    moduleHandle,
+                    "",
+                    0x00
+                  )
+              }
           }
         }
       } catch {
@@ -708,6 +736,5 @@ class OssecHidsMonitor(
     for (module: api.Module <- modules) {
       module.terminate()
     }
-
   }
 }
