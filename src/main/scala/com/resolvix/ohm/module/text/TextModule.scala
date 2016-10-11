@@ -3,7 +3,7 @@ package com.resolvix.ohm.module.text
 import com.resolvix.ohm.{Category, Location, Signature, api}
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Success, Try}
 
 class TextModule
@@ -25,10 +25,8 @@ class TextModule
     alert: Alert,
     location: Option[Location],
     signature: Option[Signature]
-  )(
-    implicit ec: ExecutionContext
-  ): Try[Future[ModuleAlertStatus]] = {
-    Success(null)
+  ): Promise[ModuleAlertStatus] = {
+    Promise()
   }
 
   override def terminate(): Try[Boolean] = {

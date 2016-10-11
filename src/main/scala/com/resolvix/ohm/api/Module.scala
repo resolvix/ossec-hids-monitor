@@ -2,7 +2,7 @@ package com.resolvix.ohm.api
 
 import com.resolvix.ohm.{Category, Location, Signature}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.Try
 
 /**
@@ -24,9 +24,7 @@ trait Module {
     alert: Alert,
     location: Option[Location],
     signature: Option[Signature]
-  )(
-    implicit ec: ExecutionContext
-  ): Try[Future[ModuleAlertStatus]]
+  ): Promise[ModuleAlertStatus]
 
   def terminate(): Try[Boolean]
 }

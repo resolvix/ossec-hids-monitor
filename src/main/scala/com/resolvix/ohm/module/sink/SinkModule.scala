@@ -3,7 +3,7 @@ package com.resolvix.ohm.module.sink
 import com.resolvix.ohm.{Location, Signature, api}
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -41,9 +41,7 @@ class SinkModule
     alert: Alert,
     location: Option[Location],
     signature: Option[Signature]
-  )(
-    implicit ec: ExecutionContext
-  ): Try[Future[ModuleAlertStatus]] = {
+  ): Promise[ModuleAlertStatus] = {
     println(
       "AID: "
         + alert.getId
@@ -57,8 +55,9 @@ class SinkModule
         + signature.get.getDescription
     )
 
-    val f = Future(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))
-    Success(f)
+    val f = Promise[ModuleAlertStatus]()
+    f.success(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))
+    f
   }
 
   override def terminate(): Try[Boolean] = {

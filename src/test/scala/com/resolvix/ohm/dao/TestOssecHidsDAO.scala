@@ -125,6 +125,7 @@ class TestOssecHidsDAO
     reference: String,
     statusId: Int
   ): Try[Boolean] = {
+    println("setModuleAlertStatus: ")
     listBuffer :+ new TestModuleAlertStatus(
       alertId,
       moduleId,

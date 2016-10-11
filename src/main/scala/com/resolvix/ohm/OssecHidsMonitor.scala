@@ -7,7 +7,7 @@ import java.time.temporal.ChronoUnit
 import java.util
 import java.util.NoSuchElementException
 
-import com.resolvix.ohm.api.{ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
+import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
 import com.resolvix.ohm.module.jira.JiraModule
 import com.resolvix.ohm.module.sink.SinkModule
@@ -16,11 +16,24 @@ import org.apache.commons.cli
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object OssecHidsMonitor {
+
+  class FailureModuleAlertStatus(
+    alert: api.Alert,
+    module: api.Module
+  ) extends api.ModuleAlertStatus {
+    override def getId: Int = alert.getId
+
+    override def getModuleId: Int = module.getId
+
+    override def getReference: String = "<none>"
+
+    override def getStatusId: Int = 0x00
+  }
 
   class ModuleHandle (
 
@@ -35,110 +48,92 @@ object OssecHidsMonitor {
     private val isEnabled: Boolean,
 
     //
-    //  The partial function to execute, in relation to the
-    //  module alert status, upon success of the Future event.
-    //
-    private val onSuccess: PartialFunction[ModuleAlertStatus, Unit],
-
-    //
-    //  The partial function to execute, in relation to the
-    //  module alert status, upon failure of the Future event.
-    //
-    private val onFailure: PartialFunction[Throwable, Unit],
-
-    //
-    //  The partial function to execute to perform an update
+    //  The function to execute to perform an update
     //  to the underlying data store in respect of a module
     //  alert status.
     //
-    private val update: PartialFunction[ModuleAlertStatus, Try[Boolean]],
+    //  This parameter is intended to be a callback to the
+    //  host application for modules to enable them to persist
+    //  to the data store without having to make reference
+    //  to the mechanics of storage.
+    //
+    private val updateModuleAlertStatus: Function[ModuleAlertStatus, Try[Boolean]],
 
     //
+    //  The function to execute to log a failure.
     //
+    //  This parameter is intended to be a callback to the
+    //  host application for modules to enable them to log messages
+    //  without having to make reference to the mechanics of logging.
     //
-    private val logFailure: PartialFunction[Throwable, Try[Boolean]]
+    private val logFailure: Function[Throwable, Try[Boolean]]
 
   ) extends api.Module {
 
     //
     //
     //
+    private val mapPromiseModuleAlertStatus: mutable.Map[Int, Promise[api.ModuleAlertStatus]]
+      = new mutable.HashMap[Int, Promise[api.ModuleAlertStatus]]
+
     private val mapFutureModuleAlertStatus: mutable.Map[Int, Future[api.ModuleAlertStatus]]
-      = new mutable.HashMap[Int, Future[api.ModuleAlertStatus]]
+    = new mutable.HashMap[Int, Future[api.ModuleAlertStatus]]
 
-    //
-    //
-    //
-    private val onFutureSuccess: PartialFunction[ModuleAlertStatus, Unit]
-      = new PartialFunction[ModuleAlertStatus, Unit] {
-        override def apply(m: ModuleAlertStatus): Unit = {
-          update(m)
-        }
+    def onComplete: Function[Try[ModuleAlertStatus], Unit] = {
+      case Success(moduleAlertStatus: ModuleAlertStatus) =>
+        println(
+          "AID: "
+            + moduleAlertStatus.getId
+            + ", MID: "
+            + moduleAlertStatus.getModuleId
+            + ", REF: "
+            + moduleAlertStatus.getReference
+            + ", SID: "
+            + moduleAlertStatus.getStatusId
+        )
 
-        override def isDefinedAt(m: ModuleAlertStatus): Boolean = {
-          m match {
-            case mm: ModuleAlertStatus =>
-              true
+        updateModuleAlertStatus(moduleAlertStatus)
 
-            case _ =>
-              false
-          }
-        }
+      case Failure(e: ModuleAlertProcessingException) => {
+        updateModuleAlertStatus(
+          new FailureModuleAlertStatus(
+            e.getAlert,
+            e.getModule
+          )
+        )
+        logFailure(e)
       }
 
-    private val onFutureFailure: PartialFunction[Throwable, Unit]
-      = new PartialFunction[Throwable, Unit] {
-      override def apply(t: Throwable): Unit = {
+      case Failure(t: Throwable) => {
         logFailure(t)
-      }
-
-      override def isDefinedAt(t: Throwable): Boolean = {
-        t match {
-          case tt: Throwable =>
-            true
-
-          case _ =>
-            false
-        }
       }
     }
 
-    def appendFutureModuleAlertStatus(
+    def appendPromiseModuleAlertStatus(
       alert: api.Alert,
-      futureModuleAlertStatus: Future[api.ModuleAlertStatus]
+      promiseModuleAlertStatus: Promise[api.ModuleAlertStatus]
     ): Try[Boolean] = {
       try {
-        //
-        //  Configure the behaviour of the future module alert status upon
-        //  notice from the relevant module.
-        //
-        futureModuleAlertStatus.onSuccess[Unit](onFutureSuccess)
-        futureModuleAlertStatus.onFailure[Unit](onFutureFailure)
-
         //
         //  Associate the future module alert status with the relevant
         //  module pending receipt of a referential callback.
         //
-        mapFutureModuleAlertStatus.put(
+        mapPromiseModuleAlertStatus.put(
           alert.getId,
-          futureModuleAlertStatus
+          promiseModuleAlertStatus
         )
 
+        //
+        //  Configure the behaviour of the future module alert status upon
+        //  notice from the relevant module.
+        //
+        promiseModuleAlertStatus.future
+          .onComplete(this.onComplete)
         Success(true)
       } catch {
         case t: Throwable =>
           Failure(t)
       }
-    }
-
-    def updateModuleAlertStatus(
-      alert: api.Alert,
-      reference: String,
-      statusId: Int
-    ): Try[Boolean] = {
-      /*
-      )*/
-      Success(false)
     }
 
     override def getDescriptor: String = {
@@ -163,9 +158,7 @@ object OssecHidsMonitor {
       alert: AlertT,
       location: Option[Location],
       signature: Option[Signature]
-    )(
-      implicit ec: ExecutionContext
-    ): Try[Future[ModuleAlertStatus]] = {
+    ): Promise[ModuleAlertStatus] = {
       module.process(
         alert,
         location,
@@ -213,33 +206,6 @@ object OssecHidsMonitor {
       .addOption(toOption)
   }
 
-  def onFailure: PartialFunction[Throwable, Unit] = {
-    case (t: Throwable) =>
-
-  }
-
-  def onSuccess: PartialFunction[ModuleAlertStatus, Unit] = {
-    case (moduleAlertStatus: ModuleAlertStatus) =>
-      println(
-        "AID: "
-          + moduleAlertStatus.getId
-          + ", MID: "
-          + moduleAlertStatus.getModuleId
-          + ", REF: "
-          + moduleAlertStatus.getReference
-          + ", SID: "
-          + moduleAlertStatus.getStatusId
-      )
-  }
-
-  def update: PartialFunction[ModuleAlertStatus, Try[Boolean]] = {
-    case (moduleAlertStatus: ModuleAlertStatus) => Success(true)
-  }
-
-  def logFailure: PartialFunction[Throwable, Try[Boolean]] = {
-    case (t: Throwable) => Success(true)
-  }
-
   //
   //
   //
@@ -258,40 +224,11 @@ object OssecHidsMonitor {
   //
   //
   //
-  private final val Modules: List[api.Module] = {
-
-    val jiraModule: JiraModule = new JiraModule
-    val sinkModule: SinkModule = new SinkModule
-    val textModule: TextModule = new TextModule
-
-    List[api.Module](
-      new ModuleHandle(
-        jiraModule,
-        false,
-        onSuccess,
-        onFailure,
-        update,
-        logFailure
-      ),
-      new ModuleHandle(
-        sinkModule,
-        false,
-        onSuccess,
-        onFailure,
-        update,
-        logFailure
-      ),
-      new ModuleHandle(
-        textModule,
-        false,
-        onSuccess,
-        onFailure,
-        update,
-        logFailure
-      )
-    )
-  }
-
+  private final val Modules: List[api.Module] = List[api.Module](
+    new JiraModule,
+    new SinkModule,
+    new TextModule
+  )
 
   private def determineFromDateTime(
     dateTime: String
@@ -400,9 +337,6 @@ object OssecHidsMonitor {
       return
     }
 
-
-    val x: String = commandLine.getOptionValue("f")
-
     //
     //
     //
@@ -485,6 +419,10 @@ class OssecHidsMonitor(
 
   import OssecHidsMonitor.ModuleHandle
 
+  def logFailure: PartialFunction[Throwable, Try[Boolean]] = {
+    case (t: Throwable) => Success(true)
+  }
+
   //
   //
   //
@@ -545,33 +483,10 @@ class OssecHidsMonitor(
   //
   //
   //
-
   crossReferenceSignaturesAndCategories(
     signatureMap,
     categoryMap
   )
-
-  private val updateModuleAlertStatus: PartialFunction[(api.Alert, api.Module, String, Int), Try[Boolean]]
-    = new PartialFunction[(api.Alert, api.Module, String, Int), Try[Boolean]] {
-      override def apply(p: (api.Alert, api.Module, String, Int)): Try[Boolean] = {
-        ossecHidsDAO.setModuleAlertStatus(
-          p._1.getId,
-          p._2.getId,
-          p._3,
-          p._4
-        )
-      }
-
-      override def isDefinedAt(p: (api.Alert, api.Module, String, Int)): Boolean = {
-        p match {
-          case pp: (api.Alert, api.Module, String, Int) =>
-            true
-
-          case _ =>
-            false
-        }
-      }
-    }
 
   def crossReferenceSignaturesAndCategories(
     signatureMap: Map[Int, Signature],
@@ -667,7 +582,16 @@ class OssecHidsMonitor(
     configuration: Map[String, Any]
   ): Unit = {
 
-    for (module: api.Module <- modules) {
+    val moduleHandles: List[ModuleHandle] = for (module: api.Module <- modules) yield {
+      new ModuleHandle(
+        module,
+        false,
+        updateModuleAlertStatus,
+        logFailure
+      )
+    }
+
+    for (module: api.Module <- moduleHandles) {
       module.initialise(
         configuration.toMap
       )
@@ -675,7 +599,7 @@ class OssecHidsMonitor(
 
     for (
       alert: api.Alert <- alerts;
-      module: api.Module <- modules
+      moduleHandle: ModuleHandle <- moduleHandles
     ) {
 
       try {
@@ -693,37 +617,19 @@ class OssecHidsMonitor(
         val moduleAlertStatus: Option[ModuleAlertStatus]
           = moduleAlertStatuses.collectFirst[ModuleAlertStatus]({
           case (moduleAlertStatus: ModuleAlertStatus)
-            if moduleAlertStatus.getModuleId == module.getId =>
+            if moduleAlertStatus.getModuleId == moduleHandle.getId =>
               moduleAlertStatus
         })
 
         if (moduleAlertStatus.isEmpty) {
-
-          val location: Option[Location] = locationMap.get(alert.getLocationId)
-          val signature: Option[Signature] = signatureMap.get(alert.getRuleId)
-
-          module match {
-            case moduleHandle: ModuleHandle =>
-              moduleHandle.process(
-                alert,
-                location,
-                signature
-              ) match {
-                case Success(futureModuleAlertStatus: Future[api.ModuleAlertStatus]) =>
-                  moduleHandle.appendFutureModuleAlertStatus(
-                    alert,
-                    futureModuleAlertStatus
-                  )
-
-                case Failure(t: Throwable) =>
-                  updateModuleAlertStatus(
-                    alert,
-                    moduleHandle,
-                    "",
-                    0x00
-                  )
-              }
-          }
+          moduleHandle.appendPromiseModuleAlertStatus(
+            alert,
+            moduleHandle.process(
+              alert,
+              locationMap.get(alert.getLocationId),
+              signatureMap.get(alert.getRuleId)
+            )
+          )
         }
       } catch {
         case t: Throwable =>
@@ -736,5 +642,18 @@ class OssecHidsMonitor(
     for (module: api.Module <- modules) {
       module.terminate()
     }
+  }
+
+  private def updateModuleAlertStatus(
+    moduleAlertStatus: api.ModuleAlertStatus
+  ): Try[Boolean] = {
+    println("updateModuleAlertStatus: ")
+    ossecHidsDAO.setModuleAlertStatus(
+      moduleAlertStatus.getId,
+      moduleAlertStatus.getModuleId,
+      moduleAlertStatus.getReference,
+      moduleAlertStatus.getStatusId
+    )
+    Success(true)
   }
 }
