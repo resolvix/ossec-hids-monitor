@@ -11,7 +11,7 @@ import com.atlassian.httpclient.api.{HttpClient, Request}
 import com.atlassian.httpclient.api.factory.HttpClientOptions
 import com.atlassian.httpclient.spi.ThreadLocalContextManager
 import com.atlassian.jira.rest.client.api._
-import com.atlassian.jira.rest.client.api.domain.{BasicIssue, BasicProject, Issue, IssueType}
+import com.atlassian.jira.rest.client.api.domain._
 import com.atlassian.jira.rest.client.api.domain.input.{IssueInput, IssueInputBuilder}
 import com.atlassian.jira.rest.client.auth.BasicHttpAuthenticationHandler
 import com.atlassian.jira.rest.client.internal.async.{AsynchronousHttpClientFactory, AsynchronousJiraRestClient, AtlassianHttpClientDecorator, DisposableHttpClient}
@@ -19,6 +19,8 @@ import com.atlassian.sal.api.ApplicationProperties
 import com.atlassian.util.concurrent.{Effect, Promise}
 
 import scala.util.{Failure, Success, Try}
+
+import scala.collection.JavaConverters._
 
 object JiraClient {
   /**
@@ -151,7 +153,7 @@ class JiraClient(
     issueType: IssueType
   ) extends Builder[Issue] {
     private val issueInputBuilder: IssueInputBuilder
-    = new IssueInputBuilder(project, issueType)
+      = new IssueInputBuilder(project, issueType)
 
     override def build(): Try[Issue] = {
       val issue: Promise[BasicIssue] = issueRestClient.createIssue(
@@ -166,8 +168,35 @@ class JiraClient(
           Failure(t)
       }
     }
-  }
 
+    def setComponents(
+      components: Iterable[BasicComponent]
+    ): IssueBuilder = {
+      issueInputBuilder.setComponents(components.asJava)
+      this
+    }
+
+    def setDescription(
+      description: String
+    ): IssueBuilder = {
+      issueInputBuilder.setDescription(description)
+      this
+    }
+
+    def setPriority(
+      priority: Priority
+    ): IssueBuilder = {
+      issueInputBuilder.setPriority(priority)
+      this
+    }
+
+    def setSummary(
+      summary: String
+    ): IssueBuilder = {
+      issueInputBuilder.setSummary(summary)
+      this
+    }
+  }
 
   private val jiraRestClientFactory: JiraClient.JiraRestClientFactory
     = new JiraClient.JiraRestClientFactory
@@ -196,4 +225,193 @@ class JiraClient(
 
   private val userRestClient: UserRestClient
     = jiraRestClient.getUserClient
+
+  def appendComment(
+    issue: Issue,
+    comment: String
+  ): Try[Boolean] = {
+    try {
+      issueRestClient.addComment(
+        issue.getSelf(),
+        Comment.valueOf(comment)
+      )
+      Success(true)
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getComponent(
+    uri: URI
+  ): Try[Component] = {
+    try {
+      Success(
+        componentRestClient.getComponent(uri).claim()
+      )
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getIssue(
+    issueId: String
+  ): Try[Issue] = {
+    try {
+      Success(
+          issueRestClient.getIssue(issueId).claim()
+      )
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getIssueType(
+    uri: URI
+  ): Try[IssueType] = {
+    try {
+      Success(metadataRestClient.getIssueType(uri).claim())
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getIssueTypes(): Try[Iterable[IssueType]] = {
+    try {
+      val issueTypes: java.lang.Iterable[IssueType]
+        = metadataRestClient.getIssueTypes().claim()
+      Success(issueTypes.asScala)
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getIssueTypes(
+    project: Project
+  ): Try[Iterable[IssueType]] = {
+    try {
+      val issueTypes: java.lang.Iterable[IssueType]
+        = project.getIssueTypes
+      Success(issueTypes.asScala)
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getPriority(
+    uri: URI
+  ): Try[Priority] = {
+    try {
+      Success(metadataRestClient.getPriority(uri).claim())
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getPriorities: Try[Iterable[Priority]] = {
+    try {
+      val priorities: java.lang.Iterable[Priority]
+        = metadataRestClient.getPriorities().claim()
+      Success(priorities.asScala)
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getProject(
+    projectId: String
+  ): Try[Project] = {
+    try {
+      Success(projectRestClient.getProject(projectId).claim())
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getProject(
+    uri: URI
+  ): Try[Project] = {
+    try {
+      Success(projectRestClient.getProject(uri).claim())
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getProjects: Try[Iterable[BasicProject]] = {
+    try {
+      val projects: java.lang.Iterable[BasicProject]
+        = projectRestClient.getAllProjects.claim()
+      Success(projects.asScala)
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getRole(
+    uri: URI
+  ): Try[ProjectRole] = {
+    try {
+      Success(projectRolesRestClient.getRole(uri).claim())
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getRoles(
+    project: Project
+  ): Try[Iterable[ProjectRole]] = {
+    try {
+      val roles: java.lang.Iterable[ProjectRole]
+        = projectRolesRestClient.getRoles(project.getSelf).claim()
+      Success(roles.asScala)
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getStatus(
+    uri: URI
+  ): Try[Status] = {
+    try {
+      Success(metadataRestClient.getStatus(uri).claim())
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getStatuses: Try[Iterable[Status]] = {
+    try {
+      val statuses: java.lang.Iterable[Status]
+        = metadataRestClient.getStatuses.claim()
+      Success(statuses.asScala)
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def getVersions(
+    project: Project
+  ): Try[Iterable[Version]] = {
+    try {
+      Success(project.getVersions.asScala)
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
 }
