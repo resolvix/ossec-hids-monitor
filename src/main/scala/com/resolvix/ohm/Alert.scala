@@ -1,6 +1,12 @@
 package com.resolvix.ohm
 import java.time.Instant
 
+object Alert {
+
+
+
+}
+
 /**
   * Created by rwbisson on 08/10/16.
   */

@@ -317,7 +317,7 @@ class JiraClient(
   def getPriorities: Try[Iterable[Priority]] = {
     try {
       val priorities: java.lang.Iterable[Priority]
-        = metadataRestClient.getPriorities().claim()
+        = metadataRestClient.getPriorities.claim()
       Success(priorities.asScala)
     } catch {
       case t: Throwable =>

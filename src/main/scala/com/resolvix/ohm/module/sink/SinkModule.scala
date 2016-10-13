@@ -6,6 +6,9 @@ import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
+import com.resolvix.ohm.Summarizable._
+import com.resolvix.ohm.Classifiable._
+
 /**
   * Created by rwbisson on 10/10/16.
   */
@@ -54,6 +57,9 @@ class SinkModule
         + ", S: "
         + signature.get.getDescription
     )
+
+    val x = alert.summarize
+    val y = alert.classify
 
     val f = Promise[ModuleAlertStatus]()
     f.success(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))
