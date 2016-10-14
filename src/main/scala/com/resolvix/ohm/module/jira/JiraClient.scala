@@ -1,6 +1,6 @@
 package com.resolvix.ohm.module.jira
 
-import java.io.File
+import java.io.{File, InputStream}
 import java.net.URI
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -19,7 +19,6 @@ import com.atlassian.sal.api.ApplicationProperties
 import com.atlassian.util.concurrent.{Effect, Promise}
 
 import scala.util.{Failure, Success, Try}
-
 import scala.collection.JavaConverters._
 
 object JiraClient {
@@ -141,21 +140,21 @@ class JiraClient(
     *
     * @tparam T
     */
-  abstract class Builder[T] {
-    def build(): Try[T]
+  abstract class Creator[T] {
+    def create(): Try[T]
   }
 
   /**
     *
     */
-  class IssueBuilder(
+  class IssueCreator(
     project: BasicProject,
     issueType: IssueType
-  ) extends Builder[Issue] {
+  ) extends Creator[Issue] {
     private val issueInputBuilder: IssueInputBuilder
       = new IssueInputBuilder(project, issueType)
 
-    override def build(): Try[Issue] = {
+    override def create(): Try[Issue] = {
       val issue: Promise[BasicIssue] = issueRestClient.createIssue(
         issueInputBuilder.build()
       )
@@ -171,28 +170,28 @@ class JiraClient(
 
     def setComponents(
       components: Iterable[BasicComponent]
-    ): IssueBuilder = {
+    ): IssueCreator = {
       issueInputBuilder.setComponents(components.asJava)
       this
     }
 
     def setDescription(
       description: String
-    ): IssueBuilder = {
+    ): IssueCreator = {
       issueInputBuilder.setDescription(description)
       this
     }
 
     def setPriority(
       priority: Priority
-    ): IssueBuilder = {
+    ): IssueCreator = {
       issueInputBuilder.setPriority(priority)
       this
     }
 
     def setSummary(
       summary: String
-    ): IssueBuilder = {
+    ): IssueCreator = {
       issueInputBuilder.setSummary(summary)
       this
     }
@@ -226,7 +225,43 @@ class JiraClient(
   private val userRestClient: UserRestClient
     = jiraRestClient.getUserClient
 
-  def appendComment(
+  def addAttachment(
+    issue: Issue,
+    inputStream: InputStream,
+    filename: String
+  ): Try[Boolean] = {
+    try {
+      issueRestClient.addAttachment(
+        issue.getSelf,
+        inputStream,
+        filename
+      )
+      Success(true)
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def addAttachments(
+    issue: Issue,
+    files: File*
+  ): Try[Boolean] = {
+    try {
+      for (file: File <- files) {
+        issueRestClient.addAttachments(
+          issue.getSelf,
+          file
+        )
+      }
+      Success(true)
+    } catch {
+      case t: Throwable =>
+        Failure(t)
+    }
+  }
+
+  def addComment(
     issue: Issue,
     comment: String
   ): Try[Boolean] = {
@@ -413,5 +448,12 @@ class JiraClient(
       case t: Throwable =>
         Failure(t)
     }
+  }
+
+  def newIssue(
+    project: Project,
+    issueType: IssueType
+  ): IssueCreator = {
+    new IssueCreator(project, issueType)
   }
 }
