@@ -1,6 +1,6 @@
 package com.resolvix.ohm.module
 
-import com.resolvix.ohm.api
+import com.resolvix.ohm.api.Alert
 
 import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
@@ -12,7 +12,7 @@ trait Summarizable {
 
   object SummarizableAlert {
 
-    abstract class SummarizableAlertFunction[S <: api.Alert](
+    abstract class SummarizableAlertFunction[S <: Alert](
       ruleId: Int
     ) extends Function[S, String] {
 
@@ -20,7 +20,7 @@ trait Summarizable {
 
     }
 
-    abstract class RegexSummarizableAlertFunction[S <: api.Alert](
+    abstract class RegexSummarizableAlertFunction[S <: Alert](
       ruleId: Int,
       regex: Regex
     ) extends SummarizableAlertFunction[S](
@@ -35,8 +35,8 @@ trait Summarizable {
       }
     }
 
-    private val SummarizeDiskUsageAlert: SummarizableAlertFunction[api.Alert]
-    = new RegexSummarizableAlertFunction[api.Alert](
+    private val SummarizeDiskUsageAlert: SummarizableAlertFunction[Alert]
+    = new RegexSummarizableAlertFunction[Alert](
       3,
       new Regex("^ossec\\:\\soutput\\:\\s`df\\s\\-h`\\:\\s([\\w\\/\\-\\.\\_\\[\\]\\+]+)\\s+([0-9\\.]+[TGMKB]?)\\s+([0-9\\.]+[TGMKB]?)\\s+([0-9\\.]+[TGMKB]?)\\s+([0-9]+\\%)\\s([\\w\\/\\-\\.\\_\\[\\]\\+]+)$")
     ) {
@@ -47,8 +47,8 @@ trait Summarizable {
       }
     }
 
-    private val SummarizeLogFileRotatedAlert: SummarizableAlertFunction[api.Alert]
-    = new RegexSummarizableAlertFunction[api.Alert](
+    private val SummarizeLogFileRotatedAlert: SummarizableAlertFunction[Alert]
+    = new RegexSummarizableAlertFunction[Alert](
       3,
       new Regex("^ossec\\:\\sFile\\srotated\\s\\(inode\\schanged\\)\\:\\s`([\\w\\/\\-\\.\\_]+)`\\.$")
     ) {
@@ -59,8 +59,8 @@ trait Summarizable {
       }
     }
 
-    private val SummarizeFileAddedAlert: SummarizableAlertFunction[api.Alert]
-    = new RegexSummarizableAlertFunction[api.Alert](
+    private val SummarizeFileAddedAlert: SummarizableAlertFunction[Alert]
+    = new RegexSummarizableAlertFunction[Alert](
       1,
       new Regex("^([\\w\\s]+):\\s`([\\w\\/\\-\\.\\_\\[\\]\\+]+)`[\\n\\r.]*$")
     ) {
@@ -71,8 +71,8 @@ trait Summarizable {
       }
     }
 
-    private val SummarizeFileModifiedAlert: SummarizableAlertFunction[api.Alert]
-    = new RegexSummarizableAlertFunction[api.Alert](
+    private val SummarizeFileModifiedAlert: SummarizableAlertFunction[Alert]
+    = new RegexSummarizableAlertFunction[Alert](
       3,
       new Regex("^([\\w\\s]+):\\s`([\\w\\/\\-\\.\\_\\[\\]\\+]+)`[\\n\\r.]*$")
     ) {
@@ -83,8 +83,8 @@ trait Summarizable {
       }
     }
 
-    private val SummarizeFileRemovedAlert: SummarizableAlertFunction[api.Alert]
-    = new RegexSummarizableAlertFunction[api.Alert](
+    private val SummarizeFileRemovedAlert: SummarizableAlertFunction[Alert]
+    = new RegexSummarizableAlertFunction[Alert](
       2,
       new Regex("^[\\w\\s]+`([\\w\\/\\-\\.\\_\\[\\]\\+]+)`[\\w\\s\\.]+$")
     ) {
@@ -95,8 +95,8 @@ trait Summarizable {
       }
     }
 
-    private val SummarizePackageInstallationRequestAlert: SummarizableAlertFunction[api.Alert]
-    = new RegexSummarizableAlertFunction[api.Alert](
+    private val SummarizePackageInstallationRequestAlert: SummarizableAlertFunction[Alert]
+    = new RegexSummarizableAlertFunction[Alert](
       3,
       new Regex("^[0-9\\-]{10}\\s[0-9\\:]{8}\\sinstall\\s([\\w\\/`:\\-\\.\\~\\s\\<\\>\\+]+)$")
     ) {
@@ -107,8 +107,8 @@ trait Summarizable {
       }
     }
 
-    private val SummarizePackageInstalledAlert: SummarizableAlertFunction[api.Alert]
-    = new RegexSummarizableAlertFunction[api.Alert](
+    private val SummarizePackageInstalledAlert: SummarizableAlertFunction[Alert]
+    = new RegexSummarizableAlertFunction[Alert](
       3,
       new Regex("^[0-9\\-]{10}\\s[0-9\\:]{8}\\sstatus\\sinstalled\\s([\\w\\/`:\\-\\.\\~\\s\\<\\>\\+]+)$")
     ) {
@@ -119,8 +119,8 @@ trait Summarizable {
       }
     }
 
-    private val SummarizePackageRemovedAlert: SummarizableAlertFunction[api.Alert]
-    = new RegexSummarizableAlertFunction[api.Alert](
+    private val SummarizePackageRemovedAlert: SummarizableAlertFunction[Alert]
+    = new RegexSummarizableAlertFunction[Alert](
       3,
       new Regex("^[0-9\\-]{10}\\s[0-9\\:]{8}\\sremove\\s([\\w\\-\\.\\:\\s\\<\\>\\+\\~]+)\\s.*$")
     ) {
@@ -131,8 +131,8 @@ trait Summarizable {
       }
     }
 
-    private val Functions: List[SummarizableAlertFunction[api.Alert]]
-    = List[SummarizableAlertFunction[api.Alert]](
+    private val Functions: List[SummarizableAlertFunction[Alert]]
+    = List[SummarizableAlertFunction[Alert]](
       SummarizeDiskUsageAlert,
       SummarizeLogFileRotatedAlert,
       SummarizeFileAddedAlert,
@@ -143,12 +143,12 @@ trait Summarizable {
       SummarizePackageRemovedAlert
     )
 
-    private val FunctionMap: Map[Int, SummarizableAlertFunction[api.Alert]]
+    private val FunctionMap: Map[Int, SummarizableAlertFunction[Alert]]
     = Functions
-      .map({ (f: SummarizableAlertFunction[api.Alert]) => (f.getRuleId, f) })
-      .toMap[Int, SummarizableAlertFunction[api.Alert]]
+      .map({ (f: SummarizableAlertFunction[Alert]) => (f.getRuleId, f) })
+      .toMap[Int, SummarizableAlertFunction[Alert]]
 
-    def getFunctionByRuleId[S <: api.Alert](
+    def getFunctionByRuleId[S <: Alert](
       ruleId: Int
     ): Try[SummarizableAlertFunction[S]] = {
       try {
@@ -163,13 +163,13 @@ trait Summarizable {
     }
   }
 
-  protected def getAlert: api.Alert
+  protected def getAlert: Alert
 
   def summarize: Try[String] = {
     try {
-      val f: SummarizableAlert.SummarizableAlertFunction[api.Alert] = SummarizableAlert.getFunctionByRuleId(getAlert.getRuleId) match {
+      val f: SummarizableAlert.SummarizableAlertFunction[Alert] = SummarizableAlert.getFunctionByRuleId(getAlert.getRuleId) match {
         case Success(f: SummarizableAlert.SummarizableAlertFunction[_]) =>
-          f.asInstanceOf[SummarizableAlert.SummarizableAlertFunction[api.Alert]]
+          f.asInstanceOf[SummarizableAlert.SummarizableAlertFunction[Alert]]
 
         case Failure(t: Throwable) =>
           throw t

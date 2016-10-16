@@ -1,8 +1,9 @@
 package com.resolvix.ohm.module.sink
 
 import com.resolvix.ohm.{Location, Signature, api}
-import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
+import com.resolvix.ohm.api.{Alert, ConsumerModule, ModuleAlertStatus, Pipe}
 import com.resolvix.ohm.module
+import com.resolvix.ohm.module.api.NewStageAlert
 
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
@@ -11,7 +12,7 @@ import scala.util.{Failure, Success, Try}
   * Created by rwbisson on 10/10/16.
   */
 class SinkModule
-  extends api.ConsumerModule
+  extends ConsumerModule
 {
   override def getDescriptor: String = "Module for sinking OSSEC HIDS alerts."
 
@@ -38,7 +39,14 @@ class SinkModule
     override def getStatusId: Int = statusId
   }
 
-  override def process(
+  class Consumer
+    extends api.Consumer[NewStageAlert]
+  {
+    protected val pipe: Pipe[NewStageAlert] = new Pipe[NewStageAlert]
+
+  }
+
+  /*override def process(
     alert: Alert,
     location: Option[Location],
     signature: Option[Signature]
@@ -64,7 +72,7 @@ class SinkModule
     val f = Promise[ModuleAlertStatus]()
     f.success(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))
     f
-  }
+  }*/
 
   override def terminate(): Try[Boolean] = {
     Success(false)

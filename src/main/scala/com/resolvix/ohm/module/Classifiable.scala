@@ -1,6 +1,6 @@
 package com.resolvix.ohm.module
 
-import com.resolvix.ohm.api
+import com.resolvix.ohm.api.Alert
 
 import scala.util.{Failure, Success, Try}
 
@@ -9,7 +9,7 @@ import scala.util.{Failure, Success, Try}
   */
 trait Classifiable {
 
-  protected def getAlert: api.Alert
+  protected def getAlert: Alert
 
   class Classification {
 

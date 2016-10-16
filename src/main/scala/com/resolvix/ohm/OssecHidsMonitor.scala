@@ -7,8 +7,11 @@ import java.time.temporal.ChronoUnit
 import java.util
 import java.util.NoSuchElementException
 
+import com.resolvix.ohm.OssecHidsMonitor.Producer
 import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, ConsumerModule => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
+import com.resolvix.ohm.module.NewStage
+import com.resolvix.ohm.module.api.NewStageAlert
 import com.resolvix.ohm.module.jira.JiraModule
 import com.resolvix.ohm.module.sink.SinkModule
 import com.resolvix.ohm.module.text.TextModule
@@ -168,6 +171,17 @@ object OssecHidsMonitor {
 
     override def terminate(): Try[Boolean] = {
       module.terminate()
+    }
+  }
+
+  class Producer(
+    alerts: List[api.Alert],
+    configuration: Map[String, Any]
+  ) extends api.Producer[api.Alert] {
+    def run(): Unit = {
+      alerts.foreach {
+        (a: api.Alert) => produce(a)
+      }
     }
   }
 
@@ -569,12 +583,19 @@ class OssecHidsMonitor(
         List[Alert]()
     }
 
-    process(
+    /*process(
       alerts,
       modules,
       configuration
-    )
+    )*/
+
+    val ns: NewStage = new NewStage(ossecHidsDAO, locationMap, signatureMap)
+
+    val p: OssecHidsMonitor.Producer = new OssecHidsMonitor.Producer(alerts, configuration)
+    p.register(ns)
+    p.run()
   }
+
 
   def process(
     alerts: List[api.Alert],

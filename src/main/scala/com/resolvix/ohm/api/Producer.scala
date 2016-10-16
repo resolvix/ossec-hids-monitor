@@ -2,7 +2,8 @@ package com.resolvix.ohm.api
 
 import scala.collection.mutable.ListBuffer
 
-trait Producer[T] {
+trait Producer[T]
+{
   //
   //
   //
@@ -53,12 +54,11 @@ trait Producer[T] {
     *
     * @param t
     */
-  def write(
+  def produce(
     t: T
   ): Unit = {
     consumers.foreach(
-      (consumer: Consumer[T]) =>
-        consumer.receive(t)
+      (c: Consumer[T]) => c.getPipe.write(t)
     )
   }
 }

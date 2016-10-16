@@ -1,15 +1,22 @@
 package com.resolvix.ohm.api
 
+import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue, TimeUnit}
+
 import scala.collection.mutable
 import scala.util.Try
 
 /**
   * Created by rwbisson on 16/10/16.
   */
-trait Consumer[T] {
+trait Consumer[T]
+{
+  protected val pipe: Pipe[T]
 
-  private val inputQueue: mutable.Queue[T]
-    = mutable.Queue[T]()
+  /**
+    *
+    * @return
+    */
+  def getPipe: Pipe[T] = pipe
 
   /**
     *
@@ -21,20 +28,23 @@ trait Consumer[T] {
 
   /**
     *
-    * @param t
+    * @return
     */
-  def receive(
-    t: T
-  ): Unit = {
-    inputQueue.enqueue(t)
+  def consume: Try[T] = {
+    pipe.read
   }
 
   /**
     *
+    * @param timeout
+    * @param unit
     * @return
     */
-  def read: T = {
-    inputQueue.dequeue()
+  def consume(
+    timeout: Int,
+    unit: TimeUnit
+  ): Try[T] = {
+    pipe.read(timeout, unit)
   }
 
   /**
