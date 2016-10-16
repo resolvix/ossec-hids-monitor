@@ -1,7 +1,8 @@
 package com.resolvix.ohm.module.sink
 
+import com.resolvix.concurrent.Pipe
 import com.resolvix.ohm.{Location, Signature, api}
-import com.resolvix.ohm.api.{Alert, ConsumerModule, ModuleAlertStatus, Pipe}
+import com.resolvix.ohm.api.{Alert, ConsumerModule, ModuleAlertStatus}
 import com.resolvix.ohm.module
 import com.resolvix.ohm.module.api.NewStageAlert
 
@@ -37,13 +38,6 @@ class SinkModule
     override def getReference: String = reference
 
     override def getStatusId: Int = statusId
-  }
-
-  class Consumer
-    extends api.Consumer[NewStageAlert]
-  {
-    protected val pipe: Pipe[NewStageAlert] = new Pipe[NewStageAlert]
-
   }
 
   /*override def process(

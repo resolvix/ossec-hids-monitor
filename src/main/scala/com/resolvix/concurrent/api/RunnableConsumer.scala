@@ -1,4 +1,4 @@
-package com.resolvix.ohm.api
+package com.resolvix.concurrent.api
 
 import java.util.concurrent.TimeUnit
 
@@ -11,19 +11,6 @@ import scala.util.{Failure, Success}
 trait RunnableConsumer[T]
   extends Consumer[T]
   with Runnable {
-  //
-  //
-  //
-  private val runtimeControl: Boolean = false
-
-  def isRunning: Boolean = {
-    this.synchronized { runtimeControl }
-  }
-
-  def isStopped: Boolean = {
-    this.synchronized { !runtimeControl }
-  }
-
   /**
     *
     * @return
@@ -34,9 +21,10 @@ trait RunnableConsumer[T]
     *
     */
   def run(): Unit = {
+    start()
     while (isRunning) {
       consume(5000, TimeUnit.MILLISECONDS) match {
-        case Success(t: T) =>
+        case Success(t) =>
           doConsume(t)
 
         case Failure(e: TimeoutException) =>

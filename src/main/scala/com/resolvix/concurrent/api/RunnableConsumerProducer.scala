@@ -1,6 +1,6 @@
-package com.resolvix.ohm.api
+package com.resolvix.concurrent.api
 
-trait ConsumerProducerModule[I, O]
+trait RunnableConsumerProducer[I, O]
   extends RunnableConsumer[I]
     with Producer[O]
 {
@@ -9,14 +9,14 @@ trait ConsumerProducerModule[I, O]
     * @param i
     * @return
     */
-  def convert(i: I): O
+  def apply(i: I): O
 
   /**
     *
     * @return
     */
   override def doConsume(i: I): Unit = {
-    val o: O = convert(i)
+    val o: O = apply(i)
     produce(o)
   }
 }

@@ -7,7 +7,7 @@ import java.time.temporal.ChronoUnit
 import java.util
 import java.util.NoSuchElementException
 
-import com.resolvix.ohm.OssecHidsMonitor.Producer
+import com.resolvix.concurrent.api.Producer
 import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, ConsumerModule => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
 import com.resolvix.ohm.module.NewStage
@@ -157,7 +157,7 @@ object OssecHidsMonitor {
       module.initialise(configuration)
     }
 
-    override def process(
+    /*override def process(
       alert: AlertT,
       location: Option[Location],
       signature: Option[Signature]
@@ -167,17 +167,17 @@ object OssecHidsMonitor {
         location,
         signature
       )
-    }
+    }*/
 
     override def terminate(): Try[Boolean] = {
       module.terminate()
     }
   }
 
-  class Producer(
+  class ProducerP(
     alerts: List[api.Alert],
     configuration: Map[String, Any]
-  ) extends api.Producer[api.Alert] {
+  ) extends Producer[api.Alert] {
     def run(): Unit = {
       alerts.foreach {
         (a: api.Alert) => produce(a)
@@ -591,7 +591,7 @@ class OssecHidsMonitor(
 
     val ns: NewStage = new NewStage(ossecHidsDAO, locationMap, signatureMap)
 
-    val p: OssecHidsMonitor.Producer = new OssecHidsMonitor.Producer(alerts, configuration)
+    val p: OssecHidsMonitor.ProducerP = new OssecHidsMonitor.ProducerP(alerts, configuration)
     p.register(ns)
     p.run()
   }
@@ -643,14 +643,14 @@ class OssecHidsMonitor(
         })
 
         if (moduleAlertStatus.isEmpty) {
-          moduleHandle.appendPromiseModuleAlertStatus(
+          /*moduleHandle.appendPromiseModuleAlertStatus(
             alert,
             moduleHandle.process(
               alert,
               locationMap.get(alert.getLocationId),
               signatureMap.get(alert.getRuleId)
             )
-          )
+          )*/
         }
       } catch {
         case t: Throwable =>

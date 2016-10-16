@@ -1,8 +1,9 @@
-package com.resolvix.ohm.api
+package com.resolvix.concurrent.api
 
-import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue, TimeUnit}
+import java.util.concurrent.TimeUnit
 
-import scala.collection.mutable
+import com.resolvix.concurrent.Pipe
+
 import scala.util.Try
 
 /**

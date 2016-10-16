@@ -1,5 +1,6 @@
 package com.resolvix.ohm.api
 
+import com.resolvix.concurrent.api.{Consumer, ConsumerProducer, Producer}
 import com.resolvix.ohm.{Category, Location, Signature}
 
 import scala.concurrent.{ExecutionContext, Promise}
@@ -8,7 +9,9 @@ import scala.util.Try
 /**
   * Created by rwbisson on 08/10/16.
   */
-trait ConsumerModule {
+trait ConsumerModule
+  extends ConsumerProducer[Alert, ModuleAlertStatus]
+{
 
   def getDescriptor: String
 
@@ -20,11 +23,9 @@ trait ConsumerModule {
     configuration: Map[String, Any]
   ): Try[Boolean]
 
-  def process(
-    alert: Alert,
-    location: Option[Location],
-    signature: Option[Signature]
-  ): Promise[ModuleAlertStatus]
+  override def getConsumer: Consumer[Alert] = super.getConsumer
+
+  override def getProducer: Producer[ModuleAlertStatus] = super.getProducer
 
   def terminate(): Try[Boolean]
 }

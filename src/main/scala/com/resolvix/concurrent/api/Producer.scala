@@ -1,4 +1,4 @@
-package com.resolvix.ohm.api
+package com.resolvix.concurrent.api
 
 import scala.collection.mutable.ListBuffer
 

@@ -1,4 +1,4 @@
-package com.resolvix.ohm.api
+package com.resolvix.concurrent
 
 import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue, TimeoutException}
 

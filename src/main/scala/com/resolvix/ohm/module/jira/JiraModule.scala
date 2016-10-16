@@ -21,13 +21,13 @@ class JiraModule
     Success(false)
   }
 
-  override def process(
+  /*override def process(
     alert: Alert,
     location: Option[Location],
     signature: Option[Signature]
   ): Promise[ModuleAlertStatus] = {
     Promise()
-  }
+  }*/
 
   override def terminate(): Try[Boolean] = {
     Success(false)
