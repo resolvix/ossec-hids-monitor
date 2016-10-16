@@ -37,8 +37,8 @@ class OssecHidMonitorTest
         throw t
     }
 
-    val modules: List[api.Module] = OssecHidsMonitor.getModules(
-      (m: api.Module) => m.getHandle.equalsIgnoreCase("sink")
+    val modules: List[api.ConsumerModule] = OssecHidsMonitor.getModules(
+      (m: api.ConsumerModule) => m.getHandle.equalsIgnoreCase("sink")
     )
 
     ossecHidsMonitor.process(

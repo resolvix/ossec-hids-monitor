@@ -7,7 +7,7 @@ import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Success, Try}
 
 class TextModule
-  extends api.Module
+  extends api.ConsumerModule
 {
   override def getDescriptor: String = "Module for rendering OSSEC HIDS alerts to a text-based report."
 

@@ -2,6 +2,8 @@ package com.resolvix.ohm.api
 
 import java.time.Instant
 
+import scala.util.Try
+
 trait Alert {
 
   def getId: Int

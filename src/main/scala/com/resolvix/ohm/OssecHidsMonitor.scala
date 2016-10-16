@@ -7,7 +7,7 @@ import java.time.temporal.ChronoUnit
 import java.util
 import java.util.NoSuchElementException
 
-import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
+import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, ConsumerModule => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
 import com.resolvix.ohm.module.jira.JiraModule
 import com.resolvix.ohm.module.sink.SinkModule
@@ -24,7 +24,7 @@ object OssecHidsMonitor {
 
   class FailureModuleAlertStatus(
     alert: api.Alert,
-    module: api.Module
+    module: api.ConsumerModule
   ) extends api.ModuleAlertStatus {
     override def getId: Int = alert.getId
 
@@ -40,7 +40,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    private val module: api.Module,
+    private val module: api.ConsumerModule,
 
     //
     //
@@ -68,7 +68,7 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.Module {
+  ) extends api.ConsumerModule {
 
     //
     //
@@ -224,7 +224,7 @@ object OssecHidsMonitor {
   //
   //
   //
-  private final val Modules: List[api.Module] = List[api.Module](
+  private final val Modules: List[api.ConsumerModule] = List[api.ConsumerModule](
     new JiraModule,
     new SinkModule,
     new TextModule
@@ -302,7 +302,7 @@ object OssecHidsMonitor {
   }
 
   def displayModules(): Unit = {
-    for (module: api.Module <- Modules) {
+    for (module: api.ConsumerModule <- Modules) {
       println(
         module.getHandle
           + " "
@@ -366,7 +366,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    val modules: List[api.Module] = List[api.Module]()
+    val modules: List[api.ConsumerModule] = List[api.ConsumerModule]()
 
     val configuration: Map[String, Any] = Map[String, Any]()
 
@@ -395,14 +395,14 @@ object OssecHidsMonitor {
     }
   }
 
-  def getModules: List[api.Module] = {
+  def getModules: List[api.ConsumerModule] = {
     Modules
   }
 
   def getModules(
-    filter: Function[api.Module, Boolean]
-  ): List[api.Module] = {
-    (for (module: api.Module <- Modules if filter.apply(module))
+    filter: Function[api.ConsumerModule, Boolean]
+  ): List[api.ConsumerModule] = {
+    (for (module: api.ConsumerModule <- Modules if filter.apply(module))
       yield { module }).toList
   }
 
@@ -549,7 +549,7 @@ class OssecHidsMonitor(
   }
 
   def execute(
-    modules: List[api.Module],
+    modules: List[api.ConsumerModule],
     configuration: Map[String, Any],
     fromDateTime: LocalDateTime,
     toDateTime: LocalDateTime
@@ -578,11 +578,11 @@ class OssecHidsMonitor(
 
   def process(
     alerts: List[api.Alert],
-    modules: List[api.Module],
+    modules: List[api.ConsumerModule],
     configuration: Map[String, Any]
   ): Unit = {
 
-    val moduleHandles: List[ModuleHandle] = for (module: api.Module <- modules) yield {
+    val moduleHandles: List[ModuleHandle] = for (module: api.ConsumerModule <- modules) yield {
       new ModuleHandle(
         module,
         false,
@@ -591,7 +591,7 @@ class OssecHidsMonitor(
       )
     }
 
-    for (module: api.Module <- moduleHandles) {
+    for (module: api.ConsumerModule <- moduleHandles) {
       module.initialise(
         configuration.toMap
       )
@@ -639,7 +639,7 @@ class OssecHidsMonitor(
       }
     }
 
-    for (module: api.Module <- modules) {
+    for (module: api.ConsumerModule <- modules) {
       module.terminate()
     }
   }

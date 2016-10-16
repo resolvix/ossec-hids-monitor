@@ -2,18 +2,16 @@ package com.resolvix.ohm.module.sink
 
 import com.resolvix.ohm.{Location, Signature, api}
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
+import com.resolvix.ohm.module
 
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
-
-import com.resolvix.ohm.Summarizable._
-import com.resolvix.ohm.Classifiable._
 
 /**
   * Created by rwbisson on 10/10/16.
   */
 class SinkModule
-  extends api.Module
+  extends api.ConsumerModule
 {
   override def getDescriptor: String = "Module for sinking OSSEC HIDS alerts."
 
@@ -58,8 +56,10 @@ class SinkModule
         + signature.get.getDescription
     )
 
-    val x = alert.summarize
-    val y = alert.classify
+    val a = new module.AugmentedAlert(alert)
+
+    val x = a.summarize
+    val y = a.classify
 
     val f = Promise[ModuleAlertStatus]()
     f.success(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))

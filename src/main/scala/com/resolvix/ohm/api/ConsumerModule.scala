@@ -8,7 +8,7 @@ import scala.util.Try
 /**
   * Created by rwbisson on 08/10/16.
   */
-trait Module {
+trait ConsumerModule {
 
   def getDescriptor: String
 

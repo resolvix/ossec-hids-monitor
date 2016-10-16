@@ -1,16 +1,14 @@
-package com.resolvix.ohm
+package com.resolvix.ohm.module
 
-import scala.util.matching.Regex
+import com.resolvix.ohm.api
+
 import scala.util.{Failure, Success, Try}
+import scala.util.matching.Regex
 
 /**
-  * Created by rwbisson on 13/10/16.
+  * Created by rwbisson on 16/10/16.
   */
-object Summarizable {
-
-  abstract class SummarizableAny {
-    def summarize: Try[String]
-  }
+trait Summarizable {
 
   object SummarizableAlert {
 
@@ -165,31 +163,25 @@ object Summarizable {
     }
   }
 
-  /**
-    *
-    * @param alert
-    */
-  implicit class SummarizableAlert(
-    alert: api.Alert
-  ) extends SummarizableAny {
+  protected def getAlert: api.Alert
 
-    def summarize: Try[String] = {
-      try {
-        val f: SummarizableAlert.SummarizableAlertFunction[api.Alert] = SummarizableAlert.getFunctionByRuleId(alert.getRuleId) match {
-          case Success(f: SummarizableAlert.SummarizableAlertFunction[_]) =>
-            f.asInstanceOf[SummarizableAlert.SummarizableAlertFunction[api.Alert]]
+  def summarize: Try[String] = {
+    try {
+      val f: SummarizableAlert.SummarizableAlertFunction[api.Alert] = SummarizableAlert.getFunctionByRuleId(getAlert.getRuleId) match {
+        case Success(f: SummarizableAlert.SummarizableAlertFunction[_]) =>
+          f.asInstanceOf[SummarizableAlert.SummarizableAlertFunction[api.Alert]]
 
-          case Failure(t: Throwable) =>
-            throw t
-        }
-        Success(f.apply(alert))
-      } catch {
-        case e: NoSuchElementException =>
-          Failure(e)
-
-        case t: Throwable =>
-          Failure(t)
+        case Failure(t: Throwable) =>
+          throw t
       }
+      Success(f.apply(getAlert))
+    } catch {
+      case e: NoSuchElementException =>
+        Failure(e)
+
+      case t: Throwable =>
+        Failure(t)
     }
   }
+
 }
