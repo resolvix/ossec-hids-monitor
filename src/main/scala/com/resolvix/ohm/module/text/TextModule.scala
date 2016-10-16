@@ -2,12 +2,13 @@ package com.resolvix.ohm.module.text
 
 import com.resolvix.ohm.{Category, Location, Signature, api}
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
+import com.resolvix.ohm.module.api.NewStageAlert
 
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Success, Try}
 
-class TextModule
-  extends api.ConsumerModule
+class TextModule[C]
+  extends api.ConsumerModule[NewStageAlert, ModuleAlertStatus]
 {
   override def getDescriptor: String = "Module for rendering OSSEC HIDS alerts to a text-based report."
 

@@ -1,5 +1,7 @@
 package com.resolvix.ohm.module
 
+import java.time.Instant
+
 import com.resolvix.concurrent.Pipe
 import com.resolvix.concurrent.api.RunnableConsumerProducer
 import com.resolvix.ohm.{Location, Signature}
@@ -26,7 +28,25 @@ class NewStage(
     with Classifiable
     with Summarizable
   {
-    override def getAlert: Alert = alert
+    override def getId: Int = alert.getId
+
+    override def getAlertId: String = alert.getAlertId
+
+    override def getLocationId: Int = alert.getLocationId
+
+    override def getRuleId: Int = alert.getRuleId
+
+    override def getServerId: Int = alert.getServerId
+
+    override def getSourceIp: String = alert.getSourceIp
+
+    override def getSourcePort: Int = alert.getSourcePort
+
+    override def getDestinationIp: String = alert.getDestinationIp
+
+    override def getDestinationPort: Int = alert.getDestinationPort
+
+    override def getTimestamp: Instant = alert.getTimestamp
 
     def getLocation: Option[Location] = location
 

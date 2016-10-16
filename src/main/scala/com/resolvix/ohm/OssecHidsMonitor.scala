@@ -27,7 +27,7 @@ object OssecHidsMonitor {
 
   class FailureModuleAlertStatus(
     alert: api.Alert,
-    module: api.ConsumerModule
+    module: api.ConsumerModule[_, _]
   ) extends api.ModuleAlertStatus {
     override def getId: Int = alert.getId
 
@@ -38,12 +38,12 @@ object OssecHidsMonitor {
     override def getStatusId: Int = 0x00
   }
 
-  class ModuleHandle (
+  class ModuleHandle[C <: api.Alert, P <: api.ModuleAlertStatus] (
 
     //
     //
     //
-    private val module: api.ConsumerModule,
+    private val module: api.ConsumerModule[C, P],
 
     //
     //
@@ -71,7 +71,7 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.ConsumerModule {
+  ) extends api.ConsumerModule[C, P] {
 
     //
     //
@@ -82,7 +82,7 @@ object OssecHidsMonitor {
     private val mapFutureModuleAlertStatus: mutable.Map[Int, Future[api.ModuleAlertStatus]]
     = new mutable.HashMap[Int, Future[api.ModuleAlertStatus]]
 
-    def onComplete: Function[Try[ModuleAlertStatus], Unit] = {
+    def onComplete: Function[Try[api.ModuleAlertStatus], Unit] = {
       case Success(moduleAlertStatus: ModuleAlertStatus) =>
         println(
           "AID: "
@@ -97,7 +97,7 @@ object OssecHidsMonitor {
 
         updateModuleAlertStatus(moduleAlertStatus)
 
-      case Failure(e: ModuleAlertProcessingException) => {
+      case Failure(e: ModuleAlertProcessingException[C, P]) => {
         updateModuleAlertStatus(
           new FailureModuleAlertStatus(
             e.getAlert,
@@ -238,7 +238,7 @@ object OssecHidsMonitor {
   //
   //
   //
-  private final val Modules: List[api.ConsumerModule] = List[api.ConsumerModule](
+  private final val Modules: List[_] = List(
     new JiraModule,
     new SinkModule,
     new TextModule
@@ -316,7 +316,7 @@ object OssecHidsMonitor {
   }
 
   def displayModules(): Unit = {
-    for (module: api.ConsumerModule <- Modules) {
+    for (module <- Modules) {
       println(
         module.getHandle
           + " "
@@ -380,7 +380,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    val modules: List[api.ConsumerModule] = List[api.ConsumerModule]()
+    val modules: List[api.ConsumerModule[_, _]] = List[api.ConsumerModule[_, _]]()
 
     val configuration: Map[String, Any] = Map[String, Any]()
 
@@ -409,14 +409,14 @@ object OssecHidsMonitor {
     }
   }
 
-  def getModules: List[api.ConsumerModule] = {
+  def getModules: List[api.ConsumerModule[_, _]] = {
     Modules
   }
 
   def getModules(
-    filter: Function[api.ConsumerModule, Boolean]
-  ): List[api.ConsumerModule] = {
-    (for (module: api.ConsumerModule <- Modules if filter.apply(module))
+    filter: Function[api.ConsumerModule[_, _], Boolean]
+  ): List[api.ConsumerModule[_, _]] = {
+    (for (module <- Modules if filter.apply(module))
       yield { module }).toList
   }
 
@@ -563,7 +563,7 @@ class OssecHidsMonitor(
   }
 
   def execute(
-    modules: List[api.ConsumerModule],
+    modules: List[api.ConsumerModule[_, _]],
     configuration: Map[String, Any],
     fromDateTime: LocalDateTime,
     toDateTime: LocalDateTime
@@ -599,12 +599,12 @@ class OssecHidsMonitor(
 
   def process(
     alerts: List[api.Alert],
-    modules: List[api.ConsumerModule],
+    modules: List[api.ConsumerModule[api.Alert, api.ModuleAlertStatus]],
     configuration: Map[String, Any]
   ): Unit = {
 
-    val moduleHandles: List[ModuleHandle] = for (module: api.ConsumerModule <- modules) yield {
-      new ModuleHandle(
+    val moduleHandles: List[ModuleHandle[api.Alert, api.ModuleAlertStatus]] = for (module: api.ConsumerModule[api.Alert, api.ModuleAlertStatus] <- modules) yield {
+      new ModuleHandle[api.Alert, api.ModuleAlertStatus](
         module,
         false,
         updateModuleAlertStatus,
@@ -612,7 +612,7 @@ class OssecHidsMonitor(
       )
     }
 
-    for (module: api.ConsumerModule <- moduleHandles) {
+    for (module: api.ConsumerModule[api.Alert, api.ModuleAlertStatus] <- moduleHandles) {
       module.initialise(
         configuration.toMap
       )
@@ -620,7 +620,7 @@ class OssecHidsMonitor(
 
     for (
       alert: api.Alert <- alerts;
-      moduleHandle: ModuleHandle <- moduleHandles
+      moduleHandle: ModuleHandle[api.Alert, api.ModuleAlertStatus] <- moduleHandles
     ) {
 
       try {
@@ -660,7 +660,7 @@ class OssecHidsMonitor(
       }
     }
 
-    for (module: api.ConsumerModule <- modules) {
+    for (module: api.ConsumerModule[api.Alert, api.ModuleAlertStatus] <- modules) {
       module.terminate()
     }
   }

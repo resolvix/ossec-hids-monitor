@@ -9,8 +9,8 @@ import scala.util.Try
 /**
   * Created by rwbisson on 08/10/16.
   */
-trait ConsumerModule
-  extends ConsumerProducer[Alert, ModuleAlertStatus]
+trait ConsumerModule[C <: Alert, P <: ModuleAlertStatus]
+  extends ConsumerProducer[C, P]
 {
 
   def getDescriptor: String
@@ -23,9 +23,9 @@ trait ConsumerModule
     configuration: Map[String, Any]
   ): Try[Boolean]
 
-  override def getConsumer: Consumer[Alert] = super.getConsumer
+  override def getConsumer: Consumer[C] = super.getConsumer
 
-  override def getProducer: Producer[ModuleAlertStatus] = super.getProducer
+  override def getProducer: Producer[P] = super.getProducer
 
   def terminate(): Try[Boolean]
 }

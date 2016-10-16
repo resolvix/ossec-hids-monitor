@@ -9,8 +9,6 @@ import scala.util.{Failure, Success, Try}
   */
 trait Classifiable {
 
-  protected def getAlert: Alert
-
   class Classification {
 
   }

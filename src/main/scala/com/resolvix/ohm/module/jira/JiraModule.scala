@@ -2,12 +2,13 @@ package com.resolvix.ohm.module.jira
 
 import com.resolvix.ohm.{Category, Location, Signature, api}
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
+import com.resolvix.ohm.module.api.NewStageAlert
 
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Success, Try}
 
 class JiraModule
-  extends api.ConsumerModule
+  extends api.ConsumerModule[NewStageAlert, ModuleAlertStatus]
 {
   override def getDescriptor: String = "Module for rendering OSSEC HIDS alerts to a JIRA-issue based report."
 

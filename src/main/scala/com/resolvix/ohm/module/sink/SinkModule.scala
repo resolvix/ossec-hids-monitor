@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
   * Created by rwbisson on 10/10/16.
   */
 class SinkModule
-  extends ConsumerModule
+  extends ConsumerModule[NewStageAlert, ModuleAlertStatus]
 {
   override def getDescriptor: String = "Module for sinking OSSEC HIDS alerts."
 

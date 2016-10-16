@@ -8,7 +8,9 @@ import scala.util.matching.Regex
 /**
   * Created by rwbisson on 16/10/16.
   */
-trait Summarizable {
+trait Summarizable
+  extends Alert
+{
 
   object SummarizableAlert {
 
@@ -163,18 +165,16 @@ trait Summarizable {
     }
   }
 
-  protected def getAlert: Alert
-
   def summarize: Try[String] = {
     try {
-      val f: SummarizableAlert.SummarizableAlertFunction[Alert] = SummarizableAlert.getFunctionByRuleId(getAlert.getRuleId) match {
+      val f: SummarizableAlert.SummarizableAlertFunction[Alert] = SummarizableAlert.getFunctionByRuleId(getRuleId) match {
         case Success(f: SummarizableAlert.SummarizableAlertFunction[_]) =>
           f.asInstanceOf[SummarizableAlert.SummarizableAlertFunction[Alert]]
 
         case Failure(t: Throwable) =>
           throw t
       }
-      Success(f.apply(getAlert))
+      Success(f.apply(this))
     } catch {
       case e: NoSuchElementException =>
         Failure(e)
