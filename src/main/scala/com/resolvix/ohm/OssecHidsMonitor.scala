@@ -7,7 +7,8 @@ import java.time.temporal.ChronoUnit
 import java.util
 import java.util.NoSuchElementException
 
-import com.resolvix.concurrent.api.Producer
+import com.resolvix.concurrent.api.{Consumer, Producer}
+import com.resolvix.ohm.OssecHidsMonitor.ConsumerModuleType
 import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, ConsumerModule => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
 import com.resolvix.ohm.module.NewStage
@@ -60,7 +61,7 @@ object OssecHidsMonitor {
     //  to the data store without having to make reference
     //  to the mechanics of storage.
     //
-    private val updateModuleAlertStatus: Function[ModuleAlertStatus, Try[Boolean]],
+    private val updateModuleAlertStatus: Function[api.ModuleAlertStatus, Try[Boolean]],
 
     //
     //  The function to execute to log a failure.
@@ -139,6 +140,10 @@ object OssecHidsMonitor {
       }
     }
 
+    override def doConsume(c: C): Try[Boolean] = {
+      module.doConsume(c)
+    }
+
     override def getDescriptor: String = {
       module.getDescriptor
     }
@@ -168,6 +173,24 @@ object OssecHidsMonitor {
         signature
       )
     }*/
+
+
+
+    override def getConsumer: Consumer[C] = module.getConsumer
+
+    override def getProducer: Producer[P] = module.getProducer
+
+    var thread: Thread = null
+
+    override def run(): Unit = {
+      thread = new Thread(module)
+      thread.start()
+    }
+
+    override def finish(): Unit = {
+      module.finish()
+      thread.join()
+    }
 
     override def terminate(): Try[Boolean] = {
       module.terminate()
@@ -235,14 +258,18 @@ object OssecHidsMonitor {
   //
   private final val IsoDateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
+
+  type ConsumerModuleType = api.ConsumerModule[api.Alert, api.ModuleAlertStatus]
+
   //
   //
   //
-  private final val Modules: List[_] = List(
-    new JiraModule,
-    new SinkModule,
-    new TextModule
-  )
+  private final val Modules: List[ConsumerModuleType]
+    = List[ConsumerModuleType](
+    (new JiraModule).asInstanceOf[ConsumerModuleType],
+    (new SinkModule).asInstanceOf[ConsumerModuleType],
+    (new TextModule).asInstanceOf[ConsumerModuleType]
+    )
 
   private def determineFromDateTime(
     dateTime: String
@@ -409,14 +436,14 @@ object OssecHidsMonitor {
     }
   }
 
-  def getModules: List[api.ConsumerModule[_, _]] = {
+  def getModules: List[ConsumerModuleType] = {
     Modules
   }
 
   def getModules(
-    filter: Function[api.ConsumerModule[_, _], Boolean]
-  ): List[api.ConsumerModule[_, _]] = {
-    (for (module <- Modules if filter.apply(module))
+    filter: Function[ConsumerModuleType, Boolean]
+  ): List[ConsumerModuleType] = {
+    (for (module: ConsumerModuleType <- Modules if filter.apply(module))
       yield { module }).toList
   }
 
@@ -596,27 +623,43 @@ class OssecHidsMonitor(
     p.run()
   }
 
+  private def updateModuleAlertStatus(
+    moduleAlertStatus: api.ModuleAlertStatus
+  ): Try[Boolean] = {
+    println("updateModuleAlertStatus: ")
+    ossecHidsDAO.setModuleAlertStatus(
+      moduleAlertStatus.getId,
+      moduleAlertStatus.getModuleId,
+      moduleAlertStatus.getReference,
+      moduleAlertStatus.getStatusId
+    )
+    Success(true)
+  }
 
   def process(
     alerts: List[api.Alert],
-    modules: List[api.ConsumerModule[api.Alert, api.ModuleAlertStatus]],
+    modules: List[ConsumerModuleType],
     configuration: Map[String, Any]
   ): Unit = {
 
-    val moduleHandles: List[ModuleHandle[api.Alert, api.ModuleAlertStatus]] = for (module: api.ConsumerModule[api.Alert, api.ModuleAlertStatus] <- modules) yield {
-      new ModuleHandle[api.Alert, api.ModuleAlertStatus](
-        module,
+    val moduleHandles: List[ModuleHandle[api.Alert, api.ModuleAlertStatus]] = modules.map(
+      (m: ConsumerModuleType) => new ModuleHandle[api.Alert, api.ModuleAlertStatus](
+        m,
         false,
         updateModuleAlertStatus,
         logFailure
       )
-    }
+    )
 
-    for (module: api.ConsumerModule[api.Alert, api.ModuleAlertStatus] <- moduleHandles) {
-      module.initialise(
-        configuration.toMap
-      )
-    }
+    moduleHandles.foreach(
+      (m: ModuleHandle[api.Alert, api.ModuleAlertStatus]) => {
+        m.initialise(
+          configuration.toMap
+        )
+
+        m.run()
+      }
+    )
 
     for (
       alert: api.Alert <- alerts;
@@ -643,6 +686,9 @@ class OssecHidsMonitor(
         })
 
         if (moduleAlertStatus.isEmpty) {
+
+          moduleHandle.getConsumer.getPipe.write(alert)
+
           /*moduleHandle.appendPromiseModuleAlertStatus(
             alert,
             moduleHandle.process(
@@ -660,21 +706,13 @@ class OssecHidsMonitor(
       }
     }
 
-    for (module: api.ConsumerModule[api.Alert, api.ModuleAlertStatus] <- modules) {
-      module.terminate()
-    }
-  }
+    println("alert processing complete")
 
-  private def updateModuleAlertStatus(
-    moduleAlertStatus: api.ModuleAlertStatus
-  ): Try[Boolean] = {
-    println("updateModuleAlertStatus: ")
-    ossecHidsDAO.setModuleAlertStatus(
-      moduleAlertStatus.getId,
-      moduleAlertStatus.getModuleId,
-      moduleAlertStatus.getReference,
-      moduleAlertStatus.getStatusId
+    moduleHandles.foreach(
+      (module: ModuleHandle[api.Alert, api.ModuleAlertStatus]) => {
+        module.finish()
+        module.terminate()
+      }
     )
-    Success(true)
   }
 }

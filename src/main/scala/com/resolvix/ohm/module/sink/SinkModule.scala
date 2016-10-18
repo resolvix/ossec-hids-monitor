@@ -13,8 +13,13 @@ import scala.util.{Failure, Success, Try}
   * Created by rwbisson on 10/10/16.
   */
 class SinkModule
-  extends ConsumerModule[NewStageAlert, ModuleAlertStatus]
+  extends ConsumerModule[Alert, ModuleAlertStatus]
 {
+  override def doConsume(c: Alert): Try[Boolean] = {
+    println("SinkModule.doConsume: " + c.toString)
+    Success(true)
+  }
+
   override def getDescriptor: String = "Module for sinking OSSEC HIDS alerts."
 
   override def getHandle: String = "SINK"
@@ -67,6 +72,13 @@ class SinkModule
     f.success(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))
     f
   }*/
+
+
+  override def run(): Unit = {
+    println("SinkModule.run: starting thread")
+    super.run()
+    println("SinkModule.run: thread finished")
+  }
 
   override def terminate(): Try[Boolean] = {
     Success(false)

@@ -10,6 +10,8 @@ import scala.util.{Success, Try}
 class TextModule[C]
   extends api.ConsumerModule[NewStageAlert, ModuleAlertStatus]
 {
+  override def doConsume(c: NewStageAlert): Try[Boolean] = ???
+
   override def getDescriptor: String = "Module for rendering OSSEC HIDS alerts to a text-based report."
 
   override def getHandle: String = "TEXT"
