@@ -2,8 +2,9 @@ package com.resolvix.ohm.module.sink
 
 import com.resolvix.concurrent.Pipe
 import com.resolvix.ohm.{Location, Signature, api}
-import com.resolvix.ohm.api.{Alert, ConsumerModule, ModuleAlertStatus}
+import com.resolvix.ohm.api.{Alert, Module, ModuleAlertStatus}
 import com.resolvix.ohm.module
+import com.resolvix.ohm.module.AbstractModule
 import com.resolvix.ohm.module.api.NewStageAlert
 
 import scala.concurrent.{ExecutionContext, Promise}
@@ -13,7 +14,7 @@ import scala.util.{Failure, Success, Try}
   * Created by rwbisson on 10/10/16.
   */
 class SinkModule
-  extends ConsumerModule[Alert, ModuleAlertStatus]
+  extends AbstractModule[Alert]
 {
   override def doConsume(c: Alert): Try[Boolean] = {
     println("SinkModule.doConsume: " + c.toString)

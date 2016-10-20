@@ -2,13 +2,16 @@ package com.resolvix.concurrent
 
 import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue, TimeoutException}
 
+import scala.concurrent.Promise
 import scala.concurrent.duration.TimeUnit
 import scala.util.{Failure, Success, Try}
 
 /**
   * Created by rwbisson on 16/10/2016.
   */
-class Pipe[T] {
+class Pipe[T]
+  extends api.Pipe[T]
+{
 
   //
   //

@@ -2,13 +2,14 @@ package com.resolvix.ohm.module.text
 
 import com.resolvix.ohm.{Category, Location, Signature, api}
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
+import com.resolvix.ohm.module.AbstractModule
 import com.resolvix.ohm.module.api.NewStageAlert
 
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Success, Try}
 
-class TextModule[C]
-  extends api.ConsumerModule[NewStageAlert, ModuleAlertStatus]
+class TextModule
+  extends AbstractModule[NewStageAlert]
 {
   override def doConsume(c: NewStageAlert): Try[Boolean] = ???
 

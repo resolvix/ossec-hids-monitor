@@ -1,58 +1,21 @@
 package com.resolvix.concurrent.api
-
-import java.util.concurrent.TimeUnit
-
-import com.resolvix.concurrent.Pipe
-
 import scala.util.Try
 
 /**
-  * Created by rwbisson on 16/10/16.
+  * Created by rwbisson on 20/10/16.
   */
 trait Consumer[T]
+  extends Actor[T]
 {
-  protected val pipe: Pipe[T]
+  override def initialise(
+    configuration: Configuration
+  ): Try[Boolean]
 
-  /**
-    *
-    * @return
-    */
-  def getPipe: Pipe[T] = pipe
+  override def close[C <: Consumer[T]](consumer: C): Try[T]
 
-  /**
-    *
-    * @param producer
-    */
-  def open(
-    producer: Producer[T]
-  ): Unit = { }
+  override def open[C <: Consumer[T]](consumer: C): Try[Pipe[T]]
 
-  /**
-    *
-    * @return
-    */
-  def consume: Try[T] = {
-    pipe.read
-  }
+  override def register[C <: Consumer[T]](consumer: C): Try[Boolean] = ???
 
-  /**
-    *
-    * @param timeout
-    * @param unit
-    * @return
-    */
-  def consume(
-    timeout: Int,
-    unit: TimeUnit
-  ): Try[T] = {
-    pipe.read(timeout, unit)
-  }
-
-  /**
-    *
-    * @param producer
-    */
-  def close(
-    producer: Producer[T]
-  ): Unit = { }
+  override def unregister[C <: Consumer[T]](consumer: C): Try[Boolean] = ???
 }

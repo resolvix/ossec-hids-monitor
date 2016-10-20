@@ -1,8 +1,8 @@
 package com.resolvix.ohm.api
 
-class ModuleAlertProcessingException[C <: Alert, P <: ModuleAlertStatus](
+class ModuleAlertProcessingException[C <: Alert](
   private val alert: Alert,
-  private val module: ConsumerModule[C, P],
+  private val module: Module[C],
   message: String,
   cause: Throwable
 ) extends RuntimeException(
@@ -12,6 +12,6 @@ class ModuleAlertProcessingException[C <: Alert, P <: ModuleAlertStatus](
 
   def getAlert: Alert = alert
 
-  def getModule: ConsumerModule[C, P] = module
+  def getModule: Module[C] = module
 
 }

@@ -1,64 +1,27 @@
 package com.resolvix.concurrent.api
 
-import scala.collection.mutable.ListBuffer
+import scala.util.{Success, Try}
 
 trait Producer[T]
+  extends Actor[T]
 {
-  //
-  //
-  //
-  private val consumers: ListBuffer[Consumer[T]]
-    = ListBuffer[Consumer[T]]()
+  override def initialise(
+    configuration: Configuration
+  ): Try[Boolean]
 
-  /**
-    *
-    */
-  def close(): Unit = {
-    consumers.foreach(
-      (consumer: Consumer[T]) =>
-        consumer.close(this)
-    )
-  }
+  override def close[P <: Producer[T]](
+    producer: P
+  ): Try[T]
 
-  /**
-    *
-    * @param consumer
-    */
-  def deregister(
-    consumer: Consumer[T]
-  ): Unit = {
-    consumers -= consumer
-  }
+  override def open[P <: Actor[T]](
+    producer: P
+  ): Try[Pipe[T]]
 
-  /**
-    *
-    */
-  def open(): Unit = {
-    consumers.foreach(
-      (consumer: Consumer[T]) =>
-        consumer.open(this)
-    )
-  }
+  override def register[P <: Producer[T]](
+    producer: P
+  ): Try[Boolean]
 
-  /**
-    *
-    * @param consumer
-    */
-  def register(
-    consumer: Consumer[T]
-  ): Unit = {
-    consumers += consumer
-  }
-
-  /**
-    *
-    * @param t
-    */
-  def produce(
-    t: T
-  ): Unit = {
-    consumers.foreach(
-      (c: Consumer[T]) => c.getPipe.write(t)
-    )
-  }
+  override def unregister[P <: Producer[T]](
+    producer: P
+  ): Try[Boolean]
 }

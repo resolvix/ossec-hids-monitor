@@ -8,8 +8,8 @@ import java.util
 import java.util.NoSuchElementException
 
 import com.resolvix.concurrent.api.{Consumer, Producer}
-import com.resolvix.ohm.OssecHidsMonitor.ConsumerModuleType
-import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, ConsumerModule => ModuleT}
+import com.resolvix.ohm.OssecHidsMonitor.ModuleType
+import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
 import com.resolvix.ohm.module.NewStage
 import com.resolvix.ohm.module.api.NewStageAlert
@@ -28,7 +28,7 @@ object OssecHidsMonitor {
 
   class FailureModuleAlertStatus(
     alert: api.Alert,
-    module: api.ConsumerModule[_, _]
+    module: api.Module[_]
   ) extends api.ModuleAlertStatus {
     override def getId: Int = alert.getId
 
@@ -39,12 +39,12 @@ object OssecHidsMonitor {
     override def getStatusId: Int = 0x00
   }
 
-  class ModuleHandle[C <: api.Alert, P <: api.ModuleAlertStatus] (
+  class ModuleHandle[C <: api.Alert] (
 
     //
     //
     //
-    private val module: api.ConsumerModule[C, P],
+    private val module: api.Module[C],
 
     //
     //
@@ -72,7 +72,7 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.ConsumerModule[C, P] {
+  ) extends api.Module[C] {
 
     //
     //
@@ -98,7 +98,7 @@ object OssecHidsMonitor {
 
         updateModuleAlertStatus(moduleAlertStatus)
 
-      case Failure(e: ModuleAlertProcessingException[C, P]) => {
+      case Failure(e: ModuleAlertProcessingException[C]) => {
         updateModuleAlertStatus(
           new FailureModuleAlertStatus(
             e.getAlert,
@@ -140,9 +140,9 @@ object OssecHidsMonitor {
       }
     }
 
-    override def doConsume(c: C): Try[Boolean] = {
+    /*override def doConsume(c: C): Try[Boolean] = {
       module.doConsume(c)
-    }
+    }*/
 
     override def getDescriptor: String = {
       module.getDescriptor
@@ -176,9 +176,12 @@ object OssecHidsMonitor {
 
 
 
-    override def getConsumer: Consumer[C] = module.getConsumer
+    //override def getConsumer: Consumer[C] = module.getConsumer
 
-    override def getProducer: Producer[P] = module.getProducer
+    //override def getProducer: Producer[P] = module.getProducer
+
+
+
 
     var thread: Thread = null
 
@@ -259,16 +262,16 @@ object OssecHidsMonitor {
   private final val IsoDateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
 
-  type ConsumerModuleType = api.ConsumerModule[api.Alert, api.ModuleAlertStatus]
+  type ModuleType = api.Module[api.Alert]
 
   //
   //
   //
-  private final val Modules: List[ConsumerModuleType]
-    = List[ConsumerModuleType](
-    (new JiraModule).asInstanceOf[ConsumerModuleType],
-    (new SinkModule).asInstanceOf[ConsumerModuleType],
-    (new TextModule).asInstanceOf[ConsumerModuleType]
+  private final val Modules: List[ModuleType]
+    = List[ModuleType](
+    (new JiraModule).asInstanceOf[ModuleType],
+    (new SinkModule).asInstanceOf[ModuleType],
+    (new TextModule).asInstanceOf[ModuleType]
     )
 
   private def determineFromDateTime(
@@ -407,7 +410,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    val modules: List[api.ConsumerModule[_, _]] = List[api.ConsumerModule[_, _]]()
+    val modules: List[ModuleType] = List[ModuleType]()
 
     val configuration: Map[String, Any] = Map[String, Any]()
 
@@ -436,14 +439,14 @@ object OssecHidsMonitor {
     }
   }
 
-  def getModules: List[ConsumerModuleType] = {
+  def getModules: List[ModuleType] = {
     Modules
   }
 
   def getModules(
-    filter: Function[ConsumerModuleType, Boolean]
-  ): List[ConsumerModuleType] = {
-    (for (module: ConsumerModuleType <- Modules if filter.apply(module))
+    filter: Function[ModuleType, Boolean]
+  ): List[ModuleType] = {
+    (for (module: ModuleType <- Modules if filter.apply(module))
       yield { module }).toList
   }
 
@@ -459,6 +462,8 @@ class OssecHidsMonitor(
 ) {
 
   import OssecHidsMonitor.ModuleHandle
+
+  type ModuleHandleType = ModuleHandle[api.Alert]
 
   def logFailure: PartialFunction[Throwable, Try[Boolean]] = {
     case (t: Throwable) => Success(true)
@@ -590,7 +595,7 @@ class OssecHidsMonitor(
   }
 
   def execute(
-    modules: List[api.ConsumerModule[_, _]],
+    modules: List[ModuleType],
     configuration: Map[String, Any],
     fromDateTime: LocalDateTime,
     toDateTime: LocalDateTime
@@ -638,12 +643,12 @@ class OssecHidsMonitor(
 
   def process(
     alerts: List[api.Alert],
-    modules: List[ConsumerModuleType],
+    modules: List[ModuleType],
     configuration: Map[String, Any]
   ): Unit = {
 
-    val moduleHandles: List[ModuleHandle[api.Alert, api.ModuleAlertStatus]] = modules.map(
-      (m: ConsumerModuleType) => new ModuleHandle[api.Alert, api.ModuleAlertStatus](
+    val moduleHandles: List[ModuleHandleType] = modules.map(
+      (m: ModuleType) => new ModuleHandleType(
         m,
         false,
         updateModuleAlertStatus,
@@ -652,7 +657,7 @@ class OssecHidsMonitor(
     )
 
     moduleHandles.foreach(
-      (m: ModuleHandle[api.Alert, api.ModuleAlertStatus]) => {
+      (m: ModuleHandleType) => {
         m.initialise(
           configuration.toMap
         )
@@ -663,7 +668,7 @@ class OssecHidsMonitor(
 
     for (
       alert: api.Alert <- alerts;
-      moduleHandle: ModuleHandle[api.Alert, api.ModuleAlertStatus] <- moduleHandles
+      moduleHandle: ModuleHandleType <- moduleHandles
     ) {
 
       try {
@@ -687,7 +692,7 @@ class OssecHidsMonitor(
 
         if (moduleAlertStatus.isEmpty) {
 
-          moduleHandle.getConsumer.getPipe.write(alert)
+          //moduleHandle.module.(alert)
 
           /*moduleHandle.appendPromiseModuleAlertStatus(
             alert,
@@ -709,7 +714,7 @@ class OssecHidsMonitor(
     println("alert processing complete")
 
     moduleHandles.foreach(
-      (module: ModuleHandle[api.Alert, api.ModuleAlertStatus]) => {
+      (module: ModuleHandleType) => {
         module.finish()
         module.terminate()
       }
