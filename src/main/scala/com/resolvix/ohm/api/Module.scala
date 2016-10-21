@@ -2,7 +2,8 @@ package com.resolvix.ohm.api
 
 import java.util.concurrent.TimeUnit
 
-import com.resolvix.concurrent.api.{Consumer, ConsumerProducer, Producer}
+import com.resolvix.concurrent.ConsumerProducer
+import com.resolvix.concurrent.api.{Consumer, Producer}
 import com.resolvix.ohm.{Category, Location, Signature}
 
 import scala.concurrent.{ExecutionContext, Promise, TimeoutException}

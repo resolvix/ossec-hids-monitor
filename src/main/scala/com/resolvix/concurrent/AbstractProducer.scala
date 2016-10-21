@@ -12,9 +12,9 @@ object AbstractProducer {
 /**
   * Created by rwbisson on 19/10/16.
   */
-trait AbstractProducer[P <: Producer[T], T]
-  extends AbstractActor[P, T]
-    with Producer[T]
+trait AbstractProducer[P <: Producer[P, C, T], C <: Consumer[C, P, T], T]
+  extends AbstractActor[P, C, T]
+    with Producer[P, C, T]
 {
   /**
     *
@@ -22,7 +22,7 @@ trait AbstractProducer[P <: Producer[T], T]
     * @return
     */
   override def close(
-    producer: Producer[T]
+    producer: P
   ): Try[Boolean] = {
     /*consumers.foreach(
   (consumer: AbstractProducer.Consumer[T]) =>
@@ -37,7 +37,7 @@ trait AbstractProducer[P <: Producer[T], T]
     * @return
     */
   override def open(
-    producer: Producer[T]
+    producer: P
   ): Try[api.Pipe[T]] = {
     /*consumers.foreach(
   (consumer: AbstractProducer.Consumer[T]) =>
@@ -79,23 +79,21 @@ trait AbstractProducer[P <: Producer[T], T]
 
   /**
     *
-    * @param producer
     * @return
     */
-  override def register[P <: Producer[T]](
-    producer: P
+  override def register(
+    consumer: C
   ): Try[Boolean] = {
-    super.register(producer)
+    super.register(consumer)
   }
 
   /**
     *
-    * @param producer
     * @return
     */
-  override def unregister[P <: Producer[T]](
-    producer: P
+  override def unregister(
+    consumer: C
   ): Try[Boolean] = {
-    super.unregister(producer)
+    super.unregister(consumer)
   }
 }
