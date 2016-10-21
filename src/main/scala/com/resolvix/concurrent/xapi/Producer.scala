@@ -1,27 +1,27 @@
-package com.resolvix.concurrent.api
+package com.resolvix.concurrent.xapi
 
 import scala.util.Try
 
-trait Producer[P <: Producer[P, C, T], C <: Consumer[C, P, T], T]
-  extends Actor[P, C, T]
+trait Producer[T]
+  extends Actor[Producer[T], T]
 {
   override def initialise(
     configuration: Configuration
   ): Try[Boolean]
 
   override def close(
-    producer: P
+    producer: Producer[T]
   ): Try[Boolean]
 
   override def open(
-    producer: P
+    producer: Producer[T]
   ): Try[Pipe[T]]
 
-  override def register(
+  override def register[C <: Consumer[T]](
     consumer: C
   ): Try[Boolean]
 
-  override def unregister(
+  override def unregister[C <: Consumer[T]](
     consumer: C
   ): Try[Boolean]
 }

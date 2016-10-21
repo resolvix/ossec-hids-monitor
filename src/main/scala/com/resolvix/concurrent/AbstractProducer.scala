@@ -1,90 +1,49 @@
 package com.resolvix.concurrent
 
-import com.resolvix.concurrent.api.{Consumer, Producer}
+import com.resolvix.concurrent.api.{Configuration, Consumer, Producer}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Success, Try}
 
 object AbstractProducer {
-  sealed class Consumer[T](
-    private val consumer: api.Consumer[T],
-    private val sink: Consumer.Sink[T]
-  ) {
 
-    private val id: Int = generateId()
-
-    /**
-      *
-      * @return
-      */
-    def getConsumer: Consumer[T] = {
-      consumer
-    }
-
-    /**
-      *
-      * @return
-      */
-    def getId: Int = {
-      id
-    }
-
-    /**
-      *
-      * @return
-      */
-    def getSink: Consumer.Sink[T] = {
-      sink
-    }
-  }
-
-  //
-  //
-  //
-  var id: Int = 0
-
-  /**
-    *
-    * @return
-    */
-  def generateId(): Int = {
-    id.synchronized {
-      id += 1
-      id
-    }
-  }
 }
 
 /**
   * Created by rwbisson on 19/10/16.
   */
-trait AbstractProducer[T]
-  extends Producer[T]
+trait AbstractProducer[P <: Producer[T], T]
+  extends AbstractActor[P, T]
+    with Producer[T]
 {
-  //
-  //
-  //
-  private val consumers: ListBuffer[AbstractProducer.Consumer[T]]
-  = ListBuffer[AbstractProducer.Consumer[T]]()
-
   /**
     *
+    * @param producer
+    * @return
     */
-  def close(): Unit = {
-    consumers.foreach(
-      (consumer: AbstractProducer.Consumer[T]) =>
-        consumer.getSink.close(this)
-    )
+  override def close(
+    producer: Producer[T]
+  ): Try[Boolean] = {
+    /*consumers.foreach(
+  (consumer: AbstractProducer.Consumer[T]) =>
+    consumer.getSink.close(this)
+)*/
+    super.close(producer)
   }
 
   /**
     *
+    * @param producer
+    * @return
     */
-  def open(): Unit = {
-    consumers.foreach(
-      (consumer: AbstractProducer.Consumer[T]) =>
-        consumer.getSink.open(this)
-    )
+  override def open(
+    producer: Producer[T]
+  ): Try[api.Pipe[T]] = {
+    /*consumers.foreach(
+  (consumer: AbstractProducer.Consumer[T]) =>
+    consumer.getSink.open(this)
+)*/
+    super.open(producer)
   }
 
   /**
@@ -94,7 +53,7 @@ trait AbstractProducer[T]
   def produce(
     t: T
   ): Try[Boolean] = {
-    consumers.foreach(
+    /*consumers.foreach(
       (c: AbstractProducer.Consumer[T]) => {
         try {
           c.getSink.write(t)
@@ -105,39 +64,38 @@ trait AbstractProducer[T]
           //
         }
       }
-    )
+    )*/
     Success(true)
   }
 
   /**
     *
-    * @param consumer
+    * @param configuration
+    * @return
     */
-  def register(
-    consumer: Consumer[T]
-  ): Try[Boolean] = {
-    consumer.register(this) match {
-      case Success(sinkT: Consumer.Sink[T]) => {
-        consumers += new AbstractProducer.Consumer[T](
-          consumer,
-          sinkT
-        )
-        Success(true)
-      }
+  def initialise(
+    configuration: Configuration
+  ): Try[Boolean]
 
-      case Failure(t: Throwable) =>
-        Failure(t)
-    }
+  /**
+    *
+    * @param producer
+    * @return
+    */
+  override def register[P <: Producer[T]](
+    producer: P
+  ): Try[Boolean] = {
+    super.register(producer)
   }
 
   /**
     *
-    * @param consumer
+    * @param producer
+    * @return
     */
-  def unregister(
-    consumer: Consumer[T]
+  override def unregister[P <: Producer[T]](
+    producer: P
   ): Try[Boolean] = {
-    consumers -= consumer
-    Success(true)
+    super.unregister(producer)
   }
 }

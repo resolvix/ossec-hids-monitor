@@ -1,15 +1,13 @@
-package com.resolvix.concurrent.api
+package com.resolvix.concurrent.xapi
 
-import java.util.concurrent.TimeUnit
+import com.resolvix.concurrent.api.{Configuration, Pipe}
 
-import com.resolvix.concurrent.api
-
-import scala.util.{Success, Try}
+import scala.util.Try
 
 /**
   * Created by rwbisson on 16/10/16.
   */
-trait Actor[A <: Actor[A, B, T], B <: Actor[A, B, T], T] {
+trait Actor[T] {
 
   /**
     *
@@ -26,7 +24,7 @@ trait Actor[A <: Actor[A, B, T], B <: Actor[A, B, T], T] {
     * @return
     */
   def close(
-    actor: A
+    actor: Actor[T]
   ): Try[Boolean]
 
   /**
@@ -35,7 +33,7 @@ trait Actor[A <: Actor[A, B, T], B <: Actor[A, B, T], T] {
     * @return
     */
   def open(
-    actor: A
+    actor: Actor[T]
   ): Try[Pipe[T]]
 
   /**
@@ -43,7 +41,7 @@ trait Actor[A <: Actor[A, B, T], B <: Actor[A, B, T], T] {
     * @param actor
     * @return
     */
-  def register(
+  def register[B <: Actor[T]](
     actor: B
   ): Try[Boolean]
 
@@ -52,7 +50,7 @@ trait Actor[A <: Actor[A, B, T], B <: Actor[A, B, T], T] {
     * @param actor
     * @return
     */
-  def unregister(
+  def unregister[B <: Actor[T]](
     actor: B
   ): Try[Boolean]
 }
