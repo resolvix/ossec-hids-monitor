@@ -7,7 +7,17 @@ import com.resolvix.concurrent.api
 import scala.util.{Success, Try}
 
 /**
-  * Created by rwbisson on 16/10/16.
+  *
+  * @tparam L
+  *   refers to the type of the local actor
+  *
+  * @tparam R
+  *   refers to the type of the remote actor
+  *
+  * @tparam V
+  *   refers to the type of values to be transmitted between the local and
+  *   remote actors
+  *
   */
 trait Actor[L <: Actor[L, R, V], R <: Actor[R, L, V], V] {
 
