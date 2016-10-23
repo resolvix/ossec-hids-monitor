@@ -55,7 +55,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    private val module: api.Module[AlertT],
+    private val module: api.Module[api.Alert],
 
     //
     //
@@ -83,7 +83,7 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.Module[AlertT]
+  ) extends api.Module[api.Alert]
   {
 
     //
@@ -223,9 +223,13 @@ object OssecHidsMonitor {
     }
   }*/
 
-  class ProducerConsumerX[A]
+  class CaptiveProducer[A <: api.Alert]
     extends Producer[A]
   {
+    /**
+      *
+      * @return
+      */
     override protected def getSelf: Producer[A] = this
 
     /**
@@ -233,12 +237,36 @@ object OssecHidsMonitor {
       * @param configuration
       * @return
       */
-    override def initialise(configuration: Configuration): Try[Boolean] = ???
+    override def initialise(
+      configuration: Configuration
+    ): Try[Boolean] = {
+      Success(true)
+    }
   }
 
-  class ConsumerProducerModuleAlertStatus[M]
+  /**
+    *
+    * @tparam A
+    */
+  class CaptiveProducerFactory[A <: api.Alert]
+    extends ProducerFactory[CaptiveProducerFactory[A], Producer[A], Consumer[A], A]
+  {
+    /**
+      *
+      * @return
+      */
+    override def newInstance: Producer[A] = {
+      new CaptiveProducer[A]
+    }
+  }
+
+  class CaptiveConsumer[M <: api.ModuleAlertStatus]
     extends Consumer[M]
   {
+    /**
+      *
+      * @return
+      */
     override protected def getSelf: Consumer[M] = this
 
     /**
@@ -246,25 +274,34 @@ object OssecHidsMonitor {
       * @param configuration
       * @return
       */
-    override def initialise(configuration: Configuration): Try[Boolean] = ???
+    override def initialise(
+      configuration: Configuration
+    ): Try[Boolean] = {
+      Success(true)
+    }
   }
 
-  class ConsumerFactoryCF[M]
-    extends ConsumerFactory[ConsumerFactoryCF[M], Consumer[M], Producer[M],  M]
+  /**
+    *
+    * @tparam M
+    */
+  class CaptiveConsumerFactory[M <: api.ModuleAlertStatus]
+    extends ConsumerFactory[CaptiveConsumerFactory[M], Consumer[M], Producer[M],  M]
   {
+    /**
+      *
+      * @return
+      */
     override def newInstance: Consumer[M] = {
-      new ConsumerProducerModuleAlertStatus[M]
+      new CaptiveConsumer[M]
     }
   }
 
-  class ProducerFactoryPF[A]
-    extends ProducerFactory[ProducerFactoryPF[A], Producer[A], Consumer[A], A]
-  {
-    override def newInstance: Producer[A] = {
-      new ProducerConsumerX[A]
-    }
-  }
-
+  /**
+    *
+    * @tparam A
+    * @tparam M
+    */
   class ProducerConsumer[A <: Alert, M <: ModuleAlertStatus]
     extends ConsumerProducer[
       Producer[M],
@@ -275,23 +312,34 @@ object OssecHidsMonitor {
       A
     ] {
 
-    private val consumerFactoryCF: ConsumerFactoryCF[M] = new ConsumerFactoryCF[M]()
+    //
+    //
+    //
+    private val consumerFactory: CaptiveConsumerFactory[M] = new CaptiveConsumerFactory[M]()
 
-    private val producerFactoryPF: ProducerFactoryPF[A] = new ProducerFactoryPF[A]()
+    //
+    //
+    //
+    private val producerFactory: CaptiveProducerFactory[A] = new CaptiveProducerFactory[A]()
+
     /**
       *
       * @return
       */
-    override def getConsumerFactory[CF]: ConsumerFactoryCF[M] = consumerFactoryCF
+    override def getConsumerFactory[CF <: ConsumerFactory[CF, Consumer[M], Producer[M], M]]:
+      ConsumerFactory[CF, Consumer[M], Producer[M], M] = {
+        consumerFactory.asInstanceOf[ConsumerFactory[CF, Consumer[M], Producer[M], M]]
+      }
 
     /**
       *
       * @return
       */
-    override def getProducerFactory[PF]: ProducerFactoryPF[A] = producerFactoryPF
+    override def getProducerFactory[PF <: ProducerFactory[PF, Producer[A], Consumer[A], A]]:
+      ProducerFactory[PF, Producer[A], Consumer[A], A] = {
+        producerFactory.asInstanceOf[ProducerFactory[PF, Producer[A], Consumer[A], A]]
+      }
   }
-
-
 
   //
   //
