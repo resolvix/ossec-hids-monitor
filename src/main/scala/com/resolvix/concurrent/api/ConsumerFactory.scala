@@ -6,6 +6,6 @@ package com.resolvix.concurrent.api
 trait ConsumerFactory[CF <: ConsumerFactory[CF, C, P, T], C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
 {
 
-  def newInstance: CF
+  def newInstance: C
 
 }

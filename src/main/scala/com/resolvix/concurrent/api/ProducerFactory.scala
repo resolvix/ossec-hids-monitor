@@ -7,6 +7,6 @@ trait ProducerFactory[PF <: ProducerFactory[PF, P, C, T], P <: Producer[P, C, T]
   extends ActorFactory[P, C, T]
 {
 
-  def newInstance: PF
+  def newInstance: P
 
 }

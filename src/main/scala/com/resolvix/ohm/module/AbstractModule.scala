@@ -37,23 +37,18 @@ object AbstractModule
 
 import AbstractModule._
 
-abstract class AbstractModule[C <: Alert]
-  extends Module[
-    ProducerC[C],
-    ConsumerC[C],
-    ProducerP[ModuleAlertStatus],
-    ConsumerP[ModuleAlertStatus]
-  ]
+abstract class AbstractModule[A <: Alert]
+  extends Module[A]
 {
-  def doConsume(c: C): Try[Boolean]
+  def doConsume(c: A): Try[Boolean]
 
   def run(): Unit = {
     super.start()
 
-    val consumerC: ConsumerC[C] = getConsumer
+    val consumerC: Consumer[A] = getConsumer
 
-    val consumerPipe: ConsumerPipe[C] = consumerC.open match {
-      case Success(consumerPipe: ConsumerPipe[C]) =>
+    val consumerPipe: ConsumerPipe[A] = consumerC.open match {
+      case Success(consumerPipe: ConsumerPipe[A]) =>
         consumerPipe
 
       case Failure(t: Throwable) =>
@@ -62,8 +57,8 @@ abstract class AbstractModule[C <: Alert]
 
     while (super.isRunning || super.isFinishing) {
       consumerPipe.read(5000, TimeUnit.MILLISECONDS) match {
-        case Success(c: C) =>
-          doConsume(c)
+        case Success(a: A @unchecked) =>
+          doConsume(a)
 
         case Failure(e: TimeoutException) =>
           //

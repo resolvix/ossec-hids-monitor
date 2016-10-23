@@ -29,7 +29,7 @@ object OssecHidsMonitor {
 
   class FailureModuleAlertStatus(
     alert: api.Alert,
-    module: api.Module[_, _, _, _]
+    module: api.Module[AlertT]
   ) extends api.ModuleAlertStatus {
     override def getId: Int = alert.getId
 
@@ -45,7 +45,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    private val module: api.Module[_, _, _, _],
+    private val module: api.Module[AlertT],
 
     //
     //
@@ -73,8 +73,7 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.Module[_, _, _, _]
-      with ConsumerProducer[CaptiveConsumerP, api.Alert, CaptiveConsumerC, ModuleAlertStatus]
+  ) extends api.Module[AlertT]
   {
 
     //
@@ -101,7 +100,7 @@ object OssecHidsMonitor {
 
         updateModuleAlertStatus(moduleAlertStatus)
 
-      case Failure(e: ModuleAlertProcessingException[C]) => {
+      case Failure(e: ModuleAlertProcessingException[AlertT] @unchecked) => {
         updateModuleAlertStatus(
           new FailureModuleAlertStatus(
             e.getAlert,
@@ -265,7 +264,7 @@ object OssecHidsMonitor {
   private final val IsoDateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
 
-  type ModuleType = api.Module[_, _, _, _]
+  type ModuleType = api.Module[AlertT]
 
   //
   //
