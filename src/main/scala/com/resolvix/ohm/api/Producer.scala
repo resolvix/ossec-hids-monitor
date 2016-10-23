@@ -9,14 +9,5 @@ import scala.util.Try
 abstract class Producer[P]
   extends com.resolvix.concurrent.Producer[Producer[P], Consumer[P], P]
 {
-  /**
-    *
-    * @param configuration
-    * @return
-    */
-  override def initialise(
-    configuration: Configuration
-  ): Try[Boolean] = {
-    super.initialise(configuration)
-  }
+
 }

@@ -8,7 +8,7 @@ import scala.util.{Failure, Success}
 /**
   * Created by rwbisson on 16/10/2016.
   */
-trait RunnableConsumer[C, P, T]
+/*trait RunnableConsumer[C, P, T]
   extends Consumer[C, P, T]
   with Runnable {
   /**
@@ -21,4 +21,4 @@ trait RunnableConsumer[C, P, T]
     *
     */
   def run(): Unit
-}
+}*/

@@ -24,19 +24,19 @@ trait Module[A <: Alert]
   ] with com.resolvix.concurrent.api.Runnable
 {
 
-  class ConsumerFactoryCF
-    extends ConsumerFactory[ConsumerFactoryCF, Consumer[A], Producer[A], A]
+  class ConsumerFactoryCF[A]
+    extends ConsumerFactory[ConsumerFactoryCF[A], Consumer[A], Producer[A], A]
   {
-    override def newInstance: ConsumerFactoryCF = ???
+    override def newInstance: Consumer[A] = ???
   }
 
   class ProducerFactoryPF
     extends ConsumerFactory[ProducerFactoryPF, Producer[ModuleAlertStatus], Consumer[ModuleAlertStatus], ModuleAlertStatus]
   {
-    override def newInstance: ProducerFactoryPF = ???
+    override def newInstance: Producer[ModuleAlertStatus] = ???
   }
 
-  val consumerFactory: ConsumerFactoryCF = new ConsumerFactoryCF
+  val consumerFactory: ConsumerFactoryCF[A] = new ConsumerFactoryCF[A]
 
   val producerFactory: ProducerFactoryPF = new ProducerFactoryPF
 
@@ -44,7 +44,7 @@ trait Module[A <: Alert]
     *
     * @return
     */
-  override def getConsumerFactory[CF]: ConsumerFactoryCF = consumerFactory
+  override def getConsumerFactory[CF]: ConsumerFactoryCF[A] = consumerFactory
 
   /**
     *

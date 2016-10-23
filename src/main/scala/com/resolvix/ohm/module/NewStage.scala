@@ -3,7 +3,7 @@ package com.resolvix.ohm.module
 import java.time.Instant
 
 import com.resolvix.concurrent.Pipe
-import com.resolvix.concurrent.api.RunnableConsumerProducer
+//import com.resolvix.concurrent.api.RunnableConsumerProducer
 import com.resolvix.ohm.{Location, Signature}
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
@@ -18,7 +18,7 @@ class NewStage(
   val ossecHidsDAO: OssecHidsDAO,
   val locationMap: Map[Int, Location],
   val signatureMap: Map[Int, Signature]
-) extends RunnableConsumerProducer[Alert, NewStageAlert] {
+) extends /*RunnableConsumerProducer[Alert, NewStageAlert]*/ {
   class AugmentedAlert(
     private val alert: Alert,
     private val location: Option[Location],

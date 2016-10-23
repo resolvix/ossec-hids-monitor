@@ -8,9 +8,9 @@ import java.util
 import java.util.NoSuchElementException
 
 import com.resolvix.concurrent.ConsumerProducer
-import com.resolvix.concurrent.api.{Consumer, Producer}
+import com.resolvix.concurrent.api.{Configuration, ConsumerFactory, ProducerFactory}
 import com.resolvix.ohm.OssecHidsMonitor.ModuleType
-import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
+import com.resolvix.ohm.api.{Consumer, ModuleAlertProcessingException, ModuleAlertStatus, Producer, Alert => AlertT, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
 import com.resolvix.ohm.module.NewStage
 import com.resolvix.ohm.module.api.NewStageAlert
@@ -40,6 +40,16 @@ object OssecHidsMonitor {
     override def getStatusId: Int = 0x00
   }
 
+  /**
+    * The ModuleHandle class is intended to wrap modules with local
+    * application state and module specific functionality.
+    *
+    * @param module
+    * @param isEnabled
+    * @param updateModuleAlertStatus
+    * @param logFailure
+    * @tparam C
+    */
   class ModuleHandle[C <: api.Alert] (
 
     //
@@ -202,7 +212,7 @@ object OssecHidsMonitor {
     }
   }
 
-  /*class ProducerP(
+  /*class ProducerConsumer(
     alerts: List[api.Alert],
     configuration: Map[String, Any]
   ) extends Producer[api.Alert] {
@@ -212,6 +222,76 @@ object OssecHidsMonitor {
       }
     }
   }*/
+
+  class ProducerConsumerX[A]
+    extends Producer[A]
+  {
+    override protected def getSelf: Producer[A] = this
+
+    /**
+      *
+      * @param configuration
+      * @return
+      */
+    override def initialise(configuration: Configuration): Try[Boolean] = ???
+  }
+
+  class ConsumerProducerModuleAlertStatus[M]
+    extends Consumer[M]
+  {
+    override protected def getSelf: Consumer[M] = this
+
+    /**
+      *
+      * @param configuration
+      * @return
+      */
+    override def initialise(configuration: Configuration): Try[Boolean] = ???
+  }
+
+  class ConsumerFactoryCF[M]
+    extends ConsumerFactory[ConsumerFactoryCF[M], Consumer[M], Producer[M],  M]
+  {
+    override def newInstance: Consumer[M] = {
+      new ConsumerProducerModuleAlertStatus[M]
+    }
+  }
+
+  class ProducerFactoryPF[A]
+    extends ProducerFactory[ProducerFactoryPF[A], Producer[A], Consumer[A], A]
+  {
+    override def newInstance: Producer[A] = {
+      new ProducerConsumerX[A]
+    }
+  }
+
+  class ProducerConsumer[A <: Alert, M <: ModuleAlertStatus]
+    extends ConsumerProducer[
+      Producer[M],
+      Consumer[M],
+      M,
+      Producer[A],
+      Consumer[A],
+      A
+    ] {
+
+    private val consumerFactoryCF: ConsumerFactoryCF[M] = new ConsumerFactoryCF[M]()
+
+    private val producerFactoryPF: ProducerFactoryPF[A] = new ProducerFactoryPF[A]()
+    /**
+      *
+      * @return
+      */
+    override def getConsumerFactory[CF]: ConsumerFactoryCF[M] = consumerFactoryCF
+
+    /**
+      *
+      * @return
+      */
+    override def getProducerFactory[PF]: ProducerFactoryPF[A] = producerFactoryPF
+  }
+
+
 
   //
   //

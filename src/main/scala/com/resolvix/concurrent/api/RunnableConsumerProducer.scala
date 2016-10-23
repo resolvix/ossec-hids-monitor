@@ -1,6 +1,6 @@
 package com.resolvix.concurrent.api
 
-trait RunnableConsumerProducer[I, O]
+/*trait RunnableConsumerProducer[I, O]
   extends RunnableConsumer[I]
     with Producer[O]
 {
@@ -19,4 +19,4 @@ trait RunnableConsumerProducer[I, O]
     val o: O = apply(i)
     produce(o)
   }
-}
+}*/

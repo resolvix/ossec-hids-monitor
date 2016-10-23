@@ -5,7 +5,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by rwbisson on 16/10/2016.
   */
-trait RunnableProducer[P, C, T]
+/*trait RunnableProducer[P, C, T]
   extends Producer[P, C, T]
     with Runnable
 {
@@ -31,4 +31,4 @@ trait RunnableProducer[P, C, T]
       }
     }
   }
-}
+}*/
