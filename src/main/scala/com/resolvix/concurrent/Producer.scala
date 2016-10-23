@@ -5,10 +5,6 @@ import com.resolvix.concurrent.api.{Configuration}
 import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Success, Try}
 
-object Producer {
-
-}
-
 /**
   * Created by rwbisson on 19/10/16.
   */

@@ -7,11 +7,6 @@ import com.resolvix.concurrent.api.Configuration
 import scala.concurrent.duration.{TimeUnit, _}
 import scala.util.{Failure, Success, Try}
 
-object Consumer
-{
-
-}
-
 trait Consumer[C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
   extends Actor[C, P, T]
     with api.Consumer[C, P, T] {

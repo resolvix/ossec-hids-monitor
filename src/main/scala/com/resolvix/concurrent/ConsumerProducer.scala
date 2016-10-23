@@ -1,157 +1,50 @@
 package com.resolvix.concurrent
 
-import java.util.concurrent.TimeUnit
-
-import com.resolvix.concurrent.api.{Configuration}
-
-import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
-
-/**
-  *
-  */
-object ConsumerProducer {
-
-}
-
 /**
   *
   * @tparam C
   * @tparam P
   */
-trait ConsumerProducer[PC <: api.Producer[PC, _, C], C, CP <: api.Consumer[CP, _, P], P]
-{
+trait ConsumerProducer[
+  PC <: api.Producer[PC, CC, C],
+  CC <: api.Consumer[CC, PC, C],
+  C,
+  PP <: api.Producer[PP, CP, P],
+  CP <: api.Consumer[CP, PP, P],
+  P
+] {
 
   /**
     *
     */
-  sealed class CaptiveConsumerC
-    extends Consumer[CaptiveConsumerC, PC, C]
-  {
-
-    override protected def getSelf: CaptiveConsumerC = this
-
-    /**
-      *
-      *
-      * @param configuration
-      * @return
-      */
-    override def initialise(
-      configuration: Configuration
-    ): Try[Boolean] = {
-      Success(true)
-    }
-  }
-
-  /*abstract class CaptiveProducerC
-    extends Producer[CaptiveProducerC, CaptiveConsumerC, C]
-  {
-    override protected def getSelf: CaptiveProducerC = this
-
-    /**
-      *
-      * @param configuration
-      * @return
-      */
-    override def initialise(configuration: Configuration): Try[Boolean] = ???
-  }*/
-
-  /*sealed class CaptiveConsumerPipe(
-    consumer: Consumer[CaptiveConsumer, CaptiveProducer, C]
-  ) {
-    val consumerPipe: ConsumerPipe[C] = consumer.open match {
-      case Success(consumerPipe: ConsumerPipe[C]) =>
-        consumerPipe
-
-      case Failure(t: Throwable) =>
-        throw t
-    }
-
-    /**
-      *
-      * @return
-      */
-    def read: Try[C] = {
-      consumerPipe.read
-    }
-
-    /**
-      *
-      * @param timeout
-      * @param unit
-      * @return
-      */
-    def read(
-      timeout: Int,
-      unit: TimeUnit
-    ): Try[C] = {
-      consumerPipe.read(timeout, unit)
-    }
-  }*/
+  private val consumer: CC = getConsumerFactory.newInstance
 
   /**
     *
     */
-  sealed class CaptiveProducerP
-    extends Producer[CaptiveProducerP, CP, P]
-  {
-
-    override protected def getSelf: CaptiveProducerP = this
-
-    /**
-      *
-      * @param configuration
-      * @return
-      */
-    override def initialise(
-      configuration: Configuration
-    ): Try[Boolean] = {
-      Success(true)
-    }
-  }
-
-  abstract class CaptiveConsumerP
-    extends Producer[CaptiveProducerP, CaptiveConsumerP, P]
-
-  /*sealed class CaptiveProducerPipe(
-    producer: Producer[CaptiveProducer, CaptiveConsumer, P]
-  ) {
-    val producerPipe: ProducerPipe[P] = producer.open match {
-
-    }
-
-    /**
-      *
-      * @param p
-      * @return
-      */
-    def write(
-      p: P
-    ): Try[Boolean]
-  }*/
-
-  /**
-    *
-    */
-  private val consumer: CaptiveConsumerC
-    = new CaptiveConsumerC()
-
-  /**
-    *
-    */
-  private val producer: CaptiveProducerP
-    = new CaptiveProducerP()
+  private val producer: PP = getProducerFactory.newInstance
 
   /**
     *
     * @return
     */
-  def getConsumer: CaptiveConsumerC = this.consumer
+  def getConsumerFactory[CF <: api.ConsumerFactory[CF, CC, PC, C]]: api.ConsumerFactory[CF, CC, PC, C]
 
   /**
     *
     * @return
     */
-  def getProducer: CaptiveProducerP = this.producer
+  def getConsumer: CC = this.consumer
+
+  /**
+    *
+    * @return
+    */
+  def getProducerFactory[PF <: api.ProducerFactory[PF, PP, CP, P]]: api.ProducerFactory[PF, PP, CP, P]
+
+  /**
+    *
+    * @return
+    */
+  def getProducer: PP = this.producer
 }

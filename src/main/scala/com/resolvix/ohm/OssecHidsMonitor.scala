@@ -8,7 +8,6 @@ import java.util
 import java.util.NoSuchElementException
 
 import com.resolvix.concurrent.ConsumerProducer
-import com.resolvix.concurrent.ConsumerProducer.{CaptiveConsumerC, CaptiveConsumerP, CaptiveProducerP}
 import com.resolvix.concurrent.api.{Consumer, Producer}
 import com.resolvix.ohm.OssecHidsMonitor.ModuleType
 import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
@@ -30,7 +29,7 @@ object OssecHidsMonitor {
 
   class FailureModuleAlertStatus(
     alert: api.Alert,
-    module: api.Module[_, _, _]
+    module: api.Module[_, _, _, _]
   ) extends api.ModuleAlertStatus {
     override def getId: Int = alert.getId
 
@@ -46,7 +45,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    private val module: api.Module[C],
+    private val module: api.Module[_, _, _, _],
 
     //
     //
@@ -74,7 +73,7 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.Module[C, _, _]
+  ) extends api.Module[_, _, _, _]
       with ConsumerProducer[CaptiveConsumerP, api.Alert, CaptiveConsumerC, ModuleAlertStatus]
   {
 
@@ -266,7 +265,7 @@ object OssecHidsMonitor {
   private final val IsoDateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
 
-  type ModuleType = api.Module[api.Alert, Producer[_, _, api.Alert], Consumer[_, _, ModuleAlertStatus]]
+  type ModuleType = api.Module[_, _, _, _]
 
   //
   //
