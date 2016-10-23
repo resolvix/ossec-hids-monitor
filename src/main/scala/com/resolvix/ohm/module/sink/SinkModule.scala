@@ -77,7 +77,7 @@ class SinkModule
 
   override def run(): Unit = {
     println("SinkModule.run: starting thread")
-    super.run()
+    //super.run()
     println("SinkModule.run: thread finished")
   }
 

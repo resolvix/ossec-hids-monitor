@@ -9,7 +9,22 @@ import scala.util.{Success, Try}
 /**
   * Created by rwbisson on 16/10/16.
   */
-trait Actor[A <: Actor[A, B, T], B <: Actor[A, B, T], T] {
+trait Actor[L <: Actor[L, R, V], R <: Actor[R, L, V], V] {
+
+  /**
+    *
+    * @param actor
+    * @return
+    */
+  def close(
+    actor: R
+  ): Try[Boolean]
+
+  /**
+    *
+    * @return
+    */
+  def getId: Int
 
   /**
     *
@@ -25,18 +40,36 @@ trait Actor[A <: Actor[A, B, T], B <: Actor[A, B, T], T] {
     * @param actor
     * @return
     */
-  def close(
-    actor: A
-  ): Try[Boolean]
+  def isRegistered(
+    actor: R
+  ): Boolean
 
   /**
+    * The open method specifying a remote actor provides the requesting
+    * remote actor with a pipe suitable for the local / remote actor
+    * relationship.
+    *
+    * In the context of a consumer, open(producer) generates a producer
+    * pipe that enables the calling producer to write values to the pipe.
+    *
+    * In the context of a producer, open(consumer) reflects the calling
+    * consumer to supply the pipe that enables the calling consumer to
+    * read values from the pipe.
     *
     * @param actor
     * @return
     */
   def open(
-    actor: A
-  ): Try[Pipe[T]]
+    actor: R
+  ): Try[Pipe[V]]
+
+  /**
+    * The open method without parameters provides the requestor with a
+    * a pipe suitable for the local / remote actor relationship.
+    *
+    * @return
+    */
+  def open: Try[Pipe[V]]
 
   /**
     *
@@ -44,7 +77,7 @@ trait Actor[A <: Actor[A, B, T], B <: Actor[A, B, T], T] {
     * @return
     */
   def register(
-    actor: B
+    actor: R
   ): Try[Boolean]
 
   /**
@@ -53,6 +86,6 @@ trait Actor[A <: Actor[A, B, T], B <: Actor[A, B, T], T] {
     * @return
     */
   def unregister(
-    actor: B
+    actor: R
   ): Try[Boolean]
 }

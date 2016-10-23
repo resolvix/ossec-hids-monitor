@@ -10,11 +10,11 @@ trait Consumer[C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
   ): Try[Boolean]
 
   override def close(
-    consumer: C
+    producer: P
   ): Try[Boolean]
 
   override def open(
-    consumer: C
+    producer: P
   ): Try[Pipe[T]]
 
   override def register(

@@ -11,6 +11,8 @@ import scala.util.{Failure, Success, Try}
   */
 class Pipe[T]
   extends api.Pipe[T]
+    with api.ProducerPipe[T]
+    with api.ConsumerPipe[T]
 {
 
   //

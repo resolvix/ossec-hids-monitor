@@ -7,6 +7,8 @@ import java.time.temporal.ChronoUnit
 import java.util
 import java.util.NoSuchElementException
 
+import com.resolvix.concurrent.ConsumerProducer
+import com.resolvix.concurrent.ConsumerProducer.{CaptiveConsumerC, CaptiveConsumerP, CaptiveProducerP}
 import com.resolvix.concurrent.api.{Consumer, Producer}
 import com.resolvix.ohm.OssecHidsMonitor.ModuleType
 import com.resolvix.ohm.api.{ModuleAlertProcessingException, ModuleAlertStatus, Alert => AlertT, Module => ModuleT}
@@ -28,7 +30,7 @@ object OssecHidsMonitor {
 
   class FailureModuleAlertStatus(
     alert: api.Alert,
-    module: api.Module[_]
+    module: api.Module[_, _, _]
   ) extends api.ModuleAlertStatus {
     override def getId: Int = alert.getId
 
@@ -72,7 +74,9 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.Module[C] {
+  ) extends api.Module[C, _, _]
+      with ConsumerProducer[CaptiveConsumerP, api.Alert, CaptiveConsumerC, ModuleAlertStatus]
+  {
 
     //
     //
@@ -200,7 +204,7 @@ object OssecHidsMonitor {
     }
   }
 
-  class ProducerP(
+  /*class ProducerP(
     alerts: List[api.Alert],
     configuration: Map[String, Any]
   ) extends Producer[api.Alert] {
@@ -209,7 +213,7 @@ object OssecHidsMonitor {
         (a: api.Alert) => produce(a)
       }
     }
-  }
+  }*/
 
   //
   //
@@ -262,7 +266,7 @@ object OssecHidsMonitor {
   private final val IsoDateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
 
-  type ModuleType = api.Module[api.Alert]
+  type ModuleType = api.Module[api.Alert, Producer[_, _, api.Alert], Consumer[_, _, ModuleAlertStatus]]
 
   //
   //
@@ -623,9 +627,9 @@ class OssecHidsMonitor(
 
     val ns: NewStage = new NewStage(ossecHidsDAO, locationMap, signatureMap)
 
-    val p: OssecHidsMonitor.ProducerP = new OssecHidsMonitor.ProducerP(alerts, configuration)
-    p.register(ns)
-    p.run()
+    //val p: OssecHidsMonitor.ProducerP = new OssecHidsMonitor.ProducerP(alerts, configuration)
+    //p.register(ns)
+    //p.run()
   }
 
   private def updateModuleAlertStatus(

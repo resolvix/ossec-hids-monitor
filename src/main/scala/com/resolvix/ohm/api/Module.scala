@@ -12,8 +12,8 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by rwbisson on 08/10/16.
   */
-trait Module[C <: Alert]
-  extends ConsumerProducer[C, ModuleAlertStatus]
+trait Module[PC <: Producer[PC, _, C], C <: Alert, CP <: Consumer[CP, _, ModuleAlertStatus]]
+  extends ConsumerProducer[PC, C, CP, ModuleAlertStatus]
     with com.resolvix.concurrent.api.Runnable
 {
   def getDescriptor: String

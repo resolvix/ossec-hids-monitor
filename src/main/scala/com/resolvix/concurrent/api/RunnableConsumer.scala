@@ -8,8 +8,8 @@ import scala.util.{Failure, Success}
 /**
   * Created by rwbisson on 16/10/2016.
   */
-trait RunnableConsumer[T]
-  extends Consumer[T]
+trait RunnableConsumer[C, P, T]
+  extends Consumer[C, P, T]
   with Runnable {
   /**
     *
@@ -20,21 +20,5 @@ trait RunnableConsumer[T]
   /**
     *
     */
-  def run(): Unit = {
-    start()
-    while (isRunning) {
-      consume(5000, TimeUnit.MILLISECONDS) match {
-        case Success(t) =>
-          doConsume(t)
-
-        case Failure(e: TimeoutException) =>
-          //
-          //  Do nothing
-          //
-
-        case Failure(t: Throwable) =>
-          throw t
-      }
-    }
-  }
+  def run(): Unit
 }

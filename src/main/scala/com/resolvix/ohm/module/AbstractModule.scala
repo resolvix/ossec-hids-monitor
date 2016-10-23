@@ -15,10 +15,10 @@ abstract class AbstractModule[C <: Alert]
 {
   def doConsume(c: C): Try[Boolean]
 
-  def run(): Unit = {
+  /*def run(): Unit = {
     super.start()
     while (super.isRunning || super.isFinishing) {
-      getConsumer.consume(5000, TimeUnit.MILLISECONDS) match {
+      getConsumer.rea(5000, TimeUnit.MILLISECONDS) match {
         case Success(c: C) =>
           doConsume(c)
 
@@ -34,7 +34,5 @@ abstract class AbstractModule[C <: Alert]
           throw t
       }
     }
-  }
-
-
+  }*/
 }
