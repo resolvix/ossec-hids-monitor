@@ -6,11 +6,13 @@ package com.resolvix.concurrent
   * @tparam P
   */
 trait ConsumerProducer[
-  PC <: api.Producer[PC, CC, C],
-  CC <: api.Consumer[CC, PC, C],
+  CF <: api.ConsumerFactory[CF, CC, PC, _, C],
+  PC <: api.Producer[PC, CC, _, C],
+  CC <: api.Consumer[CC, PC, _, C],
   C,
-  PP <: api.Producer[PP, CP, P],
-  CP <: api.Consumer[CP, PP, P],
+  PF <: api.ProducerFactory[PF, PP, CP, _, P],
+  PP <: api.Producer[PP, CP, _, P],
+  CP <: api.Consumer[CP, PP, _, P],
   P
 ] {
 
@@ -28,7 +30,7 @@ trait ConsumerProducer[
     *
     * @return
     */
-  def getConsumerFactory[CF <: api.ConsumerFactory[CF, CC, PC, C]]: api.ConsumerFactory[CF, CC, PC, C]
+  def getConsumerFactory: CF
 
   /**
     *
@@ -40,7 +42,7 @@ trait ConsumerProducer[
     *
     * @return
     */
-  def getProducerFactory[PF <: api.ProducerFactory[PF, PP, CP, P]]: api.ProducerFactory[PF, PP, CP, P]
+  def getProducerFactory: PF
 
   /**
     *

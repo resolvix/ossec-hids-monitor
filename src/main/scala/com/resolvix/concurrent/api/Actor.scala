@@ -14,12 +14,21 @@ import scala.util.{Success, Try}
   * @tparam R
   *   refers to the type of the remote actor
   *
+  * @tparam T
+  *   refers to the type of transport for the transmission of values of
+  *   type V between the local and remote actors
+  *
   * @tparam V
   *   refers to the type of values to be transmitted between the local and
   *   remote actors
   *
   */
-trait Actor[L <: Actor[L, R, V], R <: Actor[R, L, V], V] {
+trait Actor[
+  L <: Actor[L, R, T, V],
+  R <: Actor[R, L, T, V],
+  T <: Transport[V],
+  V
+] {
 
   /**
     *
@@ -71,7 +80,7 @@ trait Actor[L <: Actor[L, R, V], R <: Actor[R, L, V], V] {
     */
   def open(
     actor: R
-  ): Try[Pipe[V]]
+  ): Try[T]
 
   /**
     * The open method without parameters provides the requestor with a

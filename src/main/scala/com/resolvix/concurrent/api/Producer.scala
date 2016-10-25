@@ -2,8 +2,21 @@ package com.resolvix.concurrent.api
 
 import scala.util.Try
 
-trait Producer[P <: Producer[P, C, T], C <: Consumer[C, P, T], T]
-  extends Actor[P, C, T]
+/**
+  *
+  * @tparam P
+  *   refers to the type of the producer
+  *
+  * @tparam C
+  *   refers to the type of the consumer
+  *
+  * @tparam T
+  *   refers to the type of values to be transmitted by the producer
+  *   to the consumer
+  *
+  */
+trait Producer[P <: Producer[P, C, T, V], C <: Consumer[C, P, T, V], T, V]
+  extends Actor[P, C, T, V]
 {
   override def initialise(
     configuration: Configuration
@@ -15,7 +28,7 @@ trait Producer[P <: Producer[P, C, T], C <: Consumer[C, P, T], T]
 
   override def open(
     consumer: C
-  ): Try[Pipe[T]]
+  ): Try[T]
 
   override def register(
     consumer: C

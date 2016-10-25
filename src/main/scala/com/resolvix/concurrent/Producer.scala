@@ -8,15 +8,15 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by rwbisson on 19/10/16.
   */
-trait Producer[P <: Producer[P, C, T], C <: Consumer[C, P, T], T]
-  extends Actor[P, C, T]
-    with api.Producer[P, C, T]
+trait Producer[P <: api.Producer[P, C, _, V], C <: api.Consumer[C, P, _, V], V]
+  extends Actor[P, C, api.ProducerPipe[V], V]
+    with api.Producer[P, C, api.ProducerPipe[V], V]
 {
   //
   //
   //
-  protected var consumerPacketPipes: Map[Int, api.ProducerPipe[T]]
-    = Map[Int, api.ProducerPipe[T]]()
+  protected var consumerPacketPipes: Map[Int, api.ProducerPipe[V]]
+    = Map[Int, api.ProducerPipe[V]]()
 
   /**
     *
@@ -29,9 +29,17 @@ trait Producer[P <: Producer[P, C, T], C <: Consumer[C, P, T], T]
     super.close(consumer)
   }
 
+  protected def newConsumerPipe(
+    consumer: C
+  ): Try[api.ConsumerPipe[V]]
+
+  protected def newProducerPipe(
+    producer: P
+  ): Try[api.ProducerPipe[V]]
+
   override def open(
     consumer: C
-  ): Try[api.ConsumerPipe[T]] = {
+  ): Try[api.ConsumerPipe[V]] = {
     try {
       consumer.open
     } catch {
@@ -44,12 +52,12 @@ trait Producer[P <: Producer[P, C, T], C <: Consumer[C, P, T], T]
     *
     * @return
     */
-  def open: Try[api.ProducerPipe[T]] = {
+  def open: Try[api.ProducerPipe[V]] = {
     try {
       consumerPacketPipes = actors.collect({
         case x: (Int, C) => {
           x._2.open(getSelf) match {
-            case Success(producerPipe: api.ProducerPipe[T]) =>
+            case Success(producerPipe: api.ProducerPipe[V]) =>
               (x._1, producerPipe)
 
             case Failure(t: Throwable) =>
@@ -59,7 +67,7 @@ trait Producer[P <: Producer[P, C, T], C <: Consumer[C, P, T], T]
       })
 
       Success(
-        new ProducerPipe[P, C, T](
+        new ProducerPipe[P, C, V](
           getSelf,
           consumerPacketPipes
         )

@@ -1,4 +1,4 @@
 package com.resolvix.concurrent
 
-class PacketPipe[D <: api.Actor[D, S, V], S <: api.Actor[S, D, V], V]
+class PacketPipe[D <: api.Actor[D, S, _, V], S <: api.Actor[S, D, _, V], V]
   extends Pipe[Packet[S, D, V]]

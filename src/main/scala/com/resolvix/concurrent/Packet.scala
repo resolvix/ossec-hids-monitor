@@ -3,7 +3,7 @@ package com.resolvix.concurrent
 /**
   * Created by rwbisson on 22/10/16.
   */
-class Packet[S <: api.Actor[S, D, V], D <: api.Actor[D, S, V], V](
+class Packet[S <: api.Actor[S, D, _, V], D <: api.Actor[D, S, _, V], V](
   actor: S,
   v: V
 ) {

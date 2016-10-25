@@ -42,9 +42,17 @@ object Actor
   *   specifies the class of values to be passed between the local actor
   *   and the remote actors
   */
-trait Actor[L <: api.Actor[L, R, V], R <: api.Actor[R, L, V], V]
-  extends api.Actor[L, R, V]
-{
+trait Actor[
+  L <: api.Actor[L, R, T, V],
+  R <: api.Actor[R, L, T, V],
+  T,
+  V
+] extends api.Actor[
+  L,
+  R,
+  T,
+  V
+] {
   //
   //
   //
@@ -100,7 +108,7 @@ trait Actor[L <: api.Actor[L, R, V], R <: api.Actor[R, L, V], V]
 
   override def open(
     actor: R
-  ): Try[api.Pipe[V]]
+  ): Try[T]
 
   override def initialise(
     configuration: Configuration

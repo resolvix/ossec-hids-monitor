@@ -7,9 +7,17 @@ import com.resolvix.concurrent.api.Configuration
 import scala.concurrent.duration.{TimeUnit, _}
 import scala.util.{Failure, Success, Try}
 
-trait Consumer[C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
-  extends Actor[C, P, T]
-    with api.Consumer[C, P, T] {
+object Consumer
+{
+
+}
+
+trait Consumer[
+  C <: api.Consumer[C, P, _, V],
+  P <: api.Producer[P, C, _, V],
+  V
+] extends Actor[C, P, api.ConsumerPipe[V], V]
+    with api.Consumer[C, P, api.ConsumerPipe[V], V] {
 
   /**
     *
@@ -17,27 +25,27 @@ trait Consumer[C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
     */
   sealed class LocalProducerPipe(
     producer: P
-  ) extends api.ProducerPipe[T]
-    with api.Pipe[T] {
+  ) extends api.ProducerPipe[V]
+    with api.Pipe[V] {
 
     /**
       *
-      * @param t
+      * @param v
       * @return
       */
     def write(
-      t: T
+      v: V
     ): Try[Boolean] = {
       packetPipe.write(
-        new Packet[P, C, T](producer, t)
+        new Packet[P, C, V](producer, v)
       )
     }
   }
 
   sealed class LocalConsumerPipe
-    extends ConsumerPipe[C, P, T](packetPipe)
-      with api.ConsumerPipe[T]
-      with api.Pipe[T]
+    extends ConsumerPipe[C, P, api.ConsumerPipe[V], V](packetPipe)
+      with api.ConsumerPipe[V]
+      with api.Pipe[V]
 
   /**
     *
@@ -58,6 +66,14 @@ trait Consumer[C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
     Success(true)
   }
 
+  protected def newConsumerPipe(
+    consumer: C
+  ): Try[api.ConsumerPipe[V]]
+
+  protected def newProducerPipe(
+    producer: P
+  ): Try[api.ProducerPipe[V]]
+
   /**
     *
     * @param producer
@@ -65,9 +81,9 @@ trait Consumer[C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
     */
   override def open(
     producer: P
-  ): Try[api.ProducerPipe[T]] = {
+  ): Try[api.ProducerPipe[V]] = {
     try {
-      Success(new LocalProducerPipe(producer))
+      newProducerPipe(producer)
     } catch {
       case t: Throwable =>
         Failure(t)
@@ -78,9 +94,9 @@ trait Consumer[C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
     *
     * @return
     */
-  def open: Try[api.ConsumerPipe[T]] = {
+  def open: Try[api.ConsumerPipe[V]] = {
     try {
-      Success(new LocalConsumerPipe)
+      newConsumerPipe(this.asInstanceOf[C])
     } catch {
       case t: Throwable =>
         Failure(t)
