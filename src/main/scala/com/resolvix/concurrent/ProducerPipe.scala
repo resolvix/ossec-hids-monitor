@@ -1,9 +1,18 @@
 package com.resolvix.concurrent
 import scala.util.{Failure, Success, Try}
 
-class ProducerPipe[P <: api.Actor[P, C, V], C <: api.Actor[C, P, V], V](
+/**
+  * A ProducerPipe is a Pipe viewed from the perspective of a Producer.
+  *
+  * @param producer
+  * @param producerPacketPipes
+  * @tparam P
+  * @tparam C
+  * @tparam V
+  */
+class ProducerPipe[P <: api.Actor[P, C, _, V], C <: api.Actor[C, P, _, V], V](
   producer: P,
-  consumerPacketPipes: Map[Int, api.ProducerPipe[V]]
+  producerPacketPipes: Map[Int, api.ProducerPipe[V]]
 ) extends api.ProducerPipe[V] {
 
   override def write(
@@ -11,7 +20,7 @@ class ProducerPipe[P <: api.Actor[P, C, V], C <: api.Actor[C, P, V], V](
   ): Try[Boolean] = {
     try {
       val p: Packet[P, C, V] = new Packet[P, C, V](producer, v)
-      consumerPacketPipes.foreach {
+      producerPacketPipes.foreach {
         x: (Int, api.ProducerPipe[V]) => x._2.write(v)
       }
       Success(true)

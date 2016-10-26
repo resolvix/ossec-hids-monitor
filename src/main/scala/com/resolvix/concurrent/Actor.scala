@@ -44,8 +44,8 @@ object Actor
   */
 trait Actor[
   L <: api.Actor[L, R, T, V],
-  R <: api.Actor[R, L, T, V],
-  T,
+  R <: api.Actor[R, L, _ <: api.Transport[V], V],
+  T <: api.Transport[V],
   V
 ] extends api.Actor[
   L,

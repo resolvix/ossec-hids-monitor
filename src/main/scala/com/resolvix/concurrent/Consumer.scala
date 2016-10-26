@@ -7,17 +7,12 @@ import com.resolvix.concurrent.api.Configuration
 import scala.concurrent.duration.{TimeUnit, _}
 import scala.util.{Failure, Success, Try}
 
-object Consumer
-{
-
-}
-
 trait Consumer[
-  C <: api.Consumer[C, P, _, V],
-  P <: api.Producer[P, C, _, V],
+  C <: api.Consumer[C, P, _ <: api.ProducerPipe[V], V],
+  P <: api.Producer[P, C, _ <: api.ConsumerPipe[V], V],
   V
-] extends Actor[C, P, api.ConsumerPipe[V], V]
-    with api.Consumer[C, P, api.ConsumerPipe[V], V] {
+] extends Actor[C, P, api.ProducerPipe[V], V]
+    with api.Consumer[C, P, api.ProducerPipe[V], V] {
 
   /**
     *
@@ -43,7 +38,7 @@ trait Consumer[
   }
 
   sealed class LocalConsumerPipe
-    extends ConsumerPipe[C, P, api.ConsumerPipe[V], V](packetPipe)
+    extends ConsumerPipe[C, P, V](packetPipe)
       with api.ConsumerPipe[V]
       with api.Pipe[V]
 
@@ -75,8 +70,14 @@ trait Consumer[
   ): Try[api.ProducerPipe[V]]
 
   /**
+    * The open method, with a parameter of derivative type Producer, is
+    * intended to provide the calling producer with a pipe suitable for
+    * the transmission of values of type V, by the producer, to the instant
+    * consumer.
     *
     * @param producer
+    *    the producer
+    *
     * @return
     */
   override def open(
@@ -91,10 +92,13 @@ trait Consumer[
   }
 
   /**
+    * The open method, specified without a parameter, is intended to
+    * provide the calling consumer with a pipe suitable for the receipt
+    * of values of type V, by the consumer, from the producers.
     *
     * @return
     */
-  def open: Try[api.ConsumerPipe[V]] = {
+  def openX: Try[api.ConsumerPipe[V]] = {
     try {
       newConsumerPipe(this.asInstanceOf[C])
     } catch {

@@ -25,7 +25,7 @@ import scala.util.{Success, Try}
   */
 trait Actor[
   L <: Actor[L, R, T, V],
-  R <: Actor[R, L, T, V],
+  R <: Actor[R, L, _ <: Transport[V], V],
   T <: Transport[V],
   V
 ] {
@@ -88,7 +88,7 @@ trait Actor[
     *
     * @return
     */
-  def open: Try[Pipe[V]]
+  def openX: Try[Pipe[V]]
 
   /**
     *

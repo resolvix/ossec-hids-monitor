@@ -304,9 +304,11 @@ object OssecHidsMonitor {
     */
   class ProducerConsumer[A <: Alert, M <: ModuleAlertStatus]
     extends ConsumerProducer[
+      CaptiveConsumerFactory[M],
       Producer[M],
       Consumer[M],
       M,
+      CaptiveProducerFactory[A],
       Producer[A],
       Consumer[A],
       A

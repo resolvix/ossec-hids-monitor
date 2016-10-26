@@ -75,7 +75,7 @@ abstract class AbstractModule[A <: Alert]
 
     val consumerC: Consumer[A] = getConsumer
 
-    val consumerPipe: ConsumerPipe[A] = consumerC.open match {
+    val consumerPipe: ConsumerPipe[A] = consumerC.openX match {
       case Success(consumerPipe: ConsumerPipe[A]) =>
         consumerPipe
 

@@ -4,7 +4,16 @@ import java.util.concurrent.TimeUnit
 
 import scala.util.{Failure, Success, Try}
 
-class ConsumerPipe[C <: api.Actor[C, P, T, V], P <: api.Actor[P, C, T, V], T, V](
+/**
+  * A ConsumerPipe is a Pipe viewed from the perspective of a Consumer.
+  *
+  * @param packetPipe
+  * @tparam C
+  * @tparam P
+  * @tparam T
+  * @tparam V
+  */
+class ConsumerPipe[C <: api.Actor[C, P, _, V], P <: api.Actor[P, C, _, V], V](
   packetPipe: PacketPipe[C, P, V]
 ) extends api.ConsumerPipe[V] {
 

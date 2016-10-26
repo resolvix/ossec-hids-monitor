@@ -8,14 +8,17 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by rwbisson on 19/10/16.
   */
-trait Producer[P <: api.Producer[P, C, _, V], C <: api.Consumer[C, P, _, V], V]
-  extends Actor[P, C, api.ProducerPipe[V], V]
-    with api.Producer[P, C, api.ProducerPipe[V], V]
+trait Producer[
+  P <: api.Producer[P, C, _ <: api.ConsumerPipe[V], V],
+  C <: api.Consumer[C, P, _ <: api.ProducerPipe[V], V],
+  V
+] extends Actor[P, C, api.ConsumerPipe[V], V]
+    with api.Producer[P, C, api.ConsumerPipe[V], V]
 {
   //
   //
   //
-  protected var consumerPacketPipes: Map[Int, api.ProducerPipe[V]]
+  protected var packetPipes: Map[Int, api.ProducerPipe[V]]
     = Map[Int, api.ProducerPipe[V]]()
 
   /**
@@ -37,11 +40,20 @@ trait Producer[P <: api.Producer[P, C, _, V], C <: api.Consumer[C, P, _, V], V]
     producer: P
   ): Try[api.ProducerPipe[V]]
 
+  /**
+    *
+    * @param consumer
+    * @return
+    */
   override def open(
     consumer: C
   ): Try[api.ConsumerPipe[V]] = {
     try {
-      consumer.open
+      Success(
+        consumer.openX
+          .get
+          .asInstanceOf[api.ConsumerPipe[V]]
+      )
     } catch {
       case t: Throwable =>
         Failure(t)
@@ -52,9 +64,9 @@ trait Producer[P <: api.Producer[P, C, _, V], C <: api.Consumer[C, P, _, V], V]
     *
     * @return
     */
-  def open: Try[api.ProducerPipe[V]] = {
+  def openX: Try[api.ProducerPipe[V]] = {
     try {
-      consumerPacketPipes = actors.collect({
+      packetPipes = actors.collect({
         case x: (Int, C) => {
           x._2.open(getSelf) match {
             case Success(producerPipe: api.ProducerPipe[V]) =>
@@ -69,7 +81,7 @@ trait Producer[P <: api.Producer[P, C, _, V], C <: api.Consumer[C, P, _, V], V]
       Success(
         new ProducerPipe[P, C, V](
           getSelf,
-          consumerPacketPipes
+          packetPipes
         )
       )
     } catch {

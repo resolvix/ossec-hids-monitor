@@ -1,10 +1,22 @@
 package com.resolvix.concurrent.api
 
 /**
-  * Created by rwbisson on 23/10/16.
+  *
+  * @tparam AF
+  * @tparam L
+  * @tparam R
+  * @tparam T
+  * @tparam V
   */
-trait ActorFactory[L <: Actor[L, R, T, V], R <: Actor[R, L, T, V], T, V] {
-
-  def newInstance: Actor[L, R, T, V]
-
+trait ActorFactory[
+  AF <: ActorFactory[AF, L, R, V],
+  L <: Actor[L, R, _ <: Transport[V], V],
+  R <: Actor[R, L, _ <: Transport[V], V],
+  V
+] {
+  /**
+    *
+    * @return
+    */
+  def newInstance: Actor[L, R, Transport[V], V]
 }
