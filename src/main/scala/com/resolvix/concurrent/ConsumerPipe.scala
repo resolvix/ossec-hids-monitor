@@ -14,13 +14,11 @@ import scala.util.{Failure, Success, Try}
   * @tparam V
   */
 class ConsumerPipe[
-  C <: api.Actor[C, CT, P, PT, V],
-  CT <: api.Transport[V],
-  P <: api.Actor[P, PT, C, CT, V],
-  PT <: api.Transport[V],
+  C <: api.Actor[C, ConsumerPipe[C, P, V], P, ProducerPipe[C, P, V], V],
+  P <: api.Actor[P, ProducerPipe[P, C, V], C, ConsumerPipe[C, P, V], V],
   V
 ](
-  packetPipe: PacketPipe[C, CT, P, PT, V]
+  packetPipe: PacketPipe[C, P, V]
 ) extends api.ConsumerPipe[V] {
 
   override def read: Try[V] = {
@@ -44,7 +42,7 @@ class ConsumerPipe[
       timeout,
       unit
     ) match {
-      case Success(pV: Packet[P, PT, C, CT, V]) =>
+      case Success(pV: Packet[P, C, V]) =>
         Success(pV.getV)
 
       case Failure(t: Throwable) =>

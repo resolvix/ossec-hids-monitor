@@ -81,7 +81,7 @@ trait Actor[
     */
   def open(
     actor: R
-  ): Try[Pipe[V]]
+  ): Try[RT]
 
   /**
     * The open method without parameters provides the requestor with a

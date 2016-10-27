@@ -37,7 +37,7 @@ trait Producer[
 
   override def open(
     consumer: C
-  ): Try[ConsumerPipe[V]]
+  ): Try[CT]
 
   override def register(
     consumer: C

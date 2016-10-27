@@ -7,42 +7,52 @@ import com.resolvix.concurrent.api.Configuration
 import scala.concurrent.duration.{TimeUnit, _}
 import scala.util.{Failure, Success, Try}
 
-trait Consumer[
-  C <: api.Consumer[C, CT, P, PT, V],
-  CT <: api.Transport[V],
-  P <: api.Producer[P, PT, C, CT, V],
-  PT <: api.Transport[V],
-  V
-] extends Actor[C, CT, P, PT, V]
-    with api.Consumer[C, CT, P, PT, V] {
+object Consumer
+{
 
   /**
     *
     * @param producer
     */
-  sealed class LocalProducerPipe(
+  /*class LocalProducerPipe[
+    P <: api.Producer[P, C, V],
+    C <: api.Consumer[C, P, V],
+    V
+  ](
     producer: P
   ) extends api.ProducerPipe[V]
-    with api.Pipe[V] {
+    with api.Pipe[V] {*/
 
     /**
       *
       * @param v
       * @return
       */
-    def write(
+  /*  def write(
       v: V
     ): Try[Boolean] = {
-      packetPipe.write(
-        new Packet[P, PT, C, CT, V](producer, v)
-      )
+      //packetPipe.write(
+      //  new Packet[P, C, V](producer, v)
+      //)
     }
-  }
+  }*/
 
-  sealed class LocalConsumerPipe
-    extends ConsumerPipe[C, CT, P, PT, V](packetPipe)
+  /*sealed class LocalConsumerPipe[
+    C <: api.Consumer[C, P, V],
+    P <: api.Producer[P, C, V],
+    V
+  ] extends ConsumerPipe[C, P, V](packetPipe)
       with api.ConsumerPipe[V]
-      with api.Pipe[V]
+      with api.Pipe[V]*/
+
+}
+
+trait Consumer[
+  C <: Consumer[C, P, V],
+  P <: Producer[P, C, V],
+  V
+] extends Actor[C, ProducerPipe[P, C, V], P, ConsumerPipe[C, P, V], V]
+    with api.Consumer[C, ProducerPipe[C, P, V], P, ConsumerPipe[C, P, V], V] {
 
   /**
     *
@@ -52,7 +62,13 @@ trait Consumer[
   override def close(
     producer: P
   ): Try[Boolean] = {
-    super.close(producer)
+    super.close(producer) match {
+      case Success(b: Boolean) =>
+        Success(b)
+
+      case Failure(t: Throwable) =>
+        Failure(t)
+    }
   }
 
   /**
@@ -65,11 +81,11 @@ trait Consumer[
 
   protected def newConsumerPipe(
     consumer: C
-  ): Try[api.ConsumerPipe[V]]
+  ): Try[ConsumerPipe[C, P, V]]
 
   protected def newProducerPipe(
     producer: P
-  ): Try[api.ProducerPipe[V]]
+  ): Try[ProducerPipe[P, C, V]]
 
   /**
     * The open method, with a parameter of derivative type Producer, is
@@ -84,7 +100,7 @@ trait Consumer[
     */
   override def open(
     producer: P
-  ): Try[api.ProducerPipe[V]] = {
+  ): Try[ProducerPipe[P, C, V]] = {
     try {
       newProducerPipe(producer)
     } catch {

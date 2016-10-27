@@ -4,10 +4,8 @@ package com.resolvix.concurrent
   * Created by rwbisson on 22/10/16.
   */
 class Packet[
-  S <: api.Actor[S, ST, D, DT, V],
-  ST <: api.Transport[V],
-  D <: api.Actor[D, DT, S, ST, V],
-  DT <: api.Transport[V],
+  S <: api.Actor[S, _ <: api.Transport[V], D, _ <: api.Transport[V], V],
+  D <: api.Actor[D, _ <: api.Transport[V], S, _ <: api.Transport[V], V],
   V
 ](
   actor: S,

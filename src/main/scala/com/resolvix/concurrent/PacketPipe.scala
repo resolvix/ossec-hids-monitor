@@ -1,9 +1,7 @@
 package com.resolvix.concurrent
 
 class PacketPipe[
-  D <: api.Actor[D, DT, S, ST, V],
-  DT <: api.Transport[V],
-  S <: api.Actor[S, ST, D, DT, V],
-  ST <: api.Transport[V],
+  D <: api.Actor[D, _ <: api.Transport[V], S, _ <: api.Transport[V], V],
+  S <: api.Actor[S, _ <: api.Transport[V], D, _ <: api.Transport[V], V],
   V
-] extends Pipe[Packet[S, ST, D, DT, V]]
+] extends Pipe[Packet[S, D, V]]

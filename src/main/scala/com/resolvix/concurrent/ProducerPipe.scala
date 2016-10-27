@@ -11,10 +11,8 @@ import scala.util.{Failure, Success, Try}
   * @tparam V
   */
 class ProducerPipe[
-  P <: api.Actor[P, PT, C, CT, V],
-  PT <: api.Transport[V],
-  C <: api.Actor[C, CT, P, PT, V],
-  CT <: api.Transport[V],
+  P <: api.Actor[P, ProducerPipe[P, C, V], C, ConsumerPipe[C, P, V], V],
+  C <: api.Actor[C, ConsumerPipe[C, P, V], P, ProducerPipe[C, P, V], V],
   V
 ](
   producer: P,
@@ -25,7 +23,7 @@ class ProducerPipe[
     v: V
   ): Try[Boolean] = {
     try {
-      val p: Packet[P, PT, C, CT, V] = new Packet[P, PT, C, CT, V](producer, v)
+      val p: Packet[P, C, V] = new Packet[P, C, V](producer, v)
       producerPacketPipes.foreach {
         x: (Int, api.ProducerPipe[V]) => x._2.write(v)
       }
@@ -35,4 +33,6 @@ class ProducerPipe[
         Failure(t)
     }
   }
+
+
 }

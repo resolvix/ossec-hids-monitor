@@ -68,7 +68,7 @@ trait Actor[
   /**
     *
     */
-  protected val packetPipe: PacketPipe[L, LT, R, RT, V] = new PacketPipe[L, LT, R, RT, V]()
+  protected val packetPipe: PacketPipe[L, R, V] = new PacketPipe[L, R, V]()
 
   override def close(
     actor: R
@@ -110,7 +110,7 @@ trait Actor[
 
   override def open(
     actor: R
-  ): Try[Pipe[V]]
+  ): Try[RT]
 
   override def initialise(
     configuration: Configuration
