@@ -43,14 +43,16 @@ object Actor
   *   and the remote actors
   */
 trait Actor[
-  L <: api.Actor[L, R, T, V],
-  R <: api.Actor[R, L, _ <: api.Transport[V], V],
-  T <: api.Transport[V],
+  L <: api.Actor[L, LT, R, RT, V],
+  LT <: api.Transport[V],
+  R <: api.Actor[R, RT, L, LT, V],
+  RT <: api.Transport[V],
   V
 ] extends api.Actor[
   L,
+  LT,
   R,
-  T,
+  RT,
   V
 ] {
   //
@@ -66,7 +68,7 @@ trait Actor[
   /**
     *
     */
-  protected val packetPipe: PacketPipe[L, R, V] = new PacketPipe[L, R, V]()
+  protected val packetPipe: PacketPipe[L, LT, R, RT, V] = new PacketPipe[L, LT, R, RT, V]()
 
   override def close(
     actor: R
@@ -108,7 +110,7 @@ trait Actor[
 
   override def open(
     actor: R
-  ): Try[T]
+  ): Try[Pipe[V]]
 
   override def initialise(
     configuration: Configuration

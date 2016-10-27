@@ -12,13 +12,17 @@ package com.resolvix.concurrent
   * @tparam P
   */
 trait ConsumerProducer[
-  CF <: api.ConsumerFactory[CF, CC, PC, C],
-  PC <: api.Producer[PC, CC, _ <: api.Transport[C], C],
-  CC <: api.Consumer[CC, PC, _ <: api.Transport[C], C],
+  CF <: api.ConsumerFactory[CF, CC, CCT, PC, PCT, C],
+  PC <: api.Producer[PC, PCT, CC, CCT, C],
+  PCT <: api.Transport[C],
+  CC <: api.Consumer[CC, CCT, PC, PCT, C],
+  CCT <: api.Transport[C],
   C,
-  PF <: api.ProducerFactory[PF, PP, CP, P],
-  PP <: api.Producer[PP, CP, _ <: api.Transport[P], P],
-  CP <: api.Consumer[CP, PP, _ <: api.Transport[P], P],
+  PF <: api.ProducerFactory[PF, PP, PPT, CP, CPT, P],
+  PP <: api.Producer[PP, PPT, CP, CPT, P],
+  PPT <: api.Transport[P],
+  CP <: api.Consumer[CP, CPT, PP, PPT, P],
+  CPT <: api.Transport[P],
   P
 ] {
 

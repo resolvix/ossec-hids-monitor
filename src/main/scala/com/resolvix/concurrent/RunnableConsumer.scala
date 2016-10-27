@@ -6,7 +6,7 @@ import scala.concurrent.TimeoutException
 import scala.util.{Failure, Success, Try}
 
 
-trait RunnableConsumer[C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
+/*trait RunnableConsumer[C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
   extends api.Runnable
 {
   /**
@@ -50,4 +50,4 @@ trait RunnableConsumer[C <: Consumer[C, P, T], P <: Producer[P, C, T], T]
       }
     }
   }
-}
+}*/

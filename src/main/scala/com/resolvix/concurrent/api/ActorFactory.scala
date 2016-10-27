@@ -9,14 +9,16 @@ package com.resolvix.concurrent.api
   * @tparam V
   */
 trait ActorFactory[
-  AF <: ActorFactory[AF, L, R, V],
-  L <: Actor[L, R, _ <: Transport[V], V],
-  R <: Actor[R, L, _ <: Transport[V], V],
+  AF <: ActorFactory[AF, L, LT, R, RT, V],
+  L <: Actor[L, LT, R, RT, V],
+  LT <: Transport[V],
+  R <: Actor[R, RT, L, LT, V],
+  RT <: Transport[V],
   V
 ] {
   /**
     *
     * @return
     */
-  def newInstance: Actor[L, R, Transport[V], V]
+  def newInstance: Actor[L, LT, R, RT, V]
 }

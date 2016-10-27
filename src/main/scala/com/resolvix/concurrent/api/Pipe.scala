@@ -7,6 +7,7 @@ import scala.util.Try
   * Created by rwbisson on 20/10/16.
   */
 trait Pipe[V]
+  extends Transport[V]
 {
 
 }

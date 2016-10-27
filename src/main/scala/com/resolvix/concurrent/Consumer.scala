@@ -8,11 +8,13 @@ import scala.concurrent.duration.{TimeUnit, _}
 import scala.util.{Failure, Success, Try}
 
 trait Consumer[
-  C <: api.Consumer[C, P, _ <: api.ProducerPipe[V], V],
-  P <: api.Producer[P, C, _ <: api.ConsumerPipe[V], V],
+  C <: api.Consumer[C, CT, P, PT, V],
+  CT <: api.Transport[V],
+  P <: api.Producer[P, PT, C, CT, V],
+  PT <: api.Transport[V],
   V
-] extends Actor[C, P, api.ProducerPipe[V], V]
-    with api.Consumer[C, P, api.ProducerPipe[V], V] {
+] extends Actor[C, CT, P, PT, V]
+    with api.Consumer[C, CT, P, PT, V] {
 
   /**
     *
@@ -32,13 +34,13 @@ trait Consumer[
       v: V
     ): Try[Boolean] = {
       packetPipe.write(
-        new Packet[P, C, V](producer, v)
+        new Packet[P, PT, C, CT, V](producer, v)
       )
     }
   }
 
   sealed class LocalConsumerPipe
-    extends ConsumerPipe[C, P, V](packetPipe)
+    extends ConsumerPipe[C, CT, P, PT, V](packetPipe)
       with api.ConsumerPipe[V]
       with api.Pipe[V]
 

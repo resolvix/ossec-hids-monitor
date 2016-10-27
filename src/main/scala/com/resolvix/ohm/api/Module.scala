@@ -2,8 +2,7 @@ package com.resolvix.ohm.api
 
 import java.util.concurrent.TimeUnit
 
-import com.resolvix.concurrent.ConsumerProducer
-import com.resolvix.concurrent.api
+import com.resolvix.concurrent.{ConsumerPipe, ConsumerProducer, ProducerPipe, api}
 import com.resolvix.ohm.{Category, Location, Signature}
 
 import scala.concurrent.{ExecutionContext, Promise, TimeoutException}
@@ -53,11 +52,15 @@ trait Module[A <: Alert]
   extends ConsumerProducer[
     Module.ConsumerFactory[A],
     Producer[A],
+    api.ConsumerPipe[A],
     Consumer[A],
+    api.ProducerPipe[A],
     A,
     Module.ProducerFactory,
     Producer[ModuleAlertStatus],
+    api.ConsumerPipe[ModuleAlertStatus],
     Consumer[ModuleAlertStatus],
+    api.ProducerPipe[ModuleAlertStatus],
     ModuleAlertStatus
   ] with com.resolvix.concurrent.api.Runnable
 {

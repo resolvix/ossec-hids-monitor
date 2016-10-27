@@ -21,11 +21,12 @@ import scala.util.Try
   *
   */
 trait Consumer[
-  C <: Consumer[C, P, T, V],
-  P <: Producer[P, C, T, V],
-  T <: ProducerPipe[V],
+  C <: Consumer[C, CT, P, PT, V],
+  CT <: Transport[V],
+  P <: Producer[P, PT, C, CT, V],
+  PT <: Transport[V],
   V
-] extends Actor[C, P, T, V] {
+] extends Actor[C, CT, P, PT, V] {
   override def initialise(
     configuration: Configuration
   ): Try[Boolean]
@@ -36,7 +37,7 @@ trait Consumer[
 
   override def open(
     producer: P
-  ): Try[T]
+  ): Try[ProducerPipe[V]]
 
   override def register(
     producer: P

@@ -8,7 +8,7 @@ import java.util
 import java.util.NoSuchElementException
 
 import com.resolvix.concurrent.ConsumerProducer
-import com.resolvix.concurrent.api.{Configuration, ConsumerFactory, ProducerFactory}
+import com.resolvix.concurrent.api._
 import com.resolvix.ohm.OssecHidsMonitor.ModuleType
 import com.resolvix.ohm.api.{Consumer, ModuleAlertProcessingException, ModuleAlertStatus, Producer, Alert => AlertT, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
@@ -249,7 +249,7 @@ object OssecHidsMonitor {
     * @tparam A
     */
   class CaptiveProducerFactory[A <: api.Alert]
-    extends ProducerFactory[CaptiveProducerFactory[A], Producer[A], Consumer[A], A]
+    extends ProducerFactory[CaptiveProducerFactory[A], Producer[A], ConsumerPipe[A], Consumer[A], ProducerPipe[A], A]
   {
     /**
       *

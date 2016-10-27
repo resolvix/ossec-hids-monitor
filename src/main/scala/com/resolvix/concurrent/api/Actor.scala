@@ -24,9 +24,10 @@ import scala.util.{Success, Try}
   *
   */
 trait Actor[
-  L <: Actor[L, R, T, V],
-  R <: Actor[R, L, _ <: Transport[V], V],
-  T <: Transport[V],
+  L <: Actor[L, LT, R, RT, V],
+  LT <: Transport[V],
+  R <: Actor[R, LT, L, RT, V],
+  RT <: Transport[V],
   V
 ] {
 
@@ -80,7 +81,7 @@ trait Actor[
     */
   def open(
     actor: R
-  ): Try[T]
+  ): Try[Pipe[V]]
 
   /**
     * The open method without parameters provides the requestor with a

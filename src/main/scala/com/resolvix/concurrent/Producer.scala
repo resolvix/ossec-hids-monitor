@@ -9,11 +9,13 @@ import scala.util.{Failure, Success, Try}
   * Created by rwbisson on 19/10/16.
   */
 trait Producer[
-  P <: api.Producer[P, C, _ <: api.ConsumerPipe[V], V],
-  C <: api.Consumer[C, P, _ <: api.ProducerPipe[V], V],
+  P <: api.Producer[P, PT, C, CT, V],
+  PT <: api.Transport[V],
+  C <: api.Consumer[C, CT, P, PT, V],
+  CT <: api.Transport[V],
   V
-] extends Actor[P, C, api.ConsumerPipe[V], V]
-    with api.Producer[P, C, api.ConsumerPipe[V], V]
+] extends Actor[P, PT, C, CT, V]
+    with api.Producer[P, PT, C, CT, V]
 {
   //
   //
@@ -79,7 +81,7 @@ trait Producer[
       })
 
       Success(
-        new ProducerPipe[P, C, V](
+        new ProducerPipe[P, PT, C, CT, V](
           getSelf,
           packetPipes
         )
