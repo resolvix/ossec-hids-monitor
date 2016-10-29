@@ -18,8 +18,8 @@ trait Producer[
   //
   //
   //
-  protected var packetPipes: Map[Int, api.ProducerPipe[V]]
-    = Map[Int, api.ProducerPipe[V]]()
+  protected var packetPipes: Map[Int, ProducerPipe[P, C, V]]
+    = Map[Int, ProducerPipe[P, C, V]]()
 
   /**
     *

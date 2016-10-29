@@ -7,46 +7,6 @@ import com.resolvix.concurrent.api.Configuration
 import scala.concurrent.duration.{TimeUnit, _}
 import scala.util.{Failure, Success, Try}
 
-object Consumer
-{
-
-  /**
-    *
-    * @param producer
-    */
-  /*class LocalProducerPipe[
-    P <: api.Producer[P, C, V],
-    C <: api.Consumer[C, P, V],
-    V
-  ](
-    producer: P
-  ) extends api.ProducerPipe[V]
-    with api.Pipe[V] {*/
-
-    /**
-      *
-      * @param v
-      * @return
-      */
-  /*  def write(
-      v: V
-    ): Try[Boolean] = {
-      //packetPipe.write(
-      //  new Packet[P, C, V](producer, v)
-      //)
-    }
-  }*/
-
-  /*sealed class LocalConsumerPipe[
-    C <: api.Consumer[C, P, V],
-    P <: api.Producer[P, C, V],
-    V
-  ] extends ConsumerPipe[C, P, V](packetPipe)
-      with api.ConsumerPipe[V]
-      with api.Pipe[V]*/
-
-}
-
 trait Consumer[
   C <: Consumer[C, P, V],
   P <: Producer[P, C, V],

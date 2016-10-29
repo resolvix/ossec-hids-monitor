@@ -15,7 +15,7 @@ class Pipe[V]
   /**
     *
     */
-  class Producer
+  class ProducerPipe
     extends api.ProducerPipe[V]
   {
     /**
@@ -38,7 +38,7 @@ class Pipe[V]
   /**
     *
     */
-  class Consumer
+  class ConsumerPipe
     extends api.ConsumerPipe[V]
   {
     /**
@@ -87,26 +87,26 @@ class Pipe[V]
   //
   //
   //
-  private val consumer: Consumer = new Consumer
+  private val consumerPipe: ConsumerPipe = new ConsumerPipe
 
   //
   //
   //
-  private val producer: Producer = new Producer
+  private val producerPipe: ProducerPipe = new ProducerPipe
 
   /**
     *
     * @return
     */
-  def getConsumerPipe: Consumer = {
-    consumer
+  def getConsumerPipe: api.ConsumerPipe[V] = {
+    consumerPipe
   }
 
   /**
     *
     * @return
     */
-  def getProducerPipe: Producer = {
-    producer
+  def getProducerPipe: api.ProducerPipe[V] = {
+    producerPipe
   }
 }

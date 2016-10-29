@@ -14,7 +14,7 @@ trait Consumer[
   /**
     *
     */
-  protected val packetPipe: PacketPipe[C, P, V] = new PacketPipe[C, P, V]()
+  protected var packetPipe: api.ConsumerPipe[V] = _
 
   /**
     *
@@ -54,9 +54,11 @@ trait Consumer[
     */
   override def open(
     producer: P
-  ): Try[Pipe.Producer[V]] = {
+  ): Try[api.ProducerPipe[V]] = {
     try {
-      packetPipe.
+      val packetPipe: PacketPipe[C, P, V] = new PacketPipe[C, P, V]()
+      this.packetPipe = packetPipe.g
+      Success(packetPipe.getProducerPipe)
     } catch {
       case t: Throwable =>
         Failure(t)

@@ -4,7 +4,6 @@ import scala.concurrent.duration._
 import scala.util.Try
 
 trait ConsumerPipe[T]
-  extends Pipe[T]
 {
 
   /**

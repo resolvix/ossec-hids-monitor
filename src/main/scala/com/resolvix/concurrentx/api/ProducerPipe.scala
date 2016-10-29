@@ -3,7 +3,6 @@ package com.resolvix.concurrentx.api
 import scala.util.Try
 
 trait ProducerPipe[T]
-  extends Pipe[T]
 {
 
   /**

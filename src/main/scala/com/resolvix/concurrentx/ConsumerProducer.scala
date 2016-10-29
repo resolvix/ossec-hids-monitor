@@ -5,30 +5,29 @@ import scala.util.Try
 
 /**
   *
-  * @tparam CF
-  * @tparam PC
+
+  * @tparam CP
+  * @tparam PP
   * @tparam CC
   * @tparam C
-  * @tparam PF
-  * @tparam PP
-  * @tparam CP
   * @tparam P
   */
 trait ConsumerProducer[
-  CP <: ConsumerProducer[CP, PC, C, P],
-  PC <: ProducerConsumer[PC, CP, P, C],
+  CP <: ConsumerProducer[CP, PP, CC, C, P],
+  PP <: Producer[PP, CP, C],
+  CC <: Consumer[CC, CP, P],
   C,
   P
 ] {
 
-  class ProducerC
-    extends Producer[]
+  class ConsumerC
+    extends Consumer[ConsumerC, CC, C]
   {
     /**
       *
       * @return
       */
-    override protected def getSelf: ProducerC = this
+    override protected def getSelf: ConsumerC = this
 
     /**
       *
@@ -42,14 +41,14 @@ trait ConsumerProducer[
     }
   }
 
-  class ConsumerP
-    extends Consumer[ConsumerP, PP, P]
+  class ProducerP
+    extends Producer[ProducerP, PP, P]
   {
     /**
       *
       * @return
       */
-    override protected def getSelf: ConsumerP = this
+    override protected def getSelf: ProducerP = this
 
     /**
       *
@@ -66,34 +65,22 @@ trait ConsumerProducer[
   /**
     *
     */
-  private val consumer: CC = getConsumerFactory.newInstance
+  private val consumer: ConsumerC = new ConsumerC
 
   /**
     *
     */
-  private val producer: PP = getProducerFactory.newInstance
-
-  /**
-    *
-    * @return
-    */
-  def getConsumerFactory: CF
+  private val producer: ProducerP = new ProducerP
 
   /**
     *
     * @return
     */
-  def getConsumer: CC = this.consumer
+  def getConsumer: ConsumerC = this.consumer
 
   /**
     *
     * @return
     */
-  def getProducerFactory: PF
-
-  /**
-    *
-    * @return
-    */
-  def getProducer: PP = this.producer
+  def getProducer: ProducerP = this.producer
 }

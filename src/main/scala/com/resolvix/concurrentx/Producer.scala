@@ -27,8 +27,8 @@ trait Producer[
   //
   //
   //
-  protected var packetPipes: Map[Int, api.ProducerPipe[V]]
-    = Map[Int, api.ProducerPipe[V]]()
+  protected var packetPipes: Map[Int, ProducerPipe[V]]
+    = Map[Int, ProducerPipe[V]]()
 
   /**
     *
@@ -48,7 +48,7 @@ trait Producer[
     */
   override def open(
     consumer: C
-  ): Try[Pipe.Consumer[V]] = {
+  ): Try[api.ConsumerPipe[V]] = {
     try {
       Success(
         consumer.open
@@ -64,7 +64,7 @@ trait Producer[
     *
     * @return
     */
-  def open: Try[Pipe.Producer[V]] = {
+  def open: Try[api.ProducerPipe[V]] = {
     try {
       packetPipes = actors.collect({
         case x: (Int, C) => {

@@ -4,18 +4,16 @@ import com.resolvix.concurrentx.api.Configuration
 
 import scala.util.Try
 
-/**
-  * Created by rwbisson on 28/10/16.
-  */
+
 trait ProducerConsumer[
-  PC <: ProducerConsumer[PC, CP, P, C],
-  CC <: Consumer[, PC, C],
-  PP <: Producer[PP, CP, P],
+  PC <: ProducerConsumer[PC, CC, PP, P, C],
+  CC <: Consumer[CC, PC, C],
+  PP <: Producer[PP, PC, P],
   C,
   P
 ] {
-  class ProducerC[CP]
-    extends Producer[ProducerC, CP, C]
+  class ProducerC
+    extends Producer[ProducerC, CC, C]
   {
     /**
       *
@@ -31,8 +29,8 @@ trait ProducerConsumer[
     override def initialise(
       configuration: Configuration
     ): Try[Boolean] = {
-    super.initialise(configuration)
-  }
+      super.initialise(configuration)
+    }
   }
 
   class ConsumerP
@@ -59,34 +57,22 @@ trait ProducerConsumer[
   /**
     *
     */
-  private val consumer: CC = getConsumerFactory.newInstance
+  private val consumer: ConsumerP = new ConsumerP
 
   /**
     *
     */
-  private val producer: PP = getProducerFactory.newInstance
-
-  /**
-    *
-    * @return
-    */
-  def getConsumerFactory: CF
+  private val producer: ProducerC = new ProducerC
 
   /**
     *
     * @return
     */
-  def getConsumer: CC = this.consumer
+  def getConsumer: Consumer[ConsumerP, PP, P] = this.consumer
 
   /**
     *
     * @return
     */
-  def getProducerFactory: PF
-
-  /**
-    *
-    * @return
-    */
-  def getProducer: PP = this.producer
+  def getProducer: Producer[ProducerC, CC, C] = this.producer
 }
