@@ -4,19 +4,29 @@ package com.resolvix.concurrentx
   * Created by rwbisson on 22/10/16.
   */
 class Packet[
-  S <: api.Actor[S, _ <: api.Transport[V], D, _ <: api.Transport[V], V],
-  D <: api.Actor[D, _ <: api.Transport[V], S, _ <: api.Transport[V], V],
+  S <: api.Actor[S, D, V],
+  D <: api.Actor[D, S, V],
   V
 ](
-  actor: S,
+  source: S,
+  destination: D,
   v: V
 ) {
+
   /**
     *
     * @return
     */
-  protected def getActor: S = {
-    actor
+  def getDestination: D = {
+    destination
+  }
+
+  /**
+    *
+    * @return
+    */
+  def getSource: S = {
+    source
   }
 
   /**

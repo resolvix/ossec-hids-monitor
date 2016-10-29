@@ -52,7 +52,7 @@ trait Producer[
     */
   def open(
     consumer: C
-  ): Try[ConsumerPipe[V]]
+  ): Try[Pipe[V]#Consumer]
 
   /**
     *

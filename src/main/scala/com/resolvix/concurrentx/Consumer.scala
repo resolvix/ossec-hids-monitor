@@ -1,6 +1,6 @@
 package com.resolvix.concurrentx
 
-import com.resolvix.concurrentx.api.{Configuration, Pipe}
+import com.resolvix.concurrentx.api.{Configuration}
 
 import scala.util.{Failure, Success, Try}
 
@@ -8,13 +8,35 @@ trait Consumer[
   C <: Consumer[C, P, V],
   P <: Producer[P, C, V],
   V
-] extends Actor[C, P, V]
-    with api.Consumer[C, P, V] {
+] extends Actor[C, P, Packet[P, C, V]]
+    with api.Consumer[C, P, Packet[P, C, V]] {
+
+  /*class ProducerPipe(
+    @transient
+    val producer: P,
+
+    @transient
+    val producerPipe: api.ProducerPipe[Packet[P, C, V]]
+  ) extends api.ProducerPipe[V] {
+
+    /**
+      *
+      * @param v
+      * @return
+      */
+    override def write(
+      v: V
+    ): Try[Boolean] = {
+      val pV = new Packet[P, C, V](producer, v)
+      producerPipe.write(pV)
+    }
+  }*/
 
   /**
     *
     */
-  protected var packetPipe: api.ConsumerPipe[V] = _
+  @transient
+  protected var consumerPipe: PacketPipe[C, P, V]#Consumer = _
 
   /**
     *
@@ -54,11 +76,23 @@ trait Consumer[
     */
   override def open(
     producer: P
-  ): Try[api.ProducerPipe[V]] = {
+  ): Try[api.Pipe[V]#Producer] = {
     try {
-      val packetPipe: PacketPipe[C, P, V] = new PacketPipe[C, P, V]()
-      this.packetPipe = packetPipe.g
-      Success(packetPipe.getProducerPipe)
+      //
+      //  If a packet pipe for the Consumer does not already exist, create a
+      //  new packet pipe for the Consumer.
+      //
+      if (!consumerPipe.isInstanceOf[api.Pipe[V]#Consumer]) {
+        val packetPipe = new PacketPipe[C, P, V]()
+        consumerPipe = packetPipe.getConsumer(getSelf)
+      }
+
+      //
+      //  Obtain a produce
+      //
+      consumerPipe.getProducer(
+        producer
+      )
     } catch {
       case t: Throwable =>
         Failure(t)
