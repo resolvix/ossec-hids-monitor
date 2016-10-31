@@ -1,7 +1,5 @@
 package com.resolvix.mq
 
-import com.sun.xml.internal.ws.api.server.LazyMOMProvider.DefaultScopeChangeListener
-
 import scala.collection._
 import scala.concurrent.duration.TimeUnit
 import scala.util.{Failure, Success, Try}
@@ -25,22 +23,23 @@ import scala.util.{Failure, Success, Try}
   */
 class MessageQueue[V] {
 
-  //
-  //
-  //
-  type PacketV = Message[V]
-
   /**
+    * The objects of type Consumer[C] is intended to provide an interface
+    * between the message pipe for messages of type V that enables the consumer
+    * to identify the producer of the message.
     *
+    * @tparam C
+    *   specifies the type of the Consumer intended to consume messages of
+    *   type V
     */
-  class Consumer[P <: api.Identifiable, C <: api.Identifiable](
+  class Consumer[C <: api.Identifiable, P <: api.Identifiable](
     consumer: C
-  ) extends api.Pipe[V]#Consumer {
+  ) extends api.Consumer[V] {
 
     //
     //
     //
-    val messageConsumer: MessagePipe[api.Identifiable, api.Identifiable]#Consumer
+    val messageConsumer: MessagePipe#Consumer
       = getMessagePipe(consumer.getId).getConsumer
 
     /**
@@ -48,11 +47,11 @@ class MessageQueue[V] {
       * @param producer
       * @return
       */
-    def getProducer[P <: api.Identifiable](
+    def getProducer(
       producer: P
-    ): Try[api.Pipe[V]#Producer] = {
+    ): Try[Producer[P, C]] = {
       Success(
-        new Producer(consumer, producer)
+        new Producer(producer, consumer)
       )
     }
 
@@ -60,9 +59,9 @@ class MessageQueue[V] {
       *
       * @return
       */
-    override def read: Try[(P, V)] = {
+    def read: Try[(P, V)] = {
       messageConsumer.read match {
-        case Success(p: Message[P, C, V]) =>
+        case Success(p: MessageWrapper[V]) =>
           Success(
             (p.getSource.asInstanceOf[P], p.getV)
           )
@@ -78,12 +77,12 @@ class MessageQueue[V] {
       * @param unit
       * @return
       */
-    override def read(
+    def read(
       timeout: Int,
       unit: TimeUnit
     ): Try[(P, V)] = {
       messageConsumer.read(timeout, unit) match {
-        case Success(p: Message[P, C, V]) =>
+        case Success(p: MessageWrapper[V]) =>
           Success(
             (p.getSource.asInstanceOf[P], p.getV)
           )
@@ -96,32 +95,34 @@ class MessageQueue[V] {
 
   /**
     *
-    * @param source
+    * @param producer
+    *
+    * @param consumer
     */
   class Producer[
-    S <: api.Identifiable,
-    D <: api.Identifiable
+    P <: api.Identifiable,
+    C <: api.Identifiable
   ] (
-    source: S,
-    destination: D
-  ) extends api.Pipe[V]#Producer {
+    producer: P,
+    consumer: C
+  ) extends api.Producer[V] {
 
     //
     //
     //
-    val messageProducer: MessagePipe[api.Identifiable, api.Identifiable]#Producer
-      = getMessagePipe(destination.getId).getProducer
+    val messageProducer: MessagePipe#ProducerV
+      = getMessagePipe(consumer.getId).getProducer
 
     /**
       *
-      * @param destination
+      * @param consumer
       * @return
       */
     def getConsumer(
-      destination: D
-    ): Try[MessagePipe[api.Identifiable, api.Identifiable]#Consumer] = {
+      consumer: C
+    ): Try[Consumer[C, P]] = {
       Success(
-        new Consumer(destination)
+        new Consumer[C, P](consumer)
       )
     }
 
@@ -130,39 +131,47 @@ class MessageQueue[V] {
       * @param v
       * @return
       */
-    override def write(
+    def write(
       v: V
     ): Try[Boolean] = {
-      val p = new Message[api.Identifiable, api.Identifiable, V](source, destination, v)
+      val p = new MessageWrapper[V](producer, consumer, v)
       messageProducer.write(p)
     }
   }
 
+  class MessageWrapper[V](
+    producer: api.Identifiable,
+    consumer: api.Identifiable,
+    v: V
+  ) extends Message[api.Identifiable, api.Identifiable, V](
+    producer,
+    consumer,
+    v
+  )
+
   /**
     *
     */
-  class MessagePipe[
-    S <: api.Identifiable,
-    D <: api.Identifiable
-  ] extends Pipe[Message[S, D, V]] {
+  class MessagePipe
+    extends PipeImpl[MessageWrapper[V]] {
 
-    class Consumer
-      extends Pipe[Message[S, D, V]]#Consumer
+    class ConsumerV
+      extends Consumer
 
-    class Producer
-      extends Pipe[Message[S, D, V]]#Producer
+    class ProducerV
+      extends Producer
 
-    def getConsumer: Consumer = new Consumer
+    override def getConsumer: ConsumerV = new ConsumerV
 
-    def getProducer: Producer = new Producer
+    override def getProducer: ProducerV = new ProducerV
 
   }
 
   //
   //
   //
-  val messagePipeMap: mutable.Map[Int, MessagePipe[api.Identifiable, api.Identifiable]]
-    = mutable.Map[Int, MessagePipe[api.Identifiable, api.Identifiable]]()
+  val messagePipeMap: mutable.Map[Int, MessagePipe]
+    = mutable.Map[Int, MessagePipe]()
 
   /**
     *
@@ -172,14 +181,14 @@ class MessageQueue[V] {
     */
   def getMessagePipe[I <: api.Identifiable](
     id: Int
-  ): MessagePipe[api.Identifiable, api.Identifiable] = {
+  ): MessagePipe = {
     messagePipeMap.get(id) match {
-      case Some(messagePipe: MessagePipe[api.Identifiable, api.Identifiable]) =>
+      case Some(messagePipe: MessagePipe) =>
         messagePipe
 
       case None =>
-        val messagePipe: MessagePipe[api.Identifiable, api.Identifiable]
-          = new MessagePipe[api.Identifiable, api.Identifiable]()
+        val messagePipe: MessagePipe
+          = new MessagePipe()
         messagePipeMap.put(id, messagePipe)
         messagePipe
     }
@@ -190,15 +199,13 @@ class MessageQueue[V] {
     * @return
     */
   def getConsumer[
-    S <: api.Identifiable,
-    D <: api.Identifiable
+    P <: api.Identifiable,
+    C <: api.Identifiable
   ] (
-    source: S,
-    destination: D
-  ): Consumer[S, D] = {
-    val messagePipe =
-
-    new Consumer(destination)
+    producer: P,
+    consumer: C
+  ): Consumer[C, P] = {
+    new Consumer(consumer)
   }
 
   /**
@@ -213,12 +220,11 @@ class MessageQueue[V] {
     destination: D
   ): Producer[S, D] = {
     val messagePipe = messagePipeMap.get(destination.getId) match {
-      case Some(messagePipe: MessagePipe[S, D]) =>
+      case Some(messagePipe: MessagePipe) =>
         messagePipe
 
       case None =>
-        val messagePipe: MessagePipe[api.Identifiable, api.Identifiable]
-          = new MessagePipe[api.Identifiable, api.Identifiable]()
+        val messagePipe: MessagePipe = new MessagePipe()
         messagePipeMap.put(destination.getId, messagePipe)
 
     }

@@ -11,47 +11,15 @@ import scala.util.Try
 trait Pipe[V]
   extends Transport[V]
 {
-  trait Consumer
-  {
-    /**
-      *
-      * @return
-      */
-    def read: Try[V]
-
-    /**
-      *
-      * @param timeout
-      * @param unit
-      * @return
-      */
-    def read(
-      timeout: Int,
-      unit: TimeUnit
-    ): Try[V]
-  }
-
-  trait Producer
-  {
-    /**
-      *
-      * @param v
-      * @return
-      */
-    def write(
-      v: V
-    ): Try[Boolean]
-  }
+  /**
+    *
+    * @return
+    */
+  def getConsumer: Consumer[V]
 
   /**
     *
     * @return
     */
-  def getConsumer: Consumer
-
-  /**
-    *
-    * @return
-    */
-  def getProducer: Producer
+  def getProducer: Producer[V]
 }

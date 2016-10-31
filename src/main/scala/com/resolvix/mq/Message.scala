@@ -1,7 +1,5 @@
 package com.resolvix.mq
 
-import com.resolvix.concurrentx.api
-
 /**
   * Created by rwbisson on 22/10/16.
   */
