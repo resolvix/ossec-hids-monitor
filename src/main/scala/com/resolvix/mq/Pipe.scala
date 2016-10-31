@@ -1,4 +1,4 @@
-package com.resolvix.concurrentx
+package com.resolvix.mq
 
 import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue, TimeoutException}
 
@@ -9,7 +9,7 @@ import scala.util.{Failure, Success, Try}
   * Created by rwbisson on 16/10/2016.
   */
 class Pipe[V]
-  extends api.Pipe[V]
+  extends Pipe[V]
 {
 
   /**

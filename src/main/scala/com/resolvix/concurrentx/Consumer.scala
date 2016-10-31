@@ -1,6 +1,7 @@
 package com.resolvix.concurrentx
 
-import com.resolvix.concurrentx.api.{Configuration}
+import com.resolvix.concurrentx.api.Configuration
+import com.resolvix.mq.{Message, MessageQueue}
 
 import scala.util.{Failure, Success, Try}
 
@@ -8,8 +9,8 @@ trait Consumer[
   C <: Consumer[C, P, V],
   P <: Producer[P, C, V],
   V
-] extends Actor[C, P, Packet[P, C, V]]
-    with api.Consumer[C, P, Packet[P, C, V]] {
+] extends Actor[C, P, Message[P, C, V]]
+    with api.Consumer[C, P, Message[P, C, V]] {
 
   /*class ProducerPipe(
     @transient
@@ -36,7 +37,7 @@ trait Consumer[
     *
     */
   @transient
-  protected var consumerPipe: PacketPipe[C, P, V]#Consumer = _
+  protected var consumerPipe: MessageQueue[C, P, V]#Consumer = _
 
   /**
     *
@@ -76,14 +77,14 @@ trait Consumer[
     */
   override def open(
     producer: P
-  ): Try[api.Pipe[V]#Producer] = {
+  ): Try[MessageQueue[C, P, V]#Producer] = {
     try {
       //
       //  If a packet pipe for the Consumer does not already exist, create a
       //  new packet pipe for the Consumer.
       //
-      if (!consumerPipe.isInstanceOf[api.Pipe[V]#Consumer]) {
-        val packetPipe = new PacketPipe[C, P, V]()
+      if (!consumerPipe.isInstanceOf[MessageQueue[C, P, V]#Consumer]) {
+        val packetPipe = new MessageQueue[C, P, V]()
         consumerPipe = packetPipe.getConsumer(getSelf)
       }
 
@@ -106,9 +107,9 @@ trait Consumer[
     *
     * @return
     */
-  def open: Try[Pipe.Consumer[V]] = {
+  def open: Try[MessageQueue[C, P, V]#Consumer] = {
     try {
-
+      Success(consumerPipe)
     } catch {
       case t: Throwable =>
         Failure(t)

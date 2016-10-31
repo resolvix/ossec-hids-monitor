@@ -1,5 +1,7 @@
 package com.resolvix.concurrentx.api
 
+import com.resolvix.mq.api.Pipe
+
 import scala.concurrent.duration._
 import scala.util.Try
 

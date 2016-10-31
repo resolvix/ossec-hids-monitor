@@ -1,7 +1,7 @@
 package com.resolvix.concurrentx
 
 import com.resolvix.concurrentx.api.Configuration
-import com.resolvix.concurrentx.api.Pipe
+import com.resolvix.mq.api.Pipe
 
 import scala.util.{Failure, Success, Try}
 

@@ -1,4 +1,7 @@
-package com.resolvix.concurrentx.api
+package com.resolvix.mq.api
+
+import com.resolvix.concurrentx.api.Transport
+
 import scala.concurrent.duration.TimeUnit
 import scala.util.Try
 
@@ -50,4 +53,5 @@ trait Pipe[V]
     *
     * @return
     */
-  def getProducer: Producer}
+  def getProducer: Producer
+}

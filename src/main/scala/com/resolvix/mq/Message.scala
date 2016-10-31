@@ -1,11 +1,13 @@
-package com.resolvix.concurrentx
+package com.resolvix.mq
+
+import com.resolvix.concurrentx.api
 
 /**
   * Created by rwbisson on 22/10/16.
   */
-class Packet[
-  S <: api.Actor[S, D, V],
-  D <: api.Actor[D, S, V],
+class Message[
+  S <: api.Identifiable,
+  D <: api.Identifiable,
   V
 ](
   source: S,
