@@ -34,7 +34,7 @@ class MessageQueue[V] {
     */
   class Consumer[C <: api.Identifiable, P <: api.Identifiable](
     consumer: C
-  ) extends api.Consumer[V] {
+  ) extends api.Consumer[(P, V)] {
 
     //
     //
@@ -202,7 +202,6 @@ class MessageQueue[V] {
     P <: api.Identifiable,
     C <: api.Identifiable
   ] (
-    producer: P,
     consumer: C
   ): Consumer[C, P] = {
     new Consumer(consumer)
