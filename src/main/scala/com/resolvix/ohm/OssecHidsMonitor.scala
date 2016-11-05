@@ -7,8 +7,6 @@ import java.time.temporal.ChronoUnit
 import java.util
 import java.util.NoSuchElementException
 
-import com.resolvix.concurrent.ConsumerProducer
-import com.resolvix.concurrent.api._
 import com.resolvix.ohm.OssecHidsMonitor.ModuleType
 import com.resolvix.ohm.api.{Consumer, ModuleAlertProcessingException, ModuleAlertStatus, Producer, Alert => AlertT, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO

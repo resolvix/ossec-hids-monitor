@@ -13,7 +13,7 @@ trait Reader[R <: Reader[R, C, V], C, V]
     *
     * @return
     */
-  def read[W <: Writer[W, _, V]]: Try[(W, V)]
+  def read[W <: Writer[W, P, V], P]: Try[(Int, V)]
 
   /**
     *
@@ -24,5 +24,5 @@ trait Reader[R <: Reader[R, C, V], C, V]
   def read[W <: Writer[W, _, V]](
     timeout: Int,
     unit: TimeUnit
-  ): Try[(W, V)]
+  ): Try[(Int, V)]
 }

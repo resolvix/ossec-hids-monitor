@@ -11,20 +11,31 @@ import scala.util.Try
   */
 trait MessageQueue[V] {
 
+  /**
+    *
+    * @param consumer
+    * @tparam R
+    * @tparam C
+    * @tparam V
+    * @return
+    */
   def getReader[R <: Reader[R, C, V], C, V](
     consumer: C
-  ): Reader[R, C, V]
+  ): R
 
   /**
     *
-    * @param writer
-    * @param reader
+    * @param producer
+    * @param consumer
     * @tparam W
+    * @tparam R
+    * @tparam P
+    * @tparam C
+    * @tparam V
     * @return
     */
-  def getWriter[W <: Writer[W, P, V], P, V](
+  def getWriter[W <: Writer[W, P, V], R <: Reader[R, C, V], P, C, V](
     producer: P,
-    reader: Reader[_, _, V]
-  ): Writer[W, P, V]
-
+    consumer: C
+  ): W
 }
