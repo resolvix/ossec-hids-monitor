@@ -1,4 +1,4 @@
-package com.resolvix.mq.api
+package com.resolvix.sio.api
 
 import scala.concurrent.duration._
 import scala.util.Try
@@ -6,7 +6,7 @@ import scala.util.Try
 /**
   * Created by rwbisson on 31/10/16.
   */
-trait Consumer[V]
+trait Reader[V]
 {
   /**
     *

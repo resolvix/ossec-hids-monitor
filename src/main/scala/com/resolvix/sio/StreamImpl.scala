@@ -1,4 +1,4 @@
-package com.resolvix.mq
+package com.resolvix.sio
 
 import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue, TimeoutException}
 
@@ -15,8 +15,8 @@ class StreamImpl[V]
   /**
     *
     */
-  class Producer
-    extends super.Producer
+  class Writer
+    extends api.Writer[V]
   {
     /**
       *
@@ -38,8 +38,8 @@ class StreamImpl[V]
   /**
     *
     */
-  class Consumer
-    extends super.Consumer
+  class Reader
+    extends api.Reader[V]
   {
     /**
       *
@@ -87,26 +87,26 @@ class StreamImpl[V]
   //
   //
   //
-  private val consumer: super.Consumer = new Consumer
+  private val reader: Reader = new Reader
 
   //
   //
   //
-  private val producer: super.Producer = new Producer
+  private val writer: Writer = new Writer
 
   /**
     *
     * @return
     */
-  def getConsumer: super.Consumer = {
-    consumer
+  def getReader(): Reader = {
+    reader
   }
 
   /**
     *
     * @return
     */
-  def getProducer: super.Producer = {
-    producer
+  def getWriter: Writer = {
+    writer
   }
 }

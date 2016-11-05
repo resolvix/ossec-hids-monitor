@@ -1,5 +1,7 @@
 package com.resolvix.mq
 
+import com.resolvix.sio.StreamImpl
+
 import scala.collection._
 import scala.concurrent.duration.TimeUnit
 import scala.util.{Failure, Success, Try}
@@ -41,8 +43,8 @@ class MessageQueue[V]
     //
     //
     //
-    val messageConsumer: MessageStream#Consumer
-      = getMessageStream(consumer.getId).getConsumer
+    val messageConsumer: MessageStream#Reader
+      = getMessageStream(consumer.getId).getReader
 
     /**
       *
@@ -113,7 +115,7 @@ class MessageQueue[V]
     //
     //
     val messageProducer: MessageStream#ProducerV
-      = getMessageStream(consumer.getId).getProducer
+      = getMessageStream(consumer.getId).getWriter
 
     /**
       *
@@ -158,14 +160,14 @@ class MessageQueue[V]
     extends StreamImpl[Packet[V]] {
 
     class ConsumerV
-      extends Consumer
+      extends Reader
 
     class ProducerV
-      extends Producer
+      extends Writer
 
-    override def getConsumer: ConsumerV = new ConsumerV
+    override def getReader(): ConsumerV = new ConsumerV
 
-    override def getProducer: ProducerV = new ProducerV
+    override def getWriter: ProducerV = new ProducerV
 
   }
 

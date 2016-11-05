@@ -1,11 +1,11 @@
-package com.resolvix.mq.api
+package com.resolvix.sio.api
 
 import scala.util.Try
 
 /**
   * Created by rwbisson on 31/10/16.
   */
-trait Producer[V]
+trait Writer[V]
 {
   /**
     *

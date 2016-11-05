@@ -1,6 +1,7 @@
 package com.resolvix.mq.api
 
 import com.resolvix.mq.api
+import com.resolvix.sio
 
 /**
   * Created by rwbisson on 05/11/16.
@@ -15,7 +16,7 @@ trait MessageQueue[V] {
   trait Consumer[
     C <: api.Actor,
     P <: api.Actor
-  ] extends api.Consumer[(P, V)]
+  ] extends sio.api.Reader[(P, V)]
 
   /**
     *
@@ -25,7 +26,7 @@ trait MessageQueue[V] {
   trait Producer[
     P <: api.Actor,
     C <: api.Actor
-  ] extends api.Producer[V]
+  ] extends sio.api.Writer[V]
 
   /**
     *

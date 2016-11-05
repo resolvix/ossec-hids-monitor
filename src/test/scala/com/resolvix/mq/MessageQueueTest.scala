@@ -1,6 +1,7 @@
 package com.resolvix.mq
 
 import com.resolvix.mq.api.Identifiable
+import com.resolvix.sio.api.{Reader, Writer}
 import org.scalatest.FunSpec
 
 import scala.util.{Failure, Success}
@@ -41,14 +42,14 @@ class MessageQueueTest
       val p2: P = new P()
       val c2: C = new C()
 
-      val p1c1Int: api.Producer[Int] = mq.getProducer(p1, c1)
-      val p2c1Int: api.Producer[Int] = mq.getProducer(p2, c1)
+      val p1c1Int: Writer[Int] = mq.getProducer(p1, c1)
+      val p2c1Int: Writer[Int] = mq.getProducer(p2, c1)
 
-      val p1c2Int: api.Producer[Int] = mq.getProducer(p1, c2)
-      val p2c2Int: api.Producer[Int] = mq.getProducer(p2, c2)
+      val p1c2Int: Writer[Int] = mq.getProducer(p1, c2)
+      val p2c2Int: Writer[Int] = mq.getProducer(p2, c2)
 
-      val c1Int: api.Consumer[(P, Int)] = mq.getConsumer(c1)
-      val c2Int: api.Consumer[(P, Int)] = mq.getConsumer(c2)
+      val c1Int: Reader[(P, Int)] = mq.getConsumer(c1)
+      val c2Int: Reader[(P, Int)] = mq.getConsumer(c2)
 
       p1c1Int.write(11)
 

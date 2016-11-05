@@ -1,6 +1,7 @@
 package com.resolvix.concurrentx.api
 
 import com.resolvix.mq.api.{Producer => ProducerMQ}
+import com.resolvix.sio.api
 
 import scala.concurrent.duration._
 import scala.util.Try
@@ -54,7 +55,7 @@ trait Consumer[
     */
   def open(
     producer: P
-  ): Try[ProducerMQ[V]]
+  ): Try[api.Writer[V]]
 
   /**
     *

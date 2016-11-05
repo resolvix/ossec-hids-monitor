@@ -2,6 +2,7 @@ package com.resolvix.concurrentx
 
 import com.resolvix.concurrentx.api.Configuration
 import com.resolvix.mq.api.MessageQueue
+import com.resolvix.sio.api
 
 import scala.concurrent.duration.TimeUnit
 import scala.util.{Failure, Success, Try}
@@ -26,7 +27,7 @@ trait Producer[
     with api.Producer[P, C, V]
 {
   class ConsumerMQV
-    extends com.resolvix.mq.api.Consumer[V]
+    extends api.Consumer[V]
   {
     /**
       *
@@ -51,7 +52,7 @@ trait Producer[
   }
 
   class ProducerMQV
-    extends com.resolvix.mq.api.Producer[V]
+    extends api.Producer[V]
   {
     /**
       *
@@ -91,7 +92,7 @@ trait Producer[
     */
   override def open(
     consumer: C
-  ): Try[com.resolvix.mq.api.Consumer[V]] = {
+  ): Try[api.Consumer[V]] = {
     try {
       Success(
         consumer.open.get
@@ -106,7 +107,7 @@ trait Producer[
     *
     * @return
     */
-  def open: Try[com.resolvix.mq.api.Producer[V]] = {
+  def open: Try[api.Producer[V]] = {
     try {
       producerMap = actors.collect({
         case x: (Int, C) => {
