@@ -1,6 +1,7 @@
 package com.resolvix.concurrentx
 
 import com.resolvix.concurrentx.api.Configuration
+import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.mq.{Message, MessageQueue}
 
 import scala.util.{Failure, Success, Try}
@@ -9,8 +10,8 @@ trait Consumer[
   C <: Consumer[C, P, V],
   P <: Producer[P, C, V],
   V
-] extends Actor[C, P, Message[P, C, V]]
-    with api.Consumer[C, P, Message[P, C, V]] {
+] extends Actor[C, P, V]
+    with api.Consumer[C, P, V] {
 
   /*class ProducerPipe(
     @transient
@@ -37,7 +38,7 @@ trait Consumer[
     *
     */
   @transient
-  protected var consumerPipe: MessageQueue[V]#Consumer[C, P] = _
+  protected var messageQueueReader: MessageQueue[V]#Reader[C] = _
 
   /**
     *
@@ -65,33 +66,33 @@ trait Consumer[
   }
 
   /**
-    * The open method, with a parameter of derivative type Producer, is
-    * intended to provide the calling producer with a pipe suitable for
-    * the transmission of values of type V, by the producer, to the instant
-    * consumer.
+    * The open method, with a parameter of type P, is intended to provide
+    * the caller with a Reader suitable for the receipt of values of type V,
+    * sent by the producer, by the instant consumer.
     *
     * @param producer
     *    the producer
     *
     * @return
+    *    an object providing the caller with a Reader object.
     */
   override def open(
     producer: P
-  ): Try[MessageQueue[V]#Producer[P, C]] = {
+  ): Try[MessageQueue[V]#Writer[P]] = {
     try {
       //
       //  If a packet pipe for the Consumer does not already exist, create a
       //  new packet pipe for the Consumer.
       //
-      if (!consumerPipe.isInstanceOf[MessageQueue[V]#Consumer[C, P]]) {
-        val packetPipe = new MessageQueue[V]()
-        consumerPipe = packetPipe.getConsumer(getSelf)
+      if (!messageQueueReader.isInstanceOf[Reader[_, C, V]]) {
+        val messageQueue = new MessageQueue[V]()
+        messageQueueReader = messageQueue.getReader(getSelf)
       }
 
       //
-      //  Obtain a produce
+      //  Obtain a producer
       //
-      consumerPipe.getProducer(
+      messageQueueReader.getWriter(
         producer
       )
     } catch {
@@ -107,9 +108,9 @@ trait Consumer[
     *
     * @return
     */
-  def open: Try[MessageQueue[V]#Consumer[C, P]] = {
+  def open: Try[MessageQueue[V]#Reader[C]] = {
     try {
-      Success(consumerPipe)
+      Success(messageQueueReader)
     } catch {
       case t: Throwable =>
         Failure(t)

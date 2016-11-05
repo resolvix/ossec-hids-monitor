@@ -5,8 +5,9 @@ package com.resolvix.mq.api
   * or consumer of messages.
   *
   */
-trait Actor
-  extends Identifiable
+trait Actor[A <: Actor[A]]
 {
+  def getId: Int
 
+  def getSelf: A
 }

@@ -11,11 +11,9 @@ import scala.util.{Failure, Success, Try}
   * intended to support situations where multiple producers are able to
   * send messages to a multiple consumers.
   *
-  * @tparam S
   *   refers to the type of the Producer intended to produce messages of
   *   type V
   *
-  * @tparam D
   *   refers to the type of the Consumer intended to consume messages of
   *   type V
   *
@@ -27,35 +25,62 @@ class MessageQueue[V]
   extends api.MessageQueue[V]
 {
 
+  abstract class Actor[A <: Actor[A]]
+    extends api.Actor[A]
+  {
+    //
+    //  Allocate an identifier for the instant Reader.
+    //
+    val id: Int = allocateId(getSelf)
+
+    /**
+      *
+      * @return
+      */
+    def getId = id
+
+    /**
+      *
+      * @return
+      */
+    def getSelf: A
+  }
+
   /**
     * Objects of type Consumer[C] are intended to provide an interface
     * between the message stream for messages of type V that enables the
     * consumer to identify the producer of the message.
     *
-    * @tparam C
-    *   specifies the type of the Consumer intended to consume messages of
-    *   type V
+    * @tparam R
+    *   specifies the type of the identifier for Consumer objects intended
+    *   to consume messages of type V
+    *
+    * @tparam W
     */
-  class Consumer[C <: api.Actor, P <: api.Actor](
+  class Reader[C](
     consumer: C
-  ) extends super.Consumer[C, P] {
+  ) extends Actor[Reader[C]]
+      with api.Reader[Reader[C], C, V] {
 
     //
-    //
+    //  Obtain a Reader object for the underlying message stream.
     //
     val messageConsumer: MessageStream#Reader
-      = getMessageStream(consumer.getId).getReader
+      = getMessageStream(getId).getReader
+
+    override def getSelf: Reader[C] = this
 
     /**
       *
       * @param producer
+      * @tparam P
       * @return
       */
-    def getProducer(
+    def getWriter[P](
       producer: P
-    ): Try[Producer[P, C]] = {
+    ): Try[Writer[P]] = {
       Success(
-        new Producer(producer, consumer)
+        new Writer[P](producer, getSelf)
       )
     }
 
@@ -63,11 +88,12 @@ class MessageQueue[V]
       *
       * @return
       */
-    def read: Try[(P, V)] = {
+    def read[W <: api.Writer[W, _, V]]: Try[(W, V)] = {
       messageConsumer.read match {
         case Success(p: Packet[V]) =>
+          val x: Writer[_] = p.getWriter()
           Success(
-            (p.getSource.asInstanceOf[P], p.getV)
+            (x.asInstanceOf[W], p.getV)
           )
 
         case Failure(t: Throwable) =>
@@ -81,14 +107,14 @@ class MessageQueue[V]
       * @param unit
       * @return
       */
-    def read(
+    def read[W <: api.Writer[W, _, V]](
       timeout: Int,
       unit: TimeUnit
-    ): Try[(P, V)] = {
+    ): Try[(Writer[_], V)] = {
       messageConsumer.read(timeout, unit) match {
         case Success(p: Packet[V]) =>
           Success(
-            (p.getSource.asInstanceOf[P], p.getV)
+            (p.getWriter(), p.getV)
           )
 
         case Failure(t: Throwable) =>
@@ -101,34 +127,35 @@ class MessageQueue[V]
     *
     * @param producer
     *
-    * @param consumer
+    * @param reader
     */
-  class Producer[
-    P <: api.Actor,
-    C <: api.Actor
-  ] (
+  class Writer[P](
     producer: P,
-    consumer: C
-  ) extends super.Producer[P, C] {
-
+    reader: Reader[_]
+  ) extends Actor[Writer[P]]
+      with api.Writer[Writer[P], P, V]
+  {
     //
     //
     //
-    val messageProducer: MessageStream#ProducerV
-      = getMessageStream(consumer.getId).getWriter
+    val messageProducer: MessageStream#Writer
+      = getMessageStream(id).getWriter
 
     /**
       *
       * @param consumer
+      * @tparam C
       * @return
       */
-    def getConsumer(
+    def getReader[C](
       consumer: C
-    ): Try[Consumer[C, P]] = {
+    ): Try[Reader[C]] = {
       Success(
-        new Consumer[C, P](consumer)
+        new Reader[C](consumer)
       )
     }
+
+    override def getSelf: Writer[P] = this
 
     /**
       *
@@ -138,18 +165,25 @@ class MessageQueue[V]
     def write(
       v: V
     ): Try[Boolean] = {
-      val p = new Packet[V](producer, consumer, v)
+      val p = new Packet[V](this, reader, v)
       messageProducer.write(p)
     }
   }
 
+  /**
+    *
+    * @param writer
+    * @param reader
+    * @param v
+    * @tparam V
+    */
   class Packet[V](
-    producer: api.Identifiable,
-    consumer: api.Identifiable,
+    writer: Writer[_],
+    reader: Reader[_],
     v: V
-  ) extends Message[api.Identifiable, api.Identifiable, V](
-    producer,
-    consumer,
+  ) extends Message[Writer[_], Reader[_], V](
+    writer,
+    reader,
     v
   )
 
@@ -159,17 +193,27 @@ class MessageQueue[V]
   class MessageStream
     extends StreamImpl[Packet[V]] {
 
-    class ConsumerV
-      extends Reader
+    class Reader
+      extends super.Reader
 
-    class ProducerV
-      extends Writer
+    class Writer
+      extends super.Writer
 
-    override def getReader(): ConsumerV = new ConsumerV
+    override def getReader(): Reader = new Reader
 
-    override def getWriter: ProducerV = new ProducerV
-
+    override def getWriter(): Writer = new Writer
   }
+
+  //
+  //  The identifier last allocated
+  //
+  var lastAllocatedId: Int = 0x00
+
+  //
+  //
+  //
+  val idMap: mutable.Map[Int, api.Actor[_]]
+    = mutable.Map[Int, api.Actor[_]]()
 
   //
   //
@@ -179,11 +223,25 @@ class MessageQueue[V]
 
   /**
     *
-    * @param id
-    * @tparam I
+    * @param actor
     * @return
     */
-  def getMessageStream[I <: api.Identifiable](
+  def allocateId(
+    actor: api.Actor[_]
+  ): Int = {
+    this.synchronized {
+      lastAllocatedId += 1
+      idMap.put(lastAllocatedId, actor)
+      lastAllocatedId
+    }
+  }
+
+  /**
+    *
+    * @param id
+    * @return
+    */
+  def getMessageStream(
     id: Int
   ): MessageStream = {
     messageStreamMap.get(id) match {
@@ -202,36 +260,30 @@ class MessageQueue[V]
     *
     * @return
     */
-  def getConsumer[
-    P <: api.Actor,
-    C <: api.Actor
-  ] (
+  def getReader[C](
     consumer: C
-  ): Consumer[C, P] = {
-    new Consumer(consumer)
+  ): Reader[C] = {
+    new Reader[C](consumer)
   }
 
   /**
     *
     * @return
     */
-  def getProducer[
-    P <: api.Actor,
-    C <: api.Actor
-  ] (
+  def getWriter[P](
     producer: P,
-    consumer: C
-  ): Producer[P, C] = {
-    val messageStream = messageStreamMap.get(consumer.getId) match {
+    reader: Reader[_]
+  ): Writer[P] = {
+    val messageStream = messageStreamMap.get(reader.getId) match {
       case Some(messageStream: MessageStream) =>
         messageStream
 
       case None =>
         val messageStream: MessageStream = new MessageStream()
-        messageStreamMap.put(consumer.getId, messageStream)
+        messageStreamMap.put(reader.getId, messageStream)
 
     }
 
-    new Producer(producer, consumer)
+    new Writer[P](producer, reader)
   }
 }

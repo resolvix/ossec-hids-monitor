@@ -1,8 +1,7 @@
 package com.resolvix.concurrentx
 
 import com.resolvix.concurrentx.api.Configuration
-import com.resolvix.mq.api.MessageQueue
-import com.resolvix.sio.api
+import com.resolvix.mq.api.{MessageQueue, Reader, Writer}
 
 import scala.concurrent.duration.TimeUnit
 import scala.util.{Failure, Success, Try}
@@ -26,53 +25,35 @@ trait Producer[
 ] extends Actor[P, C, V]
     with api.Producer[P, C, V]
 {
-  class ConsumerMQV
-    extends api.Consumer[V]
-  {
-    /**
-      *
-      * @return
-      */
-    override def read: Try[V] = {
-
-    }
-
-    /**
-      *
-      * @param timeout
-      * @param unit
-      * @return
-      */
-    override def read(
-      timeout: Int,
-      unit: TimeUnit
-    ): Try[V] = {
-
-    }
-  }
-
-  class ProducerMQV
-    extends api.Producer[V]
+  class WriterMQV
+    extends Writer[WriterMQV, P, V]
   {
     /**
       *
       * @param v
       * @return
       */
-    override def write(v: V): Try[Boolean] = {
-      producerMap.foreach {
-        (f: (Int, MessageQueue[V]#Producer[P, C])) =>
-          f._2.write(v)
+    override def write(
+      v: V
+    ): Try[Boolean] = {
+      for ((y: Int, w: Writer[_, P, V]) <- producerMap) {
+        w.write(v)
       }
       Success(true)
     }
+
+    override def getId: Int = {
+      throw new IllegalAccessException()
+    }
+
+    def getSelf: WriterMQV = this
   }
 
   //
   //
   //
-  protected var producerMap: Map[Int, MessageQueue[V]#Producer[P, C]]
-    = Map[Int, MessageQueue[V]#Producer[P, C]]()
+  protected var producerMap: Map[Int, Writer[_, P, V]]
+    = Map[Int, Writer[_, P, V]]()
 
   /**
     *
@@ -92,7 +73,7 @@ trait Producer[
     */
   override def open(
     consumer: C
-  ): Try[api.Consumer[V]] = {
+  ): Try[com.resolvix.mq.MessageQueue[V]#Reader[C]] = {
     try {
       Success(
         consumer.open.get
@@ -107,23 +88,21 @@ trait Producer[
     *
     * @return
     */
-  def open: Try[api.Producer[V]] = {
+  def open: Try[Writer[_, P, V]] = {
     try {
       producerMap = actors.collect({
         case x: (Int, C) => {
           x._2.open(getSelf) match {
-            case Success(producer: MessageQueue[V]#Producer[P, C]) =>
+            case Success(producer: Writer[_, P, V]) =>
               (x._1, producer)
 
             case Failure(t: Throwable) =>
               throw t
           }
         }
-      })
+      }).toMap
 
-      Success(
-        new ProducerMQV
-      )
+      Success(new WriterMQV)
     } catch {
       case t: Throwable =>
         Failure(t)

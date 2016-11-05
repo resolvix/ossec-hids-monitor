@@ -42,14 +42,14 @@ class MessageQueueTest
       val p2: P = new P()
       val c2: C = new C()
 
-      val p1c1Int: Writer[Int] = mq.getProducer(p1, c1)
-      val p2c1Int: Writer[Int] = mq.getProducer(p2, c1)
+      val p1c1Int: Writer[Int] = mq.getWriter(p1, c1)
+      val p2c1Int: Writer[Int] = mq.getWriter(p2, c1)
 
-      val p1c2Int: Writer[Int] = mq.getProducer(p1, c2)
-      val p2c2Int: Writer[Int] = mq.getProducer(p2, c2)
+      val p1c2Int: Writer[Int] = mq.getWriter(p1, c2)
+      val p2c2Int: Writer[Int] = mq.getWriter(p2, c2)
 
-      val c1Int: Reader[(P, Int)] = mq.getConsumer(c1)
-      val c2Int: Reader[(P, Int)] = mq.getConsumer(c2)
+      val c1Int: Reader[(P, Int)] = mq.getReader(c1)
+      val c2Int: Reader[(P, Int)] = mq.getReader(c2)
 
       p1c1Int.write(11)
 

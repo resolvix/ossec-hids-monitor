@@ -6,6 +6,7 @@ import scala.util.Try
   * Created by rwbisson on 31/10/16.
   */
 trait Writer[V]
+  extends Actor
 {
   /**
     *

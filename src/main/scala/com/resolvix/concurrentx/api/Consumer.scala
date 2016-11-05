@@ -49,9 +49,15 @@ trait Consumer[
   ): Try[Boolean]
 
   /**
+    * Obtains an object of type Writer that may be used for the transmission
+    * of values of type V to the instant Consumer by a producer of type P.
     *
     * @param producer
+    *   the producer for which the Writer object is to be obtained.
+    *
     * @return
+    *   an object of type Writer configured correctly to enable the producer,
+    *   to write values to the instant Consumer.
     */
   def open(
     producer: P

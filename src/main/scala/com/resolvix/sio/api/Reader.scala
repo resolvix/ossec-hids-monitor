@@ -7,6 +7,7 @@ import scala.util.Try
   * Created by rwbisson on 31/10/16.
   */
 trait Reader[V]
+  extends Actor
 {
   /**
     *

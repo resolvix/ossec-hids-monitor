@@ -3,13 +3,9 @@ package com.resolvix.mq
 /**
   * Created by rwbisson on 22/10/16.
   */
-class Message[
-  S <: api.Identifiable,
-  D <: api.Identifiable,
-  V
-](
-  source: S,
-  destination: D,
+class Message[W, R, V](
+  writer: W,
+  reader: R,
   v: V
 ) {
 
@@ -17,16 +13,16 @@ class Message[
     *
     * @return
     */
-  def getDestination: D = {
-    destination
+  def getReader(): R = {
+    reader
   }
 
   /**
     *
     * @return
     */
-  def getSource: S = {
-    source
+  def getWriter(): W = {
+    writer
   }
 
   /**
