@@ -37,7 +37,7 @@ trait Consumer[
     *
     */
   @transient
-  protected var consumerPipe: MessageQueue[C, P, V]#Consumer = _
+  protected var consumerPipe: MessageQueue[V]#Consumer[C, P] = _
 
   /**
     *
@@ -77,14 +77,14 @@ trait Consumer[
     */
   override def open(
     producer: P
-  ): Try[MessageQueue[C, P, V]#Producer] = {
+  ): Try[MessageQueue[V]#Producer[P, C]] = {
     try {
       //
       //  If a packet pipe for the Consumer does not already exist, create a
       //  new packet pipe for the Consumer.
       //
-      if (!consumerPipe.isInstanceOf[MessageQueue[C, P, V]#Consumer]) {
-        val packetPipe = new MessageQueue[C, P, V]()
+      if (!consumerPipe.isInstanceOf[MessageQueue[V]#Consumer[C, P]]) {
+        val packetPipe = new MessageQueue[V]()
         consumerPipe = packetPipe.getConsumer(getSelf)
       }
 
@@ -107,7 +107,7 @@ trait Consumer[
     *
     * @return
     */
-  def open: Try[MessageQueue[C, P, V]#Consumer] = {
+  def open: Try[MessageQueue[V]#Consumer[C, P]] = {
     try {
       Success(consumerPipe)
     } catch {

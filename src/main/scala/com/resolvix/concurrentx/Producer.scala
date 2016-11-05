@@ -1,7 +1,7 @@
 package com.resolvix.concurrentx
 
 import com.resolvix.concurrentx.api.Configuration
-import com.resolvix.mq.api.Pipe
+import com.resolvix.mq.api.MessageQueue
 
 import scala.util.{Failure, Success, Try}
 
@@ -27,8 +27,8 @@ trait Producer[
   //
   //
   //
-  protected var packetPipes: Map[Int, ProducerPipe[V]]
-    = Map[Int, ProducerPipe[V]]()
+  protected var producerMap: Map[Int, MessageQueue[V]#Producer[P, C]]
+    = Map[Int, MessageQueue[V]#Producer[P, C]]()
 
   /**
     *
@@ -48,11 +48,10 @@ trait Producer[
     */
   override def open(
     consumer: C
-  ): Try[api.ConsumerPipe[V]] = {
+  ): Try[MessageQueue[V]#Consumer[C, P]] = {
     try {
       Success(
-        consumer.open
-          .get
+        consumer.open.get
       )
     } catch {
       case t: Throwable =>
@@ -64,9 +63,9 @@ trait Producer[
     *
     * @return
     */
-  def open: Try[api.ProducerPipe[V]] = {
+  def open: Try[MessageQueue[V]#Producer[P, C]] = {
     try {
-      packetPipes = actors.collect({
+      producerMap = actors.collect({
         case x: (Int, C) => {
           x._2.open(getSelf) match {
             case Success(producerPipe: api.ProducerPipe[V]) =>

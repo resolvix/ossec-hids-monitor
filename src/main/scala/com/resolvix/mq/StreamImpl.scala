@@ -8,15 +8,15 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by rwbisson on 16/10/2016.
   */
-class PipeImpl[V]
-  extends api.Pipe[V]
+class StreamImpl[V]
+  extends api.Stream[V]
 {
 
   /**
     *
     */
   class Producer
-    extends api.Producer[V]
+    extends super.Producer
   {
     /**
       *
@@ -39,7 +39,7 @@ class PipeImpl[V]
     *
     */
   class Consumer
-    extends api.Consumer[V]
+    extends super.Consumer
   {
     /**
       *
@@ -87,18 +87,18 @@ class PipeImpl[V]
   //
   //
   //
-  private val consumer: api.Consumer[V] = new Consumer
+  private val consumer: super.Consumer = new Consumer
 
   //
   //
   //
-  private val producer: api.Producer[V] = new Producer
+  private val producer: super.Producer = new Producer
 
   /**
     *
     * @return
     */
-  def getConsumer: api.Consumer[V] = {
+  def getConsumer: super.Consumer = {
     consumer
   }
 
@@ -106,7 +106,7 @@ class PipeImpl[V]
     *
     * @return
     */
-  def getProducer: api.Producer[V] = {
+  def getProducer: super.Producer = {
     producer
   }
 }

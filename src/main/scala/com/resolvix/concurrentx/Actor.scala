@@ -46,7 +46,7 @@ trait Actor[
   L,
   R,
   V
-] {
+] with com.resolvix.mq.api.Actor {
   //
   //
   //

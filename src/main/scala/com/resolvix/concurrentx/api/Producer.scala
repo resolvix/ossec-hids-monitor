@@ -1,6 +1,6 @@
 package com.resolvix.concurrentx.api
 
-import com.resolvix.mq.api.Pipe
+import com.resolvix.mq.api.{Consumer => ConsumerMQ}
 
 import scala.util.Try
 
@@ -54,7 +54,7 @@ trait Producer[
     */
   def open(
     consumer: C
-  ): Try[Pipe[V]#Consumer]
+  ): Try[ConsumerMQ[V]]
 
   /**
     *
