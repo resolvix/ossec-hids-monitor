@@ -3,6 +3,7 @@ package com.resolvix.concurrentx
 import com.resolvix.concurrentx.api.Configuration
 import com.resolvix.mq.api.MessageQueue
 
+import scala.concurrent.duration.TimeUnit
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -24,6 +25,48 @@ trait Producer[
 ] extends Actor[P, C, V]
     with api.Producer[P, C, V]
 {
+  class ConsumerMQV
+    extends com.resolvix.mq.api.Consumer[V]
+  {
+    /**
+      *
+      * @return
+      */
+    override def read: Try[V] = {
+
+    }
+
+    /**
+      *
+      * @param timeout
+      * @param unit
+      * @return
+      */
+    override def read(
+      timeout: Int,
+      unit: TimeUnit
+    ): Try[V] = {
+
+    }
+  }
+
+  class ProducerMQV
+    extends com.resolvix.mq.api.Producer[V]
+  {
+    /**
+      *
+      * @param v
+      * @return
+      */
+    override def write(v: V): Try[Boolean] = {
+      producerMap.foreach {
+        (f: (Int, MessageQueue[V]#Producer[P, C])) =>
+          f._2.write(v)
+      }
+      Success(true)
+    }
+  }
+
   //
   //
   //
@@ -48,7 +91,7 @@ trait Producer[
     */
   override def open(
     consumer: C
-  ): Try[MessageQueue[V]#Consumer[C, P]] = {
+  ): Try[com.resolvix.mq.api.Consumer[V]] = {
     try {
       Success(
         consumer.open.get
@@ -63,13 +106,13 @@ trait Producer[
     *
     * @return
     */
-  def open: Try[MessageQueue[V]#Producer[P, C]] = {
+  def open: Try[com.resolvix.mq.api.Producer[V]] = {
     try {
       producerMap = actors.collect({
         case x: (Int, C) => {
           x._2.open(getSelf) match {
-            case Success(producerPipe: api.ProducerPipe[V]) =>
-              (x._1, producerPipe)
+            case Success(producer: MessageQueue[V]#Producer[P, C]) =>
+              (x._1, producer)
 
             case Failure(t: Throwable) =>
               throw t
@@ -78,10 +121,7 @@ trait Producer[
       })
 
       Success(
-        /*new ProducerPipe[P, C, V](
-          getSelf,
-          pack[etPipes
-        )*/
+        new ProducerMQV
       )
     } catch {
       case t: Throwable =>
