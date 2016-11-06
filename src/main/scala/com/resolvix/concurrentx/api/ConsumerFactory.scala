@@ -4,13 +4,11 @@ package com.resolvix.concurrentx.api
   * Created by rwbisson on 23/10/16.
   */
 trait ConsumerFactory[
-  CF <: ConsumerFactory[CF, C, CT, P, PT, V],
-  C <: Consumer[C, CT, P, PT, V],
-  CT <: Transport[V],
-  P <: Producer[P, PT, C, CT, V],
-  PT <: Transport[V],
+  CF <: ConsumerFactory[CF, C, P, V],
+  C <: Consumer[C, P, V],
+  P <: Producer[P, C, V],
   V
-] extends ActorFactory[CF, P, PT, C, CT, V]
+] extends ActorFactory[CF, P, C, V]
 {
 
   def newInstance: C

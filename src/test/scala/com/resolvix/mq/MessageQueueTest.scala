@@ -61,8 +61,8 @@ class MessageQueueTest
 
       val XX: Int = 99 + 1
 
-      val rr: (P, Int) = c1Int.read match {
-        case Success(tt: (P, Int)) =>
+      val rr: (Int, Int) = c1Int.read match {
+        case Success(tt: (Int, Int)) =>
           tt
 
         case Failure(t: Throwable) =>
@@ -73,8 +73,8 @@ class MessageQueueTest
       println(rr._1)
       println(rr._2)
 
-      val rr2: (P, Int) = c1Int.read match {
-        case Success(tt: (P, Int)) =>
+      val rr2: (Int, Int) = c1Int.read match {
+        case Success(tt: (Int, Int)) =>
           tt
 
         case Failure(t: Throwable) =>

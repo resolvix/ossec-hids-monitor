@@ -1,6 +1,6 @@
 package com.resolvix.concurrentx.api
 
-import com.resolvix.mq.api.{Consumer => ConsumerMQ}
+import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.sio.api
 
 import scala.util.Try
@@ -24,11 +24,12 @@ import scala.util.Try
   *
   */
 trait Producer[
-  P <: Producer[P, C, V],
-  C <: Consumer[C, P, V],
+  P <: Producer[P, W, C, R, V],
+  W <: Writer[W, P, V],
+  C <: Consumer[C, R, P, W, V],
+  R <: Reader[R, C, V],
   V
 ] extends Actor[P, C, V] {
-
 
   /**
     *
@@ -53,9 +54,10 @@ trait Producer[
     * @param consumer
     * @return
     */
+  @throws[ConsumerNotRegisteredException]
   def open(
     consumer: C
-  ): Try[api.Reader[V]]
+  ): Try[R]
 
   /**
     *

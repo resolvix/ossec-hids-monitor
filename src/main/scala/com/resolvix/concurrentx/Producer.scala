@@ -1,7 +1,9 @@
 package com.resolvix.concurrentx
 
-import com.resolvix.concurrentx.api.Configuration
-import com.resolvix.mq.api.{MessageQueue, Reader, Writer}
+import com.resolvix.concurrentx.api.{Configuration, ConsumerNotRegisteredException}
+
+import com.resolvix.mq.api.{Reader, Writer}
+import com.resolvix.mq.MessageQueue
 
 import scala.concurrent.duration.TimeUnit
 import scala.util.{Failure, Success, Try}
@@ -19,11 +21,13 @@ import scala.util.{Failure, Success, Try}
   *   and the remote actors
   */
 trait Producer[
-  P <: Producer[P, C, V],
-  C <: Consumer[C, P, V],
+  P <: Producer[P, W, C, R, V],
+  W <: Producer[P, W, C, R, V]#WriterMQV,
+  C <: Consumer[C, R, P, W, V],
+  R <: MessageQueue[V]#Reader[C],
   V
 ] extends Actor[P, C, V]
-    with api.Producer[P, C, V]
+    with api.Producer[P, W, C, R, V]
 {
   class WriterMQV
     extends Writer[WriterMQV, P, V]
@@ -36,7 +40,7 @@ trait Producer[
     override def write(
       v: V
     ): Try[Boolean] = {
-      for ((y: Int, w: Writer[_, P, V]) <- producerMap) {
+      for ((y: Int, w: Writer[_, P, V]) <- writerMap) {
         w.write(v)
       }
       Success(true)
@@ -52,8 +56,8 @@ trait Producer[
   //
   //
   //
-  protected var producerMap: Map[Int, Writer[_, P, V]]
-    = Map[Int, Writer[_, P, V]]()
+  protected var writerMap: Map[Int,MessageQueue[V]#Writer[P, C]]
+    = Map[Int, MessageQueue[V]#Writer[P, C]]()
 
   /**
     *
@@ -73,14 +77,18 @@ trait Producer[
     */
   override def open(
     consumer: C
-  ): Try[com.resolvix.mq.MessageQueue[V]#Reader[C]] = {
-    try {
-      Success(
-        consumer.open.get
-      )
-    } catch {
-      case t: Throwable =>
-        Failure(t)
+  ): Try[MessageQueue[V]#Reader[C]] = {
+    if (super.isRegistered(consumer)) {
+      try {
+        Success(
+          consumer.open.get
+        )
+      } catch {
+        case t: Throwable =>
+          Failure(t)
+      }
+    } else {
+      Failure(new ConsumerNotRegisteredException)
     }
   }
 
@@ -88,9 +96,9 @@ trait Producer[
     *
     * @return
     */
-  def open: Try[Writer[_, P, V]] = {
+  def open: Try[W] = {
     try {
-      producerMap = actors.collect({
+      writerMap = actors.collect({
         case x: (Int, C) => {
           x._2.open(getSelf) match {
             case Success(producer: Writer[_, P, V]) =>
@@ -102,7 +110,7 @@ trait Producer[
         }
       }).toMap
 
-      Success(new WriterMQV)
+      Success((new WriterMQV).asInstanceOf[W])
     } catch {
       case t: Throwable =>
         Failure(t)

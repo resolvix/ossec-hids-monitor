@@ -1,6 +1,6 @@
 package com.resolvix.concurrentx.api
 
-import com.resolvix.mq.api.{Producer => ProducerMQ}
+import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.sio.api
 
 import scala.concurrent.duration._
@@ -25,8 +25,10 @@ import scala.util.Try
   *
   */
 trait Consumer[
-  C <: Consumer[C, P, V],
-  P <: Producer[P, C, V],
+  C <: Consumer[C, R, P, W, V],
+  R <: Reader[R, C, V],
+  P <: Producer[P, W, C, R, V],
+  W <: Writer[W, P, V],
   V
 ] extends Actor[C, P, V] {
 
@@ -59,9 +61,10 @@ trait Consumer[
     *   an object of type Writer configured correctly to enable the producer,
     *   to write values to the instant Consumer.
     */
+  @throws[ProducerNotRegisteredException]
   def open(
     producer: P
-  ): Try[api.Writer[V]]
+  ): Try[W]
 
   /**
     *

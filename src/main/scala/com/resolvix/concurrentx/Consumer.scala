@@ -1,38 +1,20 @@
 package com.resolvix.concurrentx
 
-import com.resolvix.concurrentx.api.Configuration
+import com.resolvix.concurrentx.api.{Configuration, ProducerNotRegisteredException}
 import com.resolvix.mq.api.{Reader, Writer}
-import com.resolvix.mq.{Message, MessageQueue}
+import com.resolvix.mq.MessageQueue
 
 import scala.util.{Failure, Success, Try}
 
 trait Consumer[
-  C <: Consumer[C, P, V],
-  P <: Producer[P, C, V],
+  C <: Consumer[C, R, P, W, V],
+  R <: MessageQueue[V]#Reader[C],
+  P <: Producer[P, W, C, R, V],
+  W <: MessageQueue[V]#Writer[P, C],
   V
 ] extends Actor[C, P, V]
-    with api.Consumer[C, P, V] {
-
-  /*class ProducerPipe(
-    @transient
-    val producer: P,
-
-    @transient
-    val producerPipe: api.ProducerPipe[Packet[P, C, V]]
-  ) extends api.ProducerPipe[V] {
-
-    /**
-      *
-      * @param v
-      * @return
-      */
-    override def write(
-      v: V
-    ): Try[Boolean] = {
-      val pV = new Packet[P, C, V](producer, v)
-      producerPipe.write(pV)
-    }
-  }*/
+    with api.Consumer[C, R, P, W, V]
+{
 
   /**
     *
@@ -66,6 +48,26 @@ trait Consumer[
   }
 
   /**
+    *
+    * @return
+    */
+  def getReader: MessageQueue[V]#Reader[C] = {
+    //
+    //  If a packet pipe for the Consumer does not already exist, create a
+    //  new packet pipe for the Consumer.
+    //
+    messageQueueReader match {
+      case r: MessageQueue[V]#Reader[C] =>
+        messageQueueReader
+
+      case _ =>
+        val messageQueue = new MessageQueue[V]()
+        this.messageQueueReader = messageQueue.getReader(getSelf)
+        this.messageQueueReader
+    }
+  }
+
+  /**
     * The open method, with a parameter of type P, is intended to provide
     * the caller with a Reader suitable for the receipt of values of type V,
     * sent by the producer, by the instant consumer.
@@ -78,26 +80,16 @@ trait Consumer[
     */
   override def open(
     producer: P
-  ): Try[MessageQueue[V]#Writer[P]] = {
-    try {
-      //
-      //  If a packet pipe for the Consumer does not already exist, create a
-      //  new packet pipe for the Consumer.
-      //
-      if (!messageQueueReader.isInstanceOf[Reader[_, C, V]]) {
-        val messageQueue = new MessageQueue[V]()
-        messageQueueReader = messageQueue.getReader(getSelf)
+  ): Try[MessageQueue[V]#Writer[P, C]] = {
+    if (super.isRegistered(producer)) {
+      try {
+        getReader.getWriter(producer)
+      } catch {
+        case t: Throwable =>
+          Failure(t)
       }
-
-      //
-      //  Obtain a producer
-      //
-      messageQueueReader.getWriter(
-        producer
-      )
-    } catch {
-      case t: Throwable =>
-        Failure(t)
+    } else {
+      Failure(new ProducerNotRegisteredException)
     }
   }
 
