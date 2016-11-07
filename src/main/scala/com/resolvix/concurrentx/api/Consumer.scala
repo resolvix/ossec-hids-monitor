@@ -26,9 +26,9 @@ import scala.util.Try
   */
 trait Consumer[
   C <: Consumer[C, R, P, W, V],
-  R <: Reader[R, C, V],
+  R <: Reader[R, V],
   P <: Producer[P, W, C, R, V],
-  W <: Writer[W, P, V],
+  W <: Writer[W, V],
   V
 ] extends Actor[C, P, V] {
 
