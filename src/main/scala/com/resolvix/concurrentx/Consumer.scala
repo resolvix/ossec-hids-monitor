@@ -4,18 +4,17 @@ import com.resolvix.concurrentx.api.{Configuration, ProducerNotRegisteredExcepti
 import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.mq.MessageQueue
 
+import scala.concurrent.duration.TimeUnit
 import scala.util.{Failure, Success, Try}
 
 trait Consumer[
-  C <: Consumer[C, R, P, W, V],
-  R <: MessageQueue[V]#Reader[C],
-  P <: Producer[P, W, C, R, V],
+  C <: Consumer[C, P, W, V],
+  P <: Producer[P, C, MessageQueue[V]#Reader[C], V],
   W <: MessageQueue[V]#Writer[P, C],
   V
 ] extends Actor[C, P, V]
-    with api.Consumer[C, R, P, W, V]
+    with api.Consumer[C, MessageQueue[V]#Reader[C], P, W, V]
 {
-
   /**
     *
     */
@@ -30,13 +29,14 @@ trait Consumer[
   override def close(
     producer: P
   ): Try[Boolean] = {
-    super.close(producer) match {
+    /*getReader.getWriter.close(producer) match {
       case Success(b: Boolean) =>
         Success(b)
 
       case Failure(t: Throwable) =>
         Failure(t)
-    }
+    }*/
+    Success(true)
   }
 
   /**

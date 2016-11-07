@@ -1,6 +1,7 @@
-package com.resolvix.concurrentx
+package com.resolvix.concurrentx.parked
 
 import com.resolvix.concurrentx.api.Configuration
+import com.resolvix.concurrentx.{Consumer, Producer}
 
 import scala.util.Try
 

@@ -1,4 +1,6 @@
-package com.resolvix.concurrentx.api
+package com.resolvix.concurrentx.parked.api
+
+import com.resolvix.concurrentx.api.{ActorFactory, Consumer, Producer}
 
 /**
   * Created by rwbisson on 23/10/16.

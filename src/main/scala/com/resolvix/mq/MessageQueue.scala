@@ -65,6 +65,11 @@ class MessageQueue[V]
     val messageConsumer: MessageStream#Reader
       = getMessageStream(getId).getReader
 
+
+    /**
+      *
+      * @return
+      */
     override def getSelf: Reader[C] = this
 
     /**
@@ -164,6 +169,11 @@ class MessageQueue[V]
       )
     }
 
+
+    /**
+      *
+      * @return
+      */
     override def getSelf: Writer[P, C] = this
 
     /**

@@ -21,37 +21,13 @@ import scala.util.{Failure, Success, Try}
   *   and the remote actors
   */
 trait Producer[
-  P <: Producer[P, W, C, R, V],
-  W <: Producer[P, W, C, R, V]#WriterMQV,
-  C <: Consumer[C, R, P, W, V],
+  P <: Producer[P, C, R, V],
+  C <: Consumer[C, P, Producer[P, C, R, V]#MulticastWriter, V],
   R <: MessageQueue[V]#Reader[C],
   V
 ] extends Actor[P, C, V]
-    with api.Producer[P, W, C, R, V]
+    with api.Producer[P, Producer[P, C, R, V]#MulticastWriter, C, R, V]
 {
-  class WriterMQV
-    extends Writer[WriterMQV, P, V]
-  {
-    /**
-      *
-      * @param v
-      * @return
-      */
-    override def write(
-      v: V
-    ): Try[Boolean] = {
-      for ((y: Int, w: Writer[_, P, V]) <- writerMap) {
-        w.write(v)
-      }
-      Success(true)
-    }
-
-    override def getId: Int = {
-      throw new IllegalAccessException()
-    }
-
-    def getSelf: WriterMQV = this
-  }
 
   //
   //
@@ -67,7 +43,8 @@ trait Producer[
   override def close(
     consumer: C
   ): Try[Boolean] = {
-    super.close(consumer)
+    /*super.close(consumer)*/
+    Success(true)
   }
 
   /**
@@ -77,11 +54,11 @@ trait Producer[
     */
   override def open(
     consumer: C
-  ): Try[MessageQueue[V]#Reader[C]] = {
+  ): Try[R] = {
     if (super.isRegistered(consumer)) {
       try {
         Success(
-          consumer.open.get
+          consumer.open.get.asInstanceOf[R]
         )
       } catch {
         case t: Throwable =>
@@ -96,12 +73,12 @@ trait Producer[
     *
     * @return
     */
-  def open: Try[W] = {
+  def open: Try[MulticastWriter] = {
     try {
       writerMap = actors.collect({
         case x: (Int, C) => {
           x._2.open(getSelf) match {
-            case Success(producer: Writer[_, P, V]) =>
+            case Success(producer: MessageQueue[V]#Writer[P, C]) =>
               (x._1, producer)
 
             case Failure(t: Throwable) =>
@@ -110,7 +87,7 @@ trait Producer[
         }
       }).toMap
 
-      Success((new WriterMQV).asInstanceOf[W])
+      Success(new MulticastWriter)
     } catch {
       case t: Throwable =>
         Failure(t)
