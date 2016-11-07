@@ -1,6 +1,7 @@
 package com.resolvix.concurrentx
 
 import com.resolvix.mq.MessageQueue
+import com.resolvix.mq.api.Writer
 
 import scala.util.{Success, Try}
 
@@ -8,7 +9,7 @@ import scala.util.{Success, Try}
   *
   */
 class MulticastWriter[V](
-  writerMap: Map[Int, MessageQueue[V]#Writer]
+  writerMap: Map[Int, Writer[_, V]]
 ) extends com.resolvix.mq.api.Writer[MulticastWriter[V], V] {
   /**
     *
@@ -18,7 +19,7 @@ class MulticastWriter[V](
   override def write(
     v: V
   ): Try[Boolean] = {
-    for ((y: Int, w: MessageQueue[V]#Writer) <- writerMap) {
+    for ((y: Int, w: Writer[_, V]) <- writerMap) {
       w.write(v)
     }
     Success(true)

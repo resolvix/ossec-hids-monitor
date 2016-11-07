@@ -31,8 +31,8 @@ trait Producer[
   //
   //
   //
-  protected var writerMap: Map[Int,MessageQueue[V]#Writer]
-    = Map[Int, MessageQueue[V]#Writer]()
+  protected var writerMap: Map[Int, Writer[_, V] /*MessageQueue[V]#Writer*/]
+    = Map[Int, Writer[_, V]/*MessageQueue[V]#Writer*/]()
 
   /**
     *
@@ -74,17 +74,31 @@ trait Producer[
     */
   def open[W <: Writer[W, V]]: Try[W] = {
     try {
-      writerMap = actors.collect({
+      //writerMap
+
+      val qq = actors.collect({
         case x: (Int, C) => {
-          x._2.open(getSelf) match {
-            case Success(producer: MessageQueue[V]#Writer) =>
-              (x._1, producer)
+          val q: Try[W] = x._2.open(getSelf)
+
+          //if (q)
+
+          val r = q match {
+            case Success(w: Writer[_, V]) =>
+              println(w)
+              (x._1, w)
 
             case Failure(t: Throwable) =>
               throw t
+
+            case _ =>
+              throw new IllegalStateException()
           }
+
+          r
         }
-      }).toMap
+      })
+
+      writerMap = qq.toMap[Int, Writer[_, V]]
 
       Success(new MulticastWriter[V](writerMap).asInstanceOf[W])
     } catch {
