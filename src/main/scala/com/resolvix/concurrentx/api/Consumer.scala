@@ -25,10 +25,8 @@ import scala.util.Try
   *
   */
 trait Consumer[
-  C <: Consumer[C, R, P, W, V],
-  R <: Reader[R, V],
-  P <: Producer[P, W, C, R, V],
-  W <: Writer[W, V],
+  C <: Consumer[C, P, V],
+  P <: Producer[P, C, V],
   V
 ] extends Actor[C, P, V] {
 
@@ -62,7 +60,7 @@ trait Consumer[
     *   to write values to the instant Consumer.
     */
   @throws[ProducerNotRegisteredException]
-  def open(
+  def open[W <: Writer[W, V]](
     producer: P
   ): Try[W]
 

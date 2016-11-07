@@ -24,10 +24,8 @@ import scala.util.Try
   *
   */
 trait Producer[
-  P <: Producer[P, W, C, R, V],
-  W <: Writer[W, P, V],
-  C <: Consumer[C, R, P, W, V],
-  R <: Reader[R, C, V],
+  P <: Producer[P, C, V],
+  C <: Consumer[C, P, V],
   V
 ] extends Actor[P, C, V] {
 
@@ -55,7 +53,7 @@ trait Producer[
     * @return
     */
   @throws[ConsumerNotRegisteredException]
-  def open(
+  def open[R <: Reader[R, V]](
     consumer: C
   ): Try[R]
 

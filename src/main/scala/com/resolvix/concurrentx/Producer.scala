@@ -21,19 +21,18 @@ import scala.util.{Failure, Success, Try}
   *   and the remote actors
   */
 trait Producer[
-  P <: Producer[P, C, R, V],
-  C <: Consumer[C, P, Producer[P, C, R, V]#MulticastWriter, V],
-  R <: MessageQueue[V]#Reader[C],
+  P <: Producer[P, C, V],
+  C <: Consumer[C, P, V],
   V
 ] extends Actor[P, C, V]
-    with api.Producer[P, Producer[P, C, R, V]#MulticastWriter, C, R, V]
+    with api.Producer[P, C, V]
 {
 
   //
   //
   //
-  protected var writerMap: Map[Int,MessageQueue[V]#Writer[P, C]]
-    = Map[Int, MessageQueue[V]#Writer[P, C]]()
+  protected var writerMap: Map[Int,MessageQueue[V]#Writer]
+    = Map[Int, MessageQueue[V]#Writer]()
 
   /**
     *
@@ -52,7 +51,7 @@ trait Producer[
     * @param consumer
     * @return
     */
-  override def open(
+  override def open[R <: Reader[R, V]](
     consumer: C
   ): Try[R] = {
     if (super.isRegistered(consumer)) {
@@ -73,12 +72,12 @@ trait Producer[
     *
     * @return
     */
-  def open: Try[MulticastWriter] = {
+  def open[W <: Writer[W, V]]: Try[W] = {
     try {
       writerMap = actors.collect({
         case x: (Int, C) => {
           x._2.open(getSelf) match {
-            case Success(producer: MessageQueue[V]#Writer[P, C]) =>
+            case Success(producer: MessageQueue[V]#Writer) =>
               (x._1, producer)
 
             case Failure(t: Throwable) =>
@@ -87,7 +86,7 @@ trait Producer[
         }
       }).toMap
 
-      Success(new MulticastWriter)
+      Success(new MulticastWriter[V](writerMap).asInstanceOf[W])
     } catch {
       case t: Throwable =>
         Failure(t)

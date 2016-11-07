@@ -8,18 +8,17 @@ import scala.concurrent.duration.TimeUnit
 import scala.util.{Failure, Success, Try}
 
 trait Consumer[
-  C <: Consumer[C, P, W, V],
-  P <: Producer[P, C, MessageQueue[V]#Reader[C], V],
-  W <: MessageQueue[V]#Writer[P, C],
+  C <: Consumer[C, P, V],
+  P <: Producer[P, C, V],
   V
 ] extends Actor[C, P, V]
-    with api.Consumer[C, MessageQueue[V]#Reader[C], P, W, V]
+    with api.Consumer[C, P, V]
 {
   /**
     *
     */
   @transient
-  protected var messageQueueReader: MessageQueue[V]#Reader[C] = _
+  protected var messageQueueReader: MessageQueue[V]#Reader = _
 
   /**
     *
@@ -51,13 +50,13 @@ trait Consumer[
     *
     * @return
     */
-  def getReader: MessageQueue[V]#Reader[C] = {
+  def getReader: MessageQueue[V]#Reader = {
     //
     //  If a packet pipe for the Consumer does not already exist, create a
     //  new packet pipe for the Consumer.
     //
     messageQueueReader match {
-      case r: MessageQueue[V]#Reader[C] =>
+      case r: MessageQueue[V]#Reader =>
         messageQueueReader
 
       case _ =>
@@ -78,12 +77,12 @@ trait Consumer[
     * @return
     *    an object providing the caller with a Reader object.
     */
-  override def open(
+  override def open[W <: Writer[W, V]](
     producer: P
-  ): Try[MessageQueue[V]#Writer[P, C]] = {
+  ): Try[W] = {
     if (super.isRegistered(producer)) {
       try {
-        getReader.getWriter(producer)
+        getReader.getWriter(producer).asInstanceOf[Try[W]]
       } catch {
         case t: Throwable =>
           Failure(t)
@@ -100,7 +99,7 @@ trait Consumer[
     *
     * @return
     */
-  def open: Try[MessageQueue[V]#Reader[C]] = {
+  def open: Try[MessageQueue[V]#Reader] = {
     try {
       Success(messageQueueReader)
     } catch {
