@@ -11,19 +11,17 @@ import scala.util.{Failure, Success, Try}
   * Created by rwbisson on 07/11/16.
   */
 class ProducerConsumerTest
-  extends FunSpec
-{
+  extends FunSpec {
+
   class X(
     val x: Int,
     val y: Int
-  )
-  {
+  ) {
 
   }
 
   class C
-    extends Consumer[C, P, X]
-  {
+    extends Consumer[C, P, X] {
     /**
       *
       * @param configuration
@@ -35,47 +33,61 @@ class ProducerConsumerTest
   }
 
   class P
-    extends Producer[P, C, X]
-  {
-/**
-    *
-    * @param configuration
-    * @return
-    */
-override def initialise(configuration: Configuration): Try[Boolean] = ???
+    extends Producer[P, C, X] {
+    /**
+      *
+      * @param configuration
+      * @return
+      */
+    override def initialise(configuration: Configuration): Try[Boolean] = ???
 
     override protected def getSelf: P = this
-}
+  }
 
-  describe("An instance of a Producer / Consumer ") {
-    describe("should be capabile of being created") {
-      it("each should be capable of being cross-registered") {
-        val consumer: C = new C
+  describe("For instance of a Producer / Consumer ") {
 
-        val producer: P = new P
+    val consumer: C = new C
 
-        val b1: Try[Boolean] = consumer.register(producer)
-        val b2: Try[Boolean] = producer.register(consumer)
+    val producer: P = new P
 
-        val tryWriter: Try[Writer[_, X]] = producer.open
+    var writer: Writer[_, X] = null
 
-        val writer: Writer[_, X] = tryWriter match {
-          case Success(w: Writer[_, X]) => w.asInstanceOf[Writer[_, X]]
-          case Failure(t: Throwable) => throw t
-        }
+    var reader: Reader[_, X] = null
 
-        val tryReader: Try[Reader[_, X]] = consumer.open
+    it("should be possible to register the Producer with the Consumer") {
+      val b1: Try[Boolean] = consumer.register(producer)
+    }
 
-        val reader: Reader[_, X] = tryReader match {
-          case Success(r: Reader[_, X]) => r.asInstanceOf[Reader[_, X]]
-          case Failure(t: Throwable) => throw t
-          case _ => throw new IllegalStateException()
-        }
+    it("should be possible to register the Consumer with the Producer") {
+      val b2: Try[Boolean] = producer.register(consumer)
+    }
 
-        writer.write(new X(1, 1))
-        writer.write(new X(2, 2))
-        writer.write(new X(3, 3))
+    it("the producer should be capable of being opened to obtain a writer") {
+      val tryWriter = producer.open: Try[Writer[_, X]]
 
+      writer = tryWriter match {
+        case Success(w: Writer[_, X]) => w.asInstanceOf[Writer[_, X]]
+        case Failure(t: Throwable) => throw t
+      }
+    }
+
+    it("the consumer should be capable of being opened to obtain a reader") {
+      val tryReader: Try[Reader[_, X]] = consumer.open
+
+      reader = tryReader match {
+        case Success(r: Reader[_, X]) => r.asInstanceOf[Reader[_, X]]
+        case Failure(t: Throwable) => throw t
+        case _ => throw new IllegalStateException()
+      }
+    }
+
+    it("should be possible to write values to a writer") {
+      writer.write(new X(1, 1))
+      writer.write(new X(2, 2))
+      writer.write(new X(3, 3))
+    }
+
+    it("should be possible to read values from a reader") {
         val r1: Try[(Int, X)] = reader.read
         println(r1.get._2.x)
 
@@ -84,8 +96,6 @@ override def initialise(configuration: Configuration): Try[Boolean] = ???
 
         val r3: Try[(Int, X)] = reader.read
         println(r3.get._2.x)
-
-      }
     }
   }
 
