@@ -50,9 +50,9 @@ class ProducerConsumerTest
 
     val producer: P = new P
 
-    var writer: Writer[_, X] = null
+    var writer: Writer[X] = null
 
-    var reader: Reader[_, X] = null
+    var reader: Reader[X] = null
 
     it("should be possible to register the Producer with the Consumer") {
       val b1: Try[Boolean] = consumer.register(producer)
@@ -63,19 +63,19 @@ class ProducerConsumerTest
     }
 
     it("the producer should be capable of being opened to obtain a writer") {
-      val tryWriter = producer.open: Try[Writer[_, X]]
+      val tryWriter = producer.open: Try[Writer[X]]
 
       writer = tryWriter match {
-        case Success(w: Writer[_, X]) => w.asInstanceOf[Writer[_, X]]
+        case Success(w: Writer[X]) => w.asInstanceOf[Writer[X]]
         case Failure(t: Throwable) => throw t
       }
     }
 
     it("the consumer should be capable of being opened to obtain a reader") {
-      val tryReader: Try[Reader[_, X]] = consumer.open
+      val tryReader: Try[Reader[X]] = consumer.open
 
       reader = tryReader match {
-        case Success(r: Reader[_, X]) => r.asInstanceOf[Reader[_, X]]
+        case Success(r: Reader[X]) => r.asInstanceOf[Reader[X]]
         case Failure(t: Throwable) => throw t
         case _ => throw new IllegalStateException()
       }

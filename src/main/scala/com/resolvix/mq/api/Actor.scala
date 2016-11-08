@@ -5,9 +5,9 @@ package com.resolvix.mq.api
   * or consumer of messages.
   *
   */
-trait Actor[A <: Actor[A]]
+trait Actor
 {
   def getId: Int
 
-  def getSelf: A
+  def getSelf: Actor
 }

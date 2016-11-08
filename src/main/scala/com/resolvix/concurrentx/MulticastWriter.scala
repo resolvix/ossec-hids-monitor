@@ -9,8 +9,8 @@ import scala.util.{Success, Try}
   *
   */
 class MulticastWriter[V](
-  writerMap: Map[Int, Writer[_, V]]
-) extends com.resolvix.mq.api.Writer[MulticastWriter[V], V] {
+  writerMap: Map[Int, Writer[V]]
+) extends com.resolvix.mq.api.Writer[V] {
   /**
     *
     * @param v
@@ -19,7 +19,7 @@ class MulticastWriter[V](
   override def write(
     v: V
   ): Try[Boolean] = {
-    for ((y: Int, w: Writer[_, V]) <- writerMap) {
+    for ((y: Int, w: Writer[V]) <- writerMap) {
       w.write(v)
     }
     Success(true)
@@ -29,5 +29,5 @@ class MulticastWriter[V](
     throw new IllegalAccessException()
   }
 
-  def getSelf: MulticastWriter[V] = this
+  override def getSelf: MulticastWriter[V] = this
 }

@@ -77,7 +77,7 @@ trait Consumer[
     * @return
     *    an object providing the caller with a Reader object.
     */
-  override def open[W <: Writer[W, V]](
+  override def open[W <: Writer[V]](
     producer: P
   ): Try[W] = {
     if (super.isRegistered(producer)) {
@@ -99,7 +99,7 @@ trait Consumer[
     *
     * @return
     */
-  def open[R <: Reader[R, V]]: Try[R] = {
+  def open[R <: Reader[V]]: Try[R] = {
     try {
       Success(messageQueueReader.asInstanceOf[R])
     } catch {

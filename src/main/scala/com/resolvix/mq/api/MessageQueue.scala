@@ -18,7 +18,7 @@ trait MessageQueue[V] {
     * @tparam V
     * @return
     */
-  def getReader[R <: Reader[R, V], V](
+  def getReader[R <: Reader[V], V](
     consumer: Any
   ): R
 
@@ -31,7 +31,7 @@ trait MessageQueue[V] {
     * @tparam V
     * @return
     */
-  def getWriter[W <: Writer[W, V], R <: Reader[R, V], V](
+  def getWriter[W <: Writer[V], R <: Reader[V], V](
     producer: Any,
     consumer: Any
   ): W

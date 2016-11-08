@@ -5,8 +5,8 @@ import scala.util.Try
 /**
   * Created by rwbisson on 05/11/2016.
   */
-trait Writer[W <: Writer[W, V], V]
-  extends Actor[W]
+trait Writer[V]
+  extends Actor
 {
   /**
     *
@@ -16,4 +16,6 @@ trait Writer[W <: Writer[W, V], V]
   def write(
     v: V
   ): Try[Boolean]
+
+  override def getSelf: Writer[V]
 }

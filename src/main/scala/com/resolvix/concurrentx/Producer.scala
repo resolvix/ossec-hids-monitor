@@ -31,8 +31,8 @@ trait Producer[
   //
   //
   //
-  protected var writerMap: Map[Int, Writer[_, V] /*MessageQueue[V]#Writer*/]
-    = Map[Int, Writer[_, V]/*MessageQueue[V]#Writer*/]()
+  protected var writerMap: Map[Int, Writer[V] /*MessageQueue[V]#Writer*/]
+    = Map[Int, Writer[V]/*MessageQueue[V]#Writer*/]()
 
   /**
     *
@@ -51,7 +51,7 @@ trait Producer[
     * @param consumer
     * @return
     */
-  override def open[R <: Reader[R, V]](
+  override def open[R <: Reader[V]](
     consumer: C
   ): Try[R] = {
     if (super.isRegistered(consumer)) {
@@ -72,7 +72,7 @@ trait Producer[
     *
     * @return
     */
-  def open[W <: Writer[W, V]]: Try[W] = {
+  def open[W <: Writer[V]]: Try[W] = {
     try {
       //writerMap
 
@@ -83,7 +83,7 @@ trait Producer[
           //if (q)
 
           val r = q match {
-            case Success(w: Writer[_, V]) =>
+            case Success(w: Writer[V]) =>
               println(w)
               (x._1, w)
 
@@ -98,7 +98,7 @@ trait Producer[
         }
       })
 
-      writerMap = qq.toMap[Int, Writer[_, V]]
+      writerMap = qq.toMap[Int, Writer[V]]
 
       Success(new MulticastWriter[V](writerMap).asInstanceOf[W])
     } catch {

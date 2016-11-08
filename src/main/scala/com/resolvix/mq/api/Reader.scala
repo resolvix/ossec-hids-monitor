@@ -6,14 +6,14 @@ import scala.util.Try
 /**
   * Created by rwbisson on 05/11/2016.
   */
-trait Reader[R <: Reader[R, V], V]
-  extends Actor[R]
+trait Reader[V]
+  extends Actor
 {
   /**
     *
     * @return
     */
-  def read[W <: Writer[W, V]]: Try[(Int, V)]
+  def read: Try[(Int, V)]
 
   /**
     *
@@ -21,7 +21,7 @@ trait Reader[R <: Reader[R, V], V]
     * @param unit
     * @return
     */
-  def read[W <: Writer[W, V]](
+  def read(
     timeout: Int,
     unit: TimeUnit
   ): Try[(Int, V)]

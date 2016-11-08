@@ -19,8 +19,8 @@ class MessageQueue[V]
   extends api.MessageQueue[V]
 {
 
-  abstract class Actor[A <: Actor[A]]
-    extends api.Actor[A]
+  abstract class Actor
+    extends api.Actor
   {
     //
     //  Allocate an identifier for the instant Reader.
@@ -37,7 +37,7 @@ class MessageQueue[V]
       *
       * @return
       */
-    def getSelf: A
+    def getSelf: Actor
   }
 
   /**
@@ -56,8 +56,8 @@ class MessageQueue[V]
     */
   class Reader(
     val consumer: Any
-  ) extends Actor[Reader]
-      with api.Reader[Reader, V] {
+  ) extends Actor
+      with api.Reader[V] {
 
     //
     //  Obtain a Reader object for the underlying message stream.
@@ -92,7 +92,7 @@ class MessageQueue[V]
       *
       * @return
       */
-    def read[W <: api.Writer[W, V]]: Try[(Int, V)] = {
+    def read: Try[(Int, V)] = {
       messageConsumer.read match {
         case Success(p: Packet[V]) =>
           Success(
@@ -110,7 +110,7 @@ class MessageQueue[V]
       * @param unit
       * @return
       */
-    def read[P](
+    def read(
       timeout: Int,
       unit: TimeUnit
     ): Try[(Int, V)] = {
@@ -134,8 +134,8 @@ class MessageQueue[V]
   class Writer(
     val producer: Any,
     val consumer: Any
-  ) extends Actor[Writer]
-      with api.Writer[Writer, V]
+  ) extends Actor
+      with api.Writer[V]
   {
     //
     //
@@ -229,8 +229,8 @@ class MessageQueue[V]
   //
   //
   //
-  val idMap: mutable.Map[Int, api.Actor[_]]
-    = mutable.Map[Int, api.Actor[_]]()
+  val idMap: mutable.Map[Int, api.Actor]
+    = mutable.Map[Int, api.Actor]()
 
   //
   //
@@ -244,7 +244,7 @@ class MessageQueue[V]
     * @return
     */
   def allocateId(
-    actor: api.Actor[_]
+    actor: api.Actor
   ): Int = {
     this.synchronized {
       lastAllocatedId += 1
@@ -277,14 +277,14 @@ class MessageQueue[V]
     *
     * @return
     */
-  def getReader[R <: api.Reader[R, V], V](
+  def getReader[R <: api.Reader[V], V](
     consumer: Any
   ): R = {
     idMap.find({
       case (i: Int, r: Reader) => r.consumer.equals(consumer)
       case _ => false
     }) match {
-      case Some((i: Int, a: api.Actor[_])) =>
+      case Some((i: Int, a: api.Actor)) =>
         a.asInstanceOf[R]
 
       case _ =>
@@ -312,7 +312,7 @@ class MessageQueue[V]
     *
     * @return
     */
-  def getWriter[W <: api.Writer[W, V], R <: api.Reader[R, V], V](
+  def getWriter[W <: api.Writer[V], R <: api.Reader[V], V](
     producer: Any,
     consumer: Any
   ): W = {
@@ -322,7 +322,7 @@ class MessageQueue[V]
 
       case _ => false
     }) match {
-      case Some((i: Int, a: api.Actor[_])) =>
+      case Some((i: Int, a: api.Actor)) =>
         a.asInstanceOf[W]
 
       case _ =>
