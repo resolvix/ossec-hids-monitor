@@ -277,20 +277,20 @@ class MessageQueue[V]
     *
     * @return
     */
-  def getReader[R <: api.Reader[V], V](
+  def getReader(
     consumer: Any
-  ): R = {
+  ): Reader = {
     idMap.find({
       case (i: Int, r: Reader) => r.consumer.equals(consumer)
       case _ => false
     }) match {
       case Some((i: Int, a: api.Actor)) =>
-        a.asInstanceOf[R]
+        a.asInstanceOf[Reader]
 
       case _ =>
         val newReader: Reader = new Reader(consumer)
         idMap.put(newReader.getId, newReader)
-        newReader.asInstanceOf[R]
+        newReader
     }
   }
 
@@ -312,10 +312,10 @@ class MessageQueue[V]
     *
     * @return
     */
-  def getWriter[W <: api.Writer[V], R <: api.Reader[V], V](
+  def getWriter(
     producer: Any,
     consumer: Any
-  ): W = {
+  ): Writer = {
     idMap.find({
       case (i: Int, w: Writer) =>
         w.producer.equals(producer) && w.consumer.equals(consumer)
@@ -323,12 +323,12 @@ class MessageQueue[V]
       case _ => false
     }) match {
       case Some((i: Int, a: api.Actor)) =>
-        a.asInstanceOf[W]
+        a.asInstanceOf[Writer]
 
       case _ =>
         val newWriter: Writer = new Writer(producer, consumer)
         idMap.put(newWriter.getId, newWriter)
-        newWriter.asInstanceOf[W]
+        newWriter
     }
   }
 }

@@ -14,25 +14,20 @@ trait MessageQueue[V] {
   /**
     *
     * @param consumer
-    * @tparam R
-    * @tparam V
     * @return
     */
-  def getReader[R <: Reader[V], V](
+  def getReader(
     consumer: Any
-  ): R
+  ): Reader[V]
 
   /**
     *
     * @param producer
     * @param consumer
-    * @tparam W
-    * @tparam R
-    * @tparam V
     * @return
     */
-  def getWriter[W <: Writer[V], R <: Reader[V], V](
+  def getWriter(
     producer: Any,
     consumer: Any
-  ): W
+  ): Writer[V]
 }
