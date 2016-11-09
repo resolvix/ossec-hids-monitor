@@ -48,13 +48,13 @@ trait Producer[V]
     * @param consumer
     * @return
     */
-  override def open[R <: Reader[V]](
+  override def open(
     consumer: api.Consumer[V]
-  ): Try[R] = {
+  ): Try[Reader[V]] = {
     if (super.isRegistered(consumer)) {
       try {
         Success(
-          consumer.open.get.asInstanceOf[R]
+          consumer.open.get
         )
       } catch {
         case t: Throwable =>
@@ -69,13 +69,13 @@ trait Producer[V]
     *
     * @return
     */
-  def open[W <: Writer[V]]: Try[W] = {
+  def open: Try[Writer[V]] = {
     try {
       //writerMap
 
       val qq = actors.collect({
         case x: (Int, api.Consumer[V]) => {
-          val q: Try[W] = x._2.open(getSelf)
+          val q: Try[Writer[V]] = x._2.open(getSelf)
 
           //if (q)
 
@@ -97,7 +97,7 @@ trait Producer[V]
 
       writerMap = qq.toMap[Int, Writer[V]]
 
-      Success(new MulticastWriter[V](writerMap).asInstanceOf[W])
+      Success(new MulticastWriter[V](writerMap))
     } catch {
       case t: Throwable =>
         Failure(t)

@@ -74,12 +74,12 @@ trait Consumer[V]
     * @return
     *    an object providing the caller with a Reader object.
     */
-  override def open[W <: Writer[V]](
+  override def open(
     producer: api.Producer[V]
-  ): Try[W] = {
+  ): Try[Writer[V]] = {
     if (super.isRegistered(producer)) {
       try {
-        getReader.getWriter(producer).asInstanceOf[Try[W]]
+        getReader.getWriter(producer)
       } catch {
         case t: Throwable =>
           Failure(t)

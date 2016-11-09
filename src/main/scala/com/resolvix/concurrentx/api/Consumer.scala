@@ -64,9 +64,9 @@ trait Consumer[V]
     *   to write values to the instant Consumer.
     */
   @throws[ProducerNotRegisteredException]
-  def open[W <: Writer[V]](
+  def open(
     producer: Producer[V]
-  ): Try[W]
+  ): Try[Writer[V]]
 
   /**
     *

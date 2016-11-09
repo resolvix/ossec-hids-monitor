@@ -51,9 +51,9 @@ trait Producer[V]
     * @return
     */
   @throws[ConsumerNotRegisteredException]
-  def open[R <: Reader[V]](
+  def open(
     consumer: Consumer[V]
-  ): Try[R]
+  ): Try[Reader[V]]
 
   /**
     *
