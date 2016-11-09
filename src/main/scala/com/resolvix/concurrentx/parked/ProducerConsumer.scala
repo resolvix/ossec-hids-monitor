@@ -1,7 +1,6 @@
-package com.resolvix.concurrentx.parked
+package com.resolvix.concurrentx
 
 import com.resolvix.concurrentx.api.Configuration
-import com.resolvix.concurrentx.{Consumer, Producer}
 
 import scala.util.Try
 
@@ -14,7 +13,7 @@ trait ProducerConsumer[
   P
 ] {
   class ProducerC
-    extends Producer[ProducerC, CC, C]
+    extends Producer[C]
   {
     /**
       *
@@ -35,7 +34,7 @@ trait ProducerConsumer[
   }
 
   class ConsumerP
-    extends Consumer[ConsumerP, PP, P]
+    extends Consumer[P]
   {
     /**
       *
@@ -69,11 +68,11 @@ trait ProducerConsumer[
     *
     * @return
     */
-  def getConsumer: Consumer[ConsumerP, PP, P] = this.consumer
+  def getConsumer: Consumer[P] = this.consumer
 
   /**
     *
     * @return
     */
-  def getProducer: Producer[ProducerC, CC, C] = this.producer
+  def getProducer: Producer[C] = this.producer
 }

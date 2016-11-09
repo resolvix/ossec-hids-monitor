@@ -7,12 +7,9 @@ import com.resolvix.mq.MessageQueue
 import scala.concurrent.duration.TimeUnit
 import scala.util.{Failure, Success, Try}
 
-trait Consumer[
-  C <: Consumer[C, P, V],
-  P <: Producer[P, C, V],
-  V
-] extends Actor[C, P, V]
-    with api.Consumer[C, P, V]
+trait Consumer[V]
+  extends Actor[api.Consumer[V], api.Producer[V], V]
+    with api.Consumer[V]
 {
   /**
     *
@@ -26,7 +23,7 @@ trait Consumer[
     * @return
     */
   override def close(
-    producer: P
+    producer: api.Producer[V]
   ): Try[Boolean] = {
     /*getReader.getWriter.close(producer) match {
       case Success(b: Boolean) =>
@@ -78,7 +75,7 @@ trait Consumer[
     *    an object providing the caller with a Reader object.
     */
   override def open[W <: Writer[V]](
-    producer: P
+    producer: api.Producer[V]
   ): Try[W] = {
     if (super.isRegistered(producer)) {
       try {
@@ -99,9 +96,9 @@ trait Consumer[
     *
     * @return
     */
-  def open[R <: Reader[V]]: Try[R] = {
+  def open: Try[Reader[V]] = {
     try {
-      Success(messageQueueReader.asInstanceOf[R])
+      Success(messageQueueReader)
     } catch {
       case t: Throwable =>
         Failure(t)
@@ -123,7 +120,7 @@ trait Consumer[
     * @return
     */
   override def register(
-    producer: P
+    producer: api.Producer[V]
   ): Try[Boolean] = {
     super.register(producer)
   }
@@ -134,7 +131,7 @@ trait Consumer[
     * @return
     */
   override def unregister(
-    producer: P
+    producer: api.Producer[V]
   ): Try[Boolean] = {
     super.unregister(producer)
   }

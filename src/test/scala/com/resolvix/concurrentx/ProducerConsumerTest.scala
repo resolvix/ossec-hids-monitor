@@ -21,7 +21,7 @@ class ProducerConsumerTest
   }
 
   class C
-    extends Consumer[C, P, X] {
+    extends Consumer[X] {
     /**
       *
       * @param configuration
@@ -33,7 +33,7 @@ class ProducerConsumerTest
   }
 
   class P
-    extends Producer[P, C, X] {
+    extends Producer[X] {
     /**
       *
       * @param configuration
@@ -43,6 +43,9 @@ class ProducerConsumerTest
 
     override protected def getSelf: P = this
   }
+
+  /*class PC
+    extends ProducerConsumer[PC]*/
 
   describe("For instance of a Producer / Consumer ") {
 

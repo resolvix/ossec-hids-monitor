@@ -20,12 +20,9 @@ import scala.util.{Failure, Success, Try}
   *   specifies the class of values to be passed between the local actor
   *   and the remote actors
   */
-trait Producer[
-  P <: Producer[P, C, V],
-  C <: Consumer[C, P, V],
-  V
-] extends Actor[P, C, V]
-    with api.Producer[P, C, V]
+trait Producer[V]
+  extends Actor[api.Producer[V], api.Consumer[V], V]
+    with api.Producer[V]
 {
 
   //
@@ -40,7 +37,7 @@ trait Producer[
     * @return
     */
   override def close(
-    consumer: C
+    consumer: api.Consumer[V]
   ): Try[Boolean] = {
     /*super.close(consumer)*/
     Success(true)
@@ -52,7 +49,7 @@ trait Producer[
     * @return
     */
   override def open[R <: Reader[V]](
-    consumer: C
+    consumer: api.Consumer[V]
   ): Try[R] = {
     if (super.isRegistered(consumer)) {
       try {
@@ -77,7 +74,7 @@ trait Producer[
       //writerMap
 
       val qq = actors.collect({
-        case x: (Int, C) => {
+        case x: (Int, api.Consumer[V]) => {
           val q: Try[W] = x._2.open(getSelf)
 
           //if (q)
@@ -121,7 +118,7 @@ trait Producer[
     * @return
     */
   override def register(
-    consumer: C
+    consumer: api.Consumer[V]
   ): Try[Boolean] = {
     super.register(consumer)
   }
@@ -131,7 +128,7 @@ trait Producer[
     * @return
     */
   override def unregister(
-    consumer: C
+    consumer: api.Consumer[V]
   ): Try[Boolean] = {
     super.unregister(consumer)
   }

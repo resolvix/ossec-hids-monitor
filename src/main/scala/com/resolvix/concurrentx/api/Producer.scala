@@ -23,11 +23,9 @@ import scala.util.Try
   *   to the consumer
   *
   */
-trait Producer[
-  P <: Producer[P, C, V],
-  C <: Consumer[C, P, V],
-  V
-] extends Actor[P, C, V] {
+trait Producer[V]
+  extends Actor[Producer[V], Consumer[V], V]
+{
 
   /**
     *
@@ -44,7 +42,7 @@ trait Producer[
     * @return
     */
   def close(
-    consumer: C
+    consumer: Consumer[V]
   ): Try[Boolean]
 
   /**
@@ -54,7 +52,7 @@ trait Producer[
     */
   @throws[ConsumerNotRegisteredException]
   def open[R <: Reader[V]](
-    consumer: C
+    consumer: Consumer[V]
   ): Try[R]
 
   /**
@@ -63,7 +61,7 @@ trait Producer[
     * @return
     */
   override def register(
-    consumer: C
+    consumer: Consumer[V]
   ): Try[Boolean]
 
   /**
@@ -72,6 +70,6 @@ trait Producer[
     * @return
     */
   override def unregister(
-    consumer: C
+    consumer: Consumer[V]
   ): Try[Boolean]
 }
