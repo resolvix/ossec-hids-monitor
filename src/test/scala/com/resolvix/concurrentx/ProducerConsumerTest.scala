@@ -20,6 +20,13 @@ class ProducerConsumerTest
 
   }
 
+  class Y(
+    val x: Int,
+    val y: Int
+  ) {
+
+  }
+
   class C
     extends Consumer[X] {
     /**
@@ -44,8 +51,18 @@ class ProducerConsumerTest
     override protected def getSelf: P = this
   }
 
-  /*class PC
-    extends ProducerConsumer[PC]*/
+
+  class PC
+    extends ProducerConsumer[PC, X, Y]
+  {
+
+  }
+
+  class CP
+    extends ConsumerProducer[CP, X, Y]
+  {
+
+  }
 
   describe("For instance of a Producer / Consumer ") {
 
@@ -102,5 +119,91 @@ class ProducerConsumerTest
     }
   }
 
+  describe("For instance of a ProducerConsumer / ConsumerProducer") {
+
+    val producerConsumer: PC = new PC
+
+    val consumerProducer: CP = new CP
+
+    var writerX: Writer[X] = null
+
+    var readerX: Reader[X] = null
+
+    var writerY: Writer[Y] = null
+
+    var readerY: Reader[Y] = null
+
+    var producerX: Producer[X] = null
+
+    var consumerX: Consumer[X] = null
+
+    var producerY: Producer[Y] = null
+
+    var consumerY: Consumer[Y] = null
+
+    it("should be possible to cross-register the ProducerConsumer with the ConsumerProducer") {
+      val b1: Try[Boolean] = producerConsumer.crossregister(consumerProducer)
+      //val b2: Try[Boolean] = consumerProducer.crossregister(producerConsumer)
+    }
+
+    it("should be possible to cross-open the relevant producer / consumer channels") {
+      val tryWriterX = producerConsumer.getProducer.open
+
+      writerX = tryWriterX.get
+
+      val tryReaderX = consumerProducer.getConsumer.open
+
+      readerX = tryReaderX.get
+
+      val tryWriterY = consumerProducer.getProducer.open
+
+      writerY = tryWriterY.get
+
+      val tryReaderY = producerConsumer.getConsumer.open
+
+      readerY = tryReaderY.get
+    }
+
+    it("should be possible to write values to the producer / consumer") {
+
+      writerX.write(new X(1, 9))
+      writerX.write(new X(2, 8))
+      writerX.write(new X(3, 7))
+
+    }
+
+    it("should be possible to read and write values from the consumer / producer") {
+
+      def process(rX: Reader[X], wY: Writer[Y]): Unit = {
+        rX.read match {
+          case Success(r: (Int, X)) =>
+            wY.write(
+              new Y(r._2.y, r._2.x)
+            )
+
+          case Failure(t: Throwable) =>
+            throw t
+        }
+      }
+
+      process(readerX, writerY)
+      process(readerX, writerY)
+      process(readerX, writerY)
+
+    }
+
+    it("should be possible to read values from the producer / consumer") {
+
+      val r1: Try[(Int, Y)] = readerY.read
+      println(r1.get._2.x)
+
+      val r2: Try[(Int, Y)] = readerY.read
+      println(r2.get._2.x)
+
+      val r3: Try[(Int, Y)] = readerY.read
+      println(r3.get._2.x)
+
+    }
+  }
 
 }

@@ -1,9 +1,8 @@
-package com.resolvix.concurrentx.parked
+package com.resolvix.concurrentx
 
-import com.resolvix.concurrentx.api.Configuration
-import com.resolvix.concurrentx.{Consumer, Producer}
+import com.resolvix.concurrentx.api.{Configuration}
 
-import scala.util.Try
+import scala.util.{Success, Try}
 
 /**
   * The ConsumerProducer trait provides a generic implementation of
@@ -38,12 +37,10 @@ import scala.util.Try
   *   refers to the type of messages represented by P
   */
 trait ConsumerProducer[
-  COPR <: ConsumerProducer[COPR, PC, CP, C, P],
-  PC <: Producer[PC, COPR, C],
-  CP <: Consumer[CP, COPR, P],
+  CP <: ConsumerProducer[CP, C, P],
   C,
   P
-] {
+] extends api.ConsumerProducer[CP, C, P] {
 
   /**
     * Concrete implementation of a class applying the Consumer trait class to
@@ -52,7 +49,7 @@ trait ConsumerProducer[
     * of type C.
     */
   class ConsumerC
-    extends Consumer[ConsumerC, PC, C]
+    extends Consumer[C]
   {
     /**
       *
@@ -79,7 +76,7 @@ trait ConsumerProducer[
     * type P.
     */
   class ProducerP
-    extends Producer[ProducerP, CP, P]
+    extends Producer[P]
   {
     /**
       *
@@ -113,11 +110,98 @@ trait ConsumerProducer[
     *
     * @return
     */
-  def getConsumer: ConsumerC = this.consumerC
+  def getConsumer: Consumer[C] = this.consumerC
 
   /**
     *
     * @return
     */
-  def getProducer: ProducerP = this.producerP
+  def getProducer: Producer[P] = this.producerP
+
+  override def register[CP2 <: api.Consumer[P]](
+    consumer: CP2
+  ): Try[Boolean] = ???
+
+  /**
+    *
+    * @param producer
+    * @tparam PC2
+    * @return
+    */
+  override def registerPP[PC2 <: api.Producer[C]](
+    producer: PC2
+  ): Try[Boolean] = ???
+
+  /**
+    *
+    * @param producerConsumer
+    * @tparam PC
+    * @return
+    */
+  override def crossregister[PC <: api.ProducerConsumer[PC, C, P]](
+    producerConsumer: PC
+  ): Try[Boolean] = {
+
+    val consumerP: api.Consumer[P] = producerConsumer.getConsumer
+
+    try {
+
+      getProducer.register(
+        consumerP
+      )
+
+      consumerP.register(getProducer)
+
+    } catch {
+      case e: Exception => throw e
+    }
+
+    val producerC: api.Producer[C] = producerConsumer.getProducer
+
+    try {
+
+      getConsumer.register(
+        producerConsumer.getProducer
+      )
+
+      producerC.register(getConsumer)
+
+    } catch {
+      case e: Exception => throw e
+    }
+  }
+
+  /**
+    *
+    * @param consumerProducer
+    * @tparam CP2
+    * @return
+    */
+  override def registerP[CP2 <: api.ConsumerProducer[CP2, P, _]](
+    consumerProducer: CP2
+  ): Try[Boolean] = {
+
+    getProducer.register(
+      consumerProducer.getConsumer
+    )
+
+    Success(true)
+  }
+
+  /**
+    *
+    * @param producerConsumer
+    * @tparam PC
+    * @return
+    */
+  override def registerC[PC <: api.ProducerConsumer[PC, C, _]](
+    producerConsumer: PC
+  ): Try[Boolean] = {
+
+    getConsumer.register(
+      producerConsumer.getProducer
+    )
+
+    Success(true)
+  }
 }

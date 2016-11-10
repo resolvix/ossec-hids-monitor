@@ -111,7 +111,9 @@ trait Producer[V]
     */
   def initialise(
     configuration: Configuration
-  ): Try[Boolean]
+  ): Try[Boolean] = {
+    Success(true)
+  }
 
   /**
     *
