@@ -65,8 +65,8 @@ object AbstractModule
 
 import AbstractModule._
 
-abstract class AbstractModule[A <: Alert]
-  extends Module[A]
+abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
+  extends Module[A, M]
 {
   def doConsume(c: A): Try[Boolean]
 

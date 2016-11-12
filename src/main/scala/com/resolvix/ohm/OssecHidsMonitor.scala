@@ -4,7 +4,7 @@ import java.time._
 import java.time.chrono.ChronoLocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.util
+import java.lang.Thread
 import java.util.NoSuchElementException
 
 import com.resolvix.ohm.OssecHidsMonitor.ModuleType
@@ -27,7 +27,7 @@ object OssecHidsMonitor {
 
   class FailureModuleAlertStatus(
     alert: api.Alert,
-    module: api.Module[AlertT]
+    module: api.Module[AlertT, api.ModuleAlertStatus]
   ) extends api.ModuleAlertStatus {
     override def getId: Int = alert.getId
 
@@ -53,7 +53,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    private val module: api.Module[api.Alert],
+    private val module: api.Module[api.Alert, api.ModuleAlertStatus],
 
     //
     //
@@ -81,7 +81,7 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.Module[api.Alert]
+  ) extends api.Module[api.Alert, api.ModuleAlertStatus]
   {
 
     //
@@ -108,7 +108,7 @@ object OssecHidsMonitor {
 
         updateModuleAlertStatus(moduleAlertStatus)
 
-      case Failure(e: ModuleAlertProcessingException[AlertT] @unchecked) => {
+      case Failure(e: ModuleAlertProcessingException[AlertT, ModuleAlertStatus] @unchecked) => {
         updateModuleAlertStatus(
           new FailureModuleAlertStatus(
             e.getAlert,
@@ -150,10 +150,6 @@ object OssecHidsMonitor {
       }
     }
 
-    /*override def doConsume(c: C): Try[Boolean] = {
-      module.doConsume(c)
-    }*/
-
     override def getDescriptor: String = {
       module.getDescriptor
     }
@@ -172,31 +168,10 @@ object OssecHidsMonitor {
       module.initialise(configuration)
     }
 
-    /*override def process(
-      alert: AlertT,
-      location: Option[Location],
-      signature: Option[Signature]
-    ): Promise[ModuleAlertStatus] = {
-      module.process(
-        alert,
-        location,
-        signature
-      )
-    }*/
-
-
-
-    //override def getConsumer: Consumer[C] = module.getConsumer
-
-    //override def getProducer: Producer[P] = module.getProducer
-
-
-
-
     var thread: Thread = null
 
     override def run(): Unit = {
-      thread = new Thread(module)
+      thread = new Thread()
       thread.start()
     }
 
@@ -210,135 +185,17 @@ object OssecHidsMonitor {
     }
   }
 
-  /*class ProducerConsumer(
-    alerts: List[api.Alert],
-    configuration: Map[String, Any]
-  ) extends Producer[api.Alert] {
-    def run(): Unit = {
-      alerts.foreach {
-        (a: api.Alert) => produce(a)
-      }
-    }
-  }*/
-
-  class CaptiveProducer[A <: api.Alert]
-    extends Producer[A]
-  {
-    /**
-      *
-      * @return
-      */
-    override protected def getSelf: Producer[A] = this
-
-    /**
-      *
-      * @param configuration
-      * @return
-      */
-    override def initialise(
-      configuration: Configuration
-    ): Try[Boolean] = {
-      Success(true)
-    }
-  }
-
-  /**
-    *
-    * @tparam A
-    */
-  class CaptiveProducerFactory[A <: api.Alert]
-    extends ProducerFactory[CaptiveProducerFactory[A], Producer[A], ConsumerPipe[A], Consumer[A], ProducerPipe[A], A]
-  {
-    /**
-      *
-      * @return
-      */
-    override def newInstance: Producer[A] = {
-      new CaptiveProducer[A]
-    }
-  }
-
-  class CaptiveConsumer[M <: api.ModuleAlertStatus]
-    extends Consumer[M]
-  {
-    /**
-      *
-      * @return
-      */
-    override protected def getSelf: Consumer[M] = this
-
-    /**
-      *
-      * @param configuration
-      * @return
-      */
-    override def initialise(
-      configuration: Configuration
-    ): Try[Boolean] = {
-      Success(true)
-    }
-  }
-
-  /**
-    *
-    * @tparam M
-    */
-  class CaptiveConsumerFactory[M <: api.ModuleAlertStatus]
-    extends ConsumerFactory[CaptiveConsumerFactory[M], Consumer[M], Producer[M],  M]
-  {
-    /**
-      *
-      * @return
-      */
-    override def newInstance: Consumer[M] = {
-      new CaptiveConsumer[M]
-    }
-  }
-
   /**
     *
     * @tparam A
     * @tparam M
     */
   class ProducerConsumer[A <: Alert, M <: ModuleAlertStatus]
-    extends ConsumerProducer[
-      CaptiveConsumerFactory[M],
-      Producer[M],
-      Consumer[M],
-      M,
-      CaptiveProducerFactory[A],
-      Producer[A],
-      Consumer[A],
-      A
-    ] {
+    extends com.resolvix.ccs.runnable.ProducerConsumer[ProducerConsumer[A, M], A, M]
+  {
+    override def doConsume(c: M): Try[Boolean] = ???
 
-    //
-    //
-    //
-    private val consumerFactory: CaptiveConsumerFactory[M] = new CaptiveConsumerFactory[M]()
-
-    //
-    //
-    //
-    private val producerFactory: CaptiveProducerFactory[A] = new CaptiveProducerFactory[A]()
-
-    /**
-      *
-      * @return
-      */
-    override def getConsumerFactory[CF <: ConsumerFactory[CF, Consumer[M], Producer[M], M]]:
-      ConsumerFactory[CF, Consumer[M], Producer[M], M] = {
-        consumerFactory.asInstanceOf[ConsumerFactory[CF, Consumer[M], Producer[M], M]]
-      }
-
-    /**
-      *
-      * @return
-      */
-    override def getProducerFactory[PF <: ProducerFactory[PF, Producer[A], Consumer[A], A]]:
-      ProducerFactory[PF, Producer[A], Consumer[A], A] = {
-        producerFactory.asInstanceOf[ProducerFactory[PF, Producer[A], Consumer[A], A]]
-      }
+    override def doProduce(): Try[A] = ???
   }
 
   //
@@ -392,7 +249,7 @@ object OssecHidsMonitor {
   private final val IsoDateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
 
-  type ModuleType = api.Module[AlertT]
+  type ModuleType = api.Module[AlertT, ModuleAlertStatus]
 
   //
   //

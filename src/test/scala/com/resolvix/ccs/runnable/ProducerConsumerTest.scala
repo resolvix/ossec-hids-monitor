@@ -95,7 +95,7 @@ class ProducerConsumerTest
       thread1 = new Thread(consumerX)
       thread1.start()
 
-      //thread2 = new Thread(producerY)
+      thread2 = new Thread(producerY)
       //thread2.start()
 
     }
@@ -133,7 +133,9 @@ class ProducerConsumerTest
 
       consumerX.finish()
       thread1.join()
-      //thread2.join()
+
+      producerY.finish()
+      thread2.join()
     }
   }
 }
