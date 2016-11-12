@@ -1,5 +1,7 @@
 package com.resolvix.ccs.runnable
 
+import com.resolvix.mq.api.Writer
+
 import scala.util.{Failure, Success}
 
 /**
@@ -14,10 +16,13 @@ trait Producer[V]
     */
   override def run(): Unit = {
     super.start()
+
+    val writer: Writer[V] = open.get
+
     while (isRunning) {
       doProduce() match {
         case Success(t) =>
-        //produce(t)
+          writer.write(t)
 
         case Failure(e: Exception) =>
         //
