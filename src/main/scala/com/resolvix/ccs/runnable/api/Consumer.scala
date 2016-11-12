@@ -1,5 +1,7 @@
 package com.resolvix.ccs.runnable.api
 
+import scala.util.Try
+
 trait Consumer[V]
   extends com.resolvix.ccs.api.Consumer[V]
   with Runnable
@@ -8,7 +10,7 @@ trait Consumer[V]
     *
     * @return
     */
-  def doConsume(v: V): Unit
+  def doConsume(v: V): Try[Boolean]
 
   /**
     *

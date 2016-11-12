@@ -3,7 +3,7 @@ package com.resolvix.ccs.runnable
 import com.resolvix.mq.api.{Reader, Writer}
 import org.scalatest.FunSpec
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class ProducerConsumerTest
   extends FunSpec
@@ -25,13 +25,17 @@ class ProducerConsumerTest
   class PC
     extends com.resolvix.ccs.runnable.ProducerConsumer[PC, X, Y]
   {
+    override def doConsume(c: Y): Try[Boolean] = ???
 
+    override def doProduce(): Try[X] = ???
   }
 
   class CP
     extends com.resolvix.ccs.runnable.ConsumerProducer[CP, X, Y]
   {
+    override def doConsume(c: X): Try[Boolean] = ???
 
+    override def doProduce(): Try[Y] = ???
   }
 
   describe("For an instance of a runnable ProducerConsumer and ConsumerProducer") {
@@ -56,16 +60,21 @@ class ProducerConsumerTest
 
     var consumerY: Consumer[Y] = null
 
-
-    it("should be possible to cross-registerd the ProducerConsumer with the ConsumerProducer") {
-      //val b1: Try[Boolean] = producerConsumer.crossregister(consumerProducer)
+    it("should be possible to cross-registered the ProducerConsumer with the ConsumerProducer") {
+      val b1: Try[Boolean] = producerConsumer.crossregister(consumerProducer)
     }
 
-    /**it("should be possible to open the producer and consumer channels") {
+    it("should be possible to open the producer and consumer channels") {
       writerX = producerConsumer.getProducer.open.get
-      readerY = producerConsumer.getConsumer.
+      assert(writerX != null, "writerX is null")
 
-    }*/
+      readerY = producerConsumer.getConsumer.open match {
+        case Success(readerY: Reader[Y]) => readerY
+        case Failure(t: Throwable) => throw t
+      }
+
+      assert(readerY != null, "readerY is null")
+    }
 
     it("should be possible to start the producer / consumer, and consumer / producer threads") {
 
@@ -75,11 +84,27 @@ class ProducerConsumerTest
 
     it("should be possible to write values to the producer") {
 
-
+      writerX.write(new X(1,9))
+      writerX.write(new X(2,8))
+      writerX.write(new X(3,7))
+      writerX.write(new X(4,6))
+      writerX.write(new X(5,5))
 
     }
 
     it("should be possible to read values from the consumer") {
+
+      val r1 = readerY.read
+      println(r1.get._2.x)
+
+      val r2 = readerY.read
+      println(r2.get._2.x)
+
+      val r3 = readerY.read
+      println(r3.get._2.x)
+
+      val r4 = readerY.read
+      println(r4.get._2.x)
 
     }
   }

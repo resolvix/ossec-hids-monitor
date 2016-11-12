@@ -7,7 +7,6 @@ import com.resolvix.mq.api.Reader
 import scala.concurrent.TimeoutException
 import scala.util.{Failure, Success, Try}
 
-
 trait Consumer[V]
   extends api.Consumer[V]
 {
@@ -15,7 +14,7 @@ trait Consumer[V]
     *
     * @return
     */
-  def doConsume(v: V): Unit
+  def doConsume(v: V): Try[Boolean]
 
   /**
     *

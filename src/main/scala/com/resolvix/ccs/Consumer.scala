@@ -98,7 +98,7 @@ trait Consumer[V]
     */
   def open: Try[Reader[V]] = {
     try {
-      Success(messageQueueReader)
+      Success(getReader)
     } catch {
       case t: Throwable =>
         Failure(t)

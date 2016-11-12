@@ -47,6 +47,12 @@ trait Producer[V]
 
   /**
     *
+    * @return
+    */
+  def open: Try[Writer[V]]
+
+  /**
+    *
     * @param consumer
     * @return
     */
