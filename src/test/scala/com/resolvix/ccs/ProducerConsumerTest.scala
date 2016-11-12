@@ -1,6 +1,6 @@
-package com.resolvix.concurrentx
+package com.resolvix.ccs
 
-import com.resolvix.concurrentx.api.Configuration
+import com.resolvix.ccs.api.Configuration
 import com.resolvix.mq.MessageQueue
 import com.resolvix.mq.api.{Reader, Writer}
 import org.scalatest.FunSpec

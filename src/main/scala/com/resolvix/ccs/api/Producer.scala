@@ -1,4 +1,4 @@
-package com.resolvix.concurrentx.api
+package com.resolvix.ccs.api
 
 import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.sio.api

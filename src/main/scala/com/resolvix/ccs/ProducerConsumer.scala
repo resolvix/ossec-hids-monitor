@@ -1,6 +1,6 @@
-package com.resolvix.concurrentx
+package com.resolvix.ccs
 
-import com.resolvix.concurrentx.api._
+import com.resolvix.ccs.api._
 
 import scala.util.{Success, Try}
 
@@ -62,12 +62,24 @@ trait ProducerConsumer[
   /**
     *
     */
-  private val consumer: ConsumerC = new ConsumerC
+  private val consumer: ConsumerC = createConsumerC
 
   /**
     *
     */
-  private val producer: ProducerP = new ProducerP
+  private val producer: ProducerP = createProducerP
+
+  /**
+    *
+    * @return
+    */
+  protected def createConsumerC: ConsumerC = new ConsumerC
+
+  /**
+    *
+    * @return
+    */
+  protected def createProducerP: ProducerP = new ProducerP
 
   /**
     *

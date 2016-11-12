@@ -1,6 +1,6 @@
-package com.resolvix.concurrentx
+package com.resolvix.ccs
 
-import com.resolvix.concurrentx.api.{Configuration, ConsumerNotRegisteredException}
+import com.resolvix.ccs.api.{Configuration, ConsumerNotRegisteredException}
 
 import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.mq.MessageQueue
@@ -25,11 +25,39 @@ trait Producer[V]
     with api.Producer[V]
 {
 
+  /**
+    *
+    * @param writerMap
+    */
+  class MulticastWriter(
+    writerMap: Map[Int, Writer[V]]
+  ) extends com.resolvix.mq.api.Writer[V] {
+    /**
+      *
+      * @param v
+      * @return
+      */
+    override def write(
+      v: V
+    ): Try[Boolean] = {
+      for ((y: Int, w: Writer[V]) <- writerMap) {
+        w.write(v)
+      }
+      Success(true)
+    }
+
+    override def getId: Int = {
+      throw new IllegalAccessException()
+    }
+
+    override def getSelf: MulticastWriter = this
+  }
+
   //
   //
   //
-  protected var writerMap: Map[Int, Writer[V] /*MessageQueue[V]#Writer*/]
-    = Map[Int, Writer[V]/*MessageQueue[V]#Writer*/]()
+  protected var writerMap: Map[Int, Writer[V]]
+    = Map[Int, Writer[V]]()
 
   /**
     *
@@ -71,15 +99,9 @@ trait Producer[V]
     */
   def open: Try[Writer[V]] = {
     try {
-      //writerMap
-
-      val qq = actors.collect({
+      writerMap = actors.collect({
         case x: (Int, api.Consumer[V]) => {
-          val q: Try[Writer[V]] = x._2.open(getSelf)
-
-          //if (q)
-
-          val r = q match {
+          x._2.open(getSelf) match {
             case Success(w: Writer[V]) =>
               println(w)
               (x._1, w)
@@ -90,14 +112,10 @@ trait Producer[V]
             case _ =>
               throw new IllegalStateException()
           }
-
-          r
         }
       })
 
-      writerMap = qq.toMap[Int, Writer[V]]
-
-      Success(new MulticastWriter[V](writerMap))
+      Success(new MulticastWriter(writerMap))
     } catch {
       case t: Throwable =>
         Failure(t)

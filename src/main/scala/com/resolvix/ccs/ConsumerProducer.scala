@@ -1,6 +1,6 @@
-package com.resolvix.concurrentx
+package com.resolvix.ccs
 
-import com.resolvix.concurrentx.api.{Configuration}
+import com.resolvix.ccs.api.{Configuration}
 
 import scala.util.{Success, Try}
 
@@ -36,11 +36,9 @@ import scala.util.{Success, Try}
   * @tparam P
   *   refers to the type of messages represented by P
   */
-trait ConsumerProducer[
-  CP <: ConsumerProducer[CP, C, P],
-  C,
-  P
-] extends api.ConsumerProducer[CP, C, P] {
+trait ConsumerProducer[CP <: ConsumerProducer[CP, C, P], C, P]
+  extends api.ConsumerProducer[CP, C, P]
+{
 
   /**
     * Concrete implementation of a class applying the Consumer trait class to
@@ -99,12 +97,24 @@ trait ConsumerProducer[
   /**
     *
     */
-  private val consumerC: ConsumerC = new ConsumerC
+  private val consumerC: ConsumerC = createConsumerC
 
   /**
     *
     */
-  private val producerP: ProducerP = new ProducerP
+  private val producerP: ProducerP = createProducerP
+
+  /**
+    *
+    * @return
+    */
+  protected def createConsumerC: ConsumerC = new ConsumerC
+
+  /**
+    *
+    * @return
+    */
+  protected def createProducerP: ProducerP = new ProducerP
 
   /**
     *

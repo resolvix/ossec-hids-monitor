@@ -1,4 +1,4 @@
-package com.resolvix.concurrentx.api
+package com.resolvix.ccs.runnable.api
 
 /**
   * Created by rwbisson on 16/10/16.

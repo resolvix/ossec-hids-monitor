@@ -1,4 +1,4 @@
-package com.resolvix.concurrentx.api
+package com.resolvix.ccs.api
 
 import scala.util.Try
 

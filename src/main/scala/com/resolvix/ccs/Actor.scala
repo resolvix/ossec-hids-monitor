@@ -1,6 +1,6 @@
-package com.resolvix.concurrentx
+package com.resolvix.ccs
 
-import com.resolvix.concurrentx.api.Configuration
+import com.resolvix.ccs.api.Configuration
 
 import scala.util.{Failure, Success, Try}
 

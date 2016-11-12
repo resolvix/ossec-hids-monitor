@@ -1,6 +1,6 @@
-package com.resolvix.concurrentx
+package com.resolvix.ccs
 
-import com.resolvix.concurrentx.api.{Configuration, ProducerNotRegisteredException}
+import com.resolvix.ccs.api.{Configuration, ProducerNotRegisteredException}
 import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.mq.MessageQueue
 
