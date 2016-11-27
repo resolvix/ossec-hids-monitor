@@ -358,15 +358,21 @@ object OssecHidsMonitor {
       args
     )
 
-    if (commandLine.hasOption("help")) {
-      displayHelp()
-      return
-    }
+    commandLine.getOptions.mkString(" ") match {
+      case "help" =>
+        displayHelp()
 
-    if (commandLine.hasOption("list")) {
-      displayModules()
-      return
+      case "list" =>
+        displayModules()
+
+      case _ =>
+        execute(commandLine)
     }
+  }
+
+  def execute(
+    commandLine: cli.CommandLine
+  ): Unit = {
 
     //
     //

@@ -1,7 +1,5 @@
 package com.resolvix.ccs.runnable
 
-import com.resolvix.ccs.runnable.api.{Consumer, Producer}
-
 import scala.util.Try
 
 /**
