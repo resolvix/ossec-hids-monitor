@@ -1,11 +1,11 @@
 package com.resolvix.ccs
 
 import com.resolvix.ccs.api.{Configuration, ConsumerNotRegisteredException}
-
 import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.mq.MessageQueue
 
 import scala.concurrent.duration.TimeUnit
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -85,7 +85,7 @@ trait Producer[V]
           consumer.open.get
         )
       } catch {
-        case t: Throwable =>
+        case NonFatal(t) =>
           Failure(t)
       }
     } else {
@@ -117,7 +117,7 @@ trait Producer[V]
 
       Success(new MulticastWriter(writerMap))
     } catch {
-      case t: Throwable =>
+      case NonFatal(t) =>
         Failure(t)
     }
   }

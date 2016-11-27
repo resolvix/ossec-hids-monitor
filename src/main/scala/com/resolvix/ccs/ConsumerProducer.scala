@@ -1,7 +1,8 @@
 package com.resolvix.ccs
 
-import com.resolvix.ccs.api.{Configuration}
+import com.resolvix.ccs.api.Configuration
 
+import scala.util.control.NonFatal
 import scala.util.{Success, Try}
 
 /**
@@ -163,7 +164,8 @@ trait ConsumerProducer[CP <: ConsumerProducer[CP, C, P], C, P]
       consumerP.register(getProducer)
 
     } catch {
-      case e: Exception => throw e
+      case NonFatal(t) =>
+        throw t
     }
 
     val producerC: api.Producer[C] = producerConsumer.getProducer
@@ -177,7 +179,8 @@ trait ConsumerProducer[CP <: ConsumerProducer[CP, C, P], C, P]
       producerC.register(getConsumer)
 
     } catch {
-      case e: Exception => throw e
+      case NonFatal(t) =>
+        throw t
     }
   }
 

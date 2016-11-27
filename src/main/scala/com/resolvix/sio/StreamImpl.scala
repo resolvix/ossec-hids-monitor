@@ -3,6 +3,7 @@ package com.resolvix.sio
 import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue, TimeoutException}
 
 import scala.concurrent.duration.TimeUnit
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -29,7 +30,7 @@ class StreamImpl[V]
       try {
         Success(queue.offer(v))
       } catch {
-        case t: Throwable =>
+        case NonFatal(t) =>
           Failure(t)
       }
     }

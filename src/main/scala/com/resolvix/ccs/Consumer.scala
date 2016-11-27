@@ -5,6 +5,7 @@ import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.mq.MessageQueue
 
 import scala.concurrent.duration.TimeUnit
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 trait Consumer[V]
@@ -81,7 +82,7 @@ trait Consumer[V]
       try {
         getReader.getWriter(producer)
       } catch {
-        case t: Throwable =>
+        case NonFatal(t) =>
           Failure(t)
       }
     } else {
@@ -100,7 +101,7 @@ trait Consumer[V]
     try {
       Success(getReader)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t) =>
         Failure(t)
     }
   }
