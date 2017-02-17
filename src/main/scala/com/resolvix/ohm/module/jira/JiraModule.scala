@@ -1,27 +1,43 @@
 package com.resolvix.ohm.module.jira
 
+import com.resolvix.ohm.OssecHidsMonitor.ActiveModule
 import com.resolvix.ohm.{Category, Location, Signature}
-import com.resolvix.ohm.api.{Alert, Module, ModuleAlertStatus}
+import com.resolvix.ohm.api.{Alert, AvailableModule, Module, ModuleAlertStatus}
 import com.resolvix.ohm.module.AbstractModule
 import com.resolvix.ohm.module.api.NewStageAlert
 
 import scala.concurrent.{ExecutionContext, Promise}
-import scala.util.{Success, Try}
+import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
-class JiraModule
-  extends AbstractModule[NewStageAlert]
+object JiraModule
+  extends AvailableModule
 {
-  override def doConsume(c: NewStageAlert): Try[Boolean] = ???
+  def doInstantiate(
+    configuration: Map[String, Any]
+  ): Module[_ <: Alert, _ <: ModuleAlertStatus] = {
+    new JiraModule(configuration)
+  }
 
   override def getDescriptor: String = "Module for rendering OSSEC HIDS alerts to a JIRA-issue based report."
 
   override def getHandle: String = "JIRA"
+}
+
+class JiraModule(
+  configuration: Map[String, Any]
+) extends AbstractModule[JiraModule, NewStageAlert, ModuleAlertStatus] {
+  override def doConsume(c: NewStageAlert): Try[Boolean] = ???
+
+  override def doProduce(): Try[ModuleAlertStatus] = ???
+
+  override def getDescriptor: String = JiraModule.getDescriptor
+
+  override def getHandle: String = JiraModule.getHandle
 
   override def getId: Int = ???
 
-  override def initialise(
-    configuration: Map[String, Any]
-  ): Try[Boolean] = {
+  override def initialise(): Try[Boolean] = {
     Success(false)
   }
 

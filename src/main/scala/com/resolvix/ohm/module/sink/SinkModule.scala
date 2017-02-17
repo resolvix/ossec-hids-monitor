@@ -1,8 +1,8 @@
 package com.resolvix.ohm.module.sink
 
-import com.resolvix.concurrent.Pipe
+import com.resolvix.ohm.OssecHidsMonitor.ActiveModule
 import com.resolvix.ohm.{Location, Signature, api}
-import com.resolvix.ohm.api.{Alert, Module, ModuleAlertStatus}
+import com.resolvix.ohm.api.{Alert, Module, ModuleAlertStatus, AvailableModule}
 import com.resolvix.ohm.module
 import com.resolvix.ohm.module.AbstractModule
 import com.resolvix.ohm.module.api.NewStageAlert
@@ -10,24 +10,38 @@ import com.resolvix.ohm.module.api.NewStageAlert
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
-/**
-  * Created by rwbisson on 10/10/16.
-  */
-class SinkModule
-  extends AbstractModule[Alert]
+object SinkModule
+  extends AvailableModule
 {
-  override def doConsume(c: Alert): Try[Boolean] = {
-    println("SinkModule.doConsume: " + c.toString)
-    Success(true)
+  def doInstantiate(
+    configuration: Map[String, Any]
+  ): Module[_ <: Alert, _ <: ModuleAlertStatus] = {
+    new SinkModule(configuration)
   }
 
   override def getDescriptor: String = "Module for sinking OSSEC HIDS alerts."
 
   override def getHandle: String = "SINK"
+}
+
+/**
+  * Created by rwbisson on 10/10/16.
+  */
+class SinkModule(
+  configuration: Map[String, Any]
+) extends AbstractModule[SinkModule, Alert, ModuleAlertStatus] {
+  override def doConsume(c: Alert): Try[Boolean] = {
+    println("SinkModule.doConsume: " + c.toString)
+    Success(true)
+  }
+
+  def getDescriptor: String = SinkModule.getDescriptor
+
+  def getHandle: String = SinkModule.getHandle
 
   override def getId: Int = 2
 
-  override def initialise(configuration: Map[String, Any]): Try[Boolean] = {
+  override def initialise(): Try[Boolean] = {
     Success(false)
   }
 
@@ -45,6 +59,8 @@ class SinkModule
 
     override def getStatusId: Int = statusId
   }
+
+
 
   /*override def process(
     alert: Alert,
@@ -74,6 +90,8 @@ class SinkModule
     f
   }*/
 
+
+  override def doProduce(): Try[ModuleAlertStatus] = ???
 
   override def run(): Unit = {
     println("SinkModule.run: starting thread")

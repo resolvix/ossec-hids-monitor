@@ -2,7 +2,6 @@ package com.resolvix.ohm.module
 
 import java.time.Instant
 
-import com.resolvix.concurrent.Pipe
 //import com.resolvix.concurrent.api.RunnableConsumerProducer
 import com.resolvix.ohm.{Location, Signature}
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}

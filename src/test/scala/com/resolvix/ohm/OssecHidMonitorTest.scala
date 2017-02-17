@@ -2,7 +2,7 @@ package com.resolvix.ohm
 
 import java.time.LocalDateTime
 
-import com.resolvix.ohm.OssecHidsMonitor.ModuleType
+import com.resolvix.ohm.OssecHidsMonitor.AvailableModuleType
 import com.resolvix.ohm.api.ModuleAlertStatus
 import com.resolvix.ohm.dao.TestOssecHidsDAO
 import org.scalatest.FlatSpec
@@ -39,8 +39,8 @@ class OssecHidMonitorTest
         throw t
     }
 
-    val modules: List[ModuleType] = OssecHidsMonitor.getModules(
-      (m: ModuleType) => m.getHandle.equalsIgnoreCase("sink")
+    val modules: List[AvailableModuleType] = OssecHidsMonitor.getAvailableModules(
+      (m: AvailableModuleType) => m.getHandle.equalsIgnoreCase("sink")
     )
 
     ossecHidsMonitor.process(

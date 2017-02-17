@@ -20,12 +20,13 @@ import com.atlassian.util.concurrent.{Effect, Promise}
 
 import scala.util.{Failure, Success, Try}
 import scala.collection.JavaConverters._
+import scala.util.control.NonFatal
 
-object JiraClient {
+object JiraSession {
   /**
     *
     */
-  class JiraRestClientFactory
+  object jiraRestClientFactory
     extends com.atlassian.jira.rest.client.api.JiraRestClientFactory
   {
     override def createWithBasicHttpAuthentication(
@@ -50,7 +51,7 @@ object JiraClient {
       def applicationProperties(
         serverUri: URI
       ): ApplicationProperties = new ApplicationProperties {
-        override def getDisplayName: String = ???
+        override def getDisplayName: String = "OHM JIRA Rest Client"
         override def getHomeDirectory: File = new File(".")
         override def getPropertyValue(s: String): String = ???
         override def getBaseUrl: String = serverUri.getPath
@@ -127,15 +128,16 @@ object JiraClient {
       )
     }
   }
-
-
 }
 
-class JiraClient(
+class JiraSession(
   private val serverUri: URI,
   private val userName: String,
   private val password: String
 ) {
+
+  import JiraSession._
+
   /**
     *
     * @tparam T
@@ -197,15 +199,13 @@ class JiraClient(
     }
   }
 
-  private val jiraRestClientFactory: JiraClient.JiraRestClientFactory
-    = new JiraClient.JiraRestClientFactory
-
-  private val jiraRestClient: JiraRestClient = jiraRestClientFactory
-    .createWithBasicHttpAuthentication(
-      serverUri,
-      userName,
-      password
-    )
+  private val jiraRestClient: JiraRestClient
+    = jiraRestClientFactory
+      .createWithBasicHttpAuthentication(
+        serverUri,
+        userName,
+        password
+      )
 
   private val componentRestClient: ComponentRestClient
     = jiraRestClient.getComponentClient
@@ -272,7 +272,17 @@ class JiraClient(
       )
       Success(true)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
+        Failure(t)
+    }
+  }
+
+  def close(): Try[Boolean] = {
+    try {
+      jiraRestClient.close()
+      Success(true)
+    } catch {
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -285,7 +295,7 @@ class JiraClient(
         componentRestClient.getComponent(uri).claim()
       )
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -298,7 +308,7 @@ class JiraClient(
           issueRestClient.getIssue(issueId).claim()
       )
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -309,7 +319,7 @@ class JiraClient(
     try {
       Success(metadataRestClient.getIssueType(uri).claim())
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -320,7 +330,7 @@ class JiraClient(
         = metadataRestClient.getIssueTypes().claim()
       Success(issueTypes.asScala)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -333,7 +343,7 @@ class JiraClient(
         = project.getIssueTypes
       Success(issueTypes.asScala)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -344,7 +354,7 @@ class JiraClient(
     try {
       Success(metadataRestClient.getPriority(uri).claim())
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -355,7 +365,7 @@ class JiraClient(
         = metadataRestClient.getPriorities.claim()
       Success(priorities.asScala)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -366,7 +376,7 @@ class JiraClient(
     try {
       Success(projectRestClient.getProject(projectId).claim())
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -377,7 +387,7 @@ class JiraClient(
     try {
       Success(projectRestClient.getProject(uri).claim())
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -388,7 +398,7 @@ class JiraClient(
         = projectRestClient.getAllProjects.claim()
       Success(projects.asScala)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -399,7 +409,7 @@ class JiraClient(
     try {
       Success(projectRolesRestClient.getRole(uri).claim())
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -412,7 +422,7 @@ class JiraClient(
         = projectRolesRestClient.getRoles(project.getSelf).claim()
       Success(roles.asScala)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -423,7 +433,7 @@ class JiraClient(
     try {
       Success(metadataRestClient.getStatus(uri).claim())
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -434,7 +444,7 @@ class JiraClient(
         = metadataRestClient.getStatuses.claim()
       Success(statuses.asScala)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -445,7 +455,7 @@ class JiraClient(
     try {
       Success(project.getVersions.asScala)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }

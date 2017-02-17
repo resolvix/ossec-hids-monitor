@@ -2,7 +2,7 @@ package com.resolvix.ohm.module
 
 import java.util.concurrent.TimeUnit
 
-import com.resolvix.concurrent.api.{Configuration, ConsumerPipe}
+import com.resolvix.ccs.runnable.ConsumerProducer
 import com.resolvix.ohm.api.{Alert, Consumer, Module, ModuleAlertStatus, Producer}
 
 import scala.concurrent._
@@ -10,7 +10,7 @@ import scala.util.{Failure, Success, Try}
 
 object AbstractModule
 {
-  class ConsumerC[C]
+  /*class ConsumerC[C]
     extends Consumer[C]
   {
     override protected def getSelf: Consumer[C] = this
@@ -60,19 +60,18 @@ object AbstractModule
       * @return
       */
     override def initialise(configuration: Configuration): Try[Boolean] = ???
-  }
+  }*/
 }
 
-import AbstractModule._
-
-abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
+abstract class AbstractModule[AM <: AbstractModule[AM, A, M], A <: Alert, M <: ModuleAlertStatus]
   extends Module[A, M]
+  with ConsumerProducer[AM, A, M]
 {
+  import AbstractModule._
+
   def doConsume(c: A): Try[Boolean]
 
   def run(): Unit = {
-    super.start()
-
     val consumerC: Consumer[A] = getConsumer
 
     val consumerPipe: ConsumerPipe[A] = consumerC.openX match {
@@ -100,5 +99,9 @@ abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
           throw t
       }
     }
+  }
+
+  def finish(): Unit = {
+
   }
 }

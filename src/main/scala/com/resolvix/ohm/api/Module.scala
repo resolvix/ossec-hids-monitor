@@ -22,9 +22,9 @@ trait Module[A <: Alert, M <: ModuleAlertStatus]
 
   def getId: Int
 
-  def initialise(
-    configuration: Map[String, Any]
-  ): Try[Boolean]
+  def finish(): Unit
+
+  def initialise(): Try[Boolean]
 
   def run(): Unit
 
