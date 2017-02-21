@@ -2,9 +2,9 @@ package com.resolvix.ohm.module.text
 
 import com.resolvix.ohm.OssecHidsMonitor.ActiveModule
 import com.resolvix.ohm.{Category, Location, Signature, api}
-import com.resolvix.ohm.api.{Alert, AvailableModule, Module, ModuleAlertStatus}
+import com.resolvix.ohm.api.{AvailableModule, Module}
 import com.resolvix.ohm.module.AbstractModule
-import com.resolvix.ohm.module.api.NewStageAlert
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus, NewStageAlert}
 
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Success, Try}

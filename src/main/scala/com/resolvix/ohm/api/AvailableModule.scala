@@ -1,6 +1,6 @@
 package com.resolvix.ohm.api
 
-import com.resolvix.ohm.module.api.NewStageAlert
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus, NewStageAlert}
 
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}

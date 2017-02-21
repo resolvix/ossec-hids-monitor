@@ -3,7 +3,7 @@ package com.resolvix.ohm.dao.api
 import java.time.{LocalDateTime, Period}
 
 import com.resolvix.ohm.{Category, Location, Signature, SignatureCategoryMaplet}
-import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus}
 
 import scala.util.Try
 

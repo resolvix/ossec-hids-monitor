@@ -1,14 +1,22 @@
 package com.resolvix.ohm.module
 
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 import com.resolvix.ccs.runnable.ConsumerProducer
-import com.resolvix.ohm.api.{Alert, Consumer, Module, ModuleAlertStatus, Producer}
+import com.resolvix.ohm.api.{Consumer, Producer}
+import com.resolvix.ohm.module.api.{Alert, Instance, ModuleAlertStatus}
+import com.typesafe.config.{Config, ConfigValue}
 
 import scala.concurrent._
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
-object AbstractModule
+/**
+  *
+  */
+abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
+  extends api.Module[A, M]
 {
   /*class ConsumerC[C]
     extends Consumer[C]
@@ -61,47 +69,147 @@ object AbstractModule
       */
     override def initialise(configuration: Configuration): Try[Boolean] = ???
   }*/
-}
 
-abstract class AbstractModule[AM <: AbstractModule[AM, A, M], A <: Alert, M <: ModuleAlertStatus]
-  extends Module[A, M]
-  with ConsumerProducer[AM, A, M]
-{
-  import AbstractModule._
+  /**
+    *
+    * @tparam AI
+    * @tparam A
+    *    refers to the type of alert to be consumed by the module
+    *
+    * @tparam M
+    */
+  abstract class AbstractInstance[AI <: AbstractInstance[AI, A, M], A <: Alert, M <: ModuleAlertStatus]
+    extends api.Instance[A, M]
+      with ConsumerProducer[AI, A, M]
+  {
+    /**
+      *
+      * @param c
+      * @return
+      */
+    def doConsume(c: A): Try[Boolean]
 
-  def doConsume(c: A): Try[Boolean]
+    /**
+      *
+      */
+    def run(): Unit = {
+      val consumerC: Consumer[A] = getConsumer
 
-  def run(): Unit = {
-    val consumerC: Consumer[A] = getConsumer
-
-    val consumerPipe: ConsumerPipe[A] = consumerC.openX match {
-      case Success(consumerPipe: ConsumerPipe[A]) =>
-        consumerPipe
-
-      case Failure(t: Throwable) =>
-        throw t
-    }
-
-    while (super.isRunning || super.isFinishing) {
-      consumerPipe.read(5000, TimeUnit.MILLISECONDS) match {
-        case Success(a: A @unchecked) =>
-          doConsume(a)
-
-        case Failure(e: TimeoutException) =>
-          //
-          //  Do nothing
-          //
-          if (super.isFinishing) {
-            finished()
-          }
+      val consumerPipe: ConsumerPipe[A] = consumerC.openX match {
+        case Success(consumerPipe: ConsumerPipe[A]) =>
+          consumerPipe
 
         case Failure(t: Throwable) =>
           throw t
       }
+
+      while (super.isRunning || super.isFinishing) {
+        consumerPipe.read(5000, TimeUnit.MILLISECONDS) match {
+          case Success(a: A @unchecked) =>
+            doConsume(a)
+
+          case Failure(e: TimeoutException) =>
+            //
+            //  Do nothing
+            //
+            if (super.isFinishing) {
+              finished()
+            }
+
+          case Failure(t: Throwable) =>
+            throw t
+        }
+      }
+    }
+
+    /**
+      *
+      */
+    def finish(): Unit = {
+
     }
   }
 
-  def finish(): Unit = {
+  /**
+    *
+    * @return
+    */
+  protected def getConfigurations: Array[String]
 
+  /**
+    *
+    * @return
+    */
+  override def getDescription: String = ???
+
+  /**
+    *
+    * @return
+    */
+  override def getHandle: String = ???
+
+  /**
+    *
+    * @return
+    */
+  override def getId: Int = ???
+
+  /**
+    *
+    * @param config
+    * @return
+    */
+  protected def newInstance(
+    config: Map[String, Any]
+  ): Try[Instance[A, M]] = ???
+
+  /**
+    *
+    * @return
+    */
+  override def getInstance(): Try[Instance[A, M]] = {
+    newInstance(Map[String, Any]())
   }
+
+  /**
+    *
+    * @param config
+    * @return
+    */
+  override def getInstance(
+    config: Config
+  ): Try[Instance[A, M]] = {
+    newInstance(
+      getConfigurations.map(
+        (h: String) => config.getValue(h) match {
+          case v: ConfigValue =>
+            (h, v.unwrapped())
+        }
+      ).toMap
+    )
+  }
+
+  /**
+    *
+    * @param properties
+    * @return
+    */
+  override def getInstance(
+    properties: Properties
+  ): Try[Instance[A, M]] = {
+    newInstance(
+      getConfigurations.map(
+        (h: String) => properties.get(h) match {
+          case a: Any =>
+            (h, a)
+        }
+      ).toMap
+    )
+  }
+
+  /**
+    *
+    * @return
+    */
+  override def getName: String = ???
 }

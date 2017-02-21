@@ -3,8 +3,9 @@ package com.resolvix.ohm
 import java.time.LocalDateTime
 
 import com.resolvix.ohm.OssecHidsMonitor.AvailableModuleType
-import com.resolvix.ohm.api.ModuleAlertStatus
 import com.resolvix.ohm.dao.TestOssecHidsDAO
+import com.resolvix.ohm.module.api
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus}
 import org.scalatest.FlatSpec
 
 import scala.util.{Failure, Success}
@@ -27,7 +28,7 @@ class OssecHidMonitorTest
 
   it should "xxx" in {
 
-    val alerts: List[api.Alert] = testOssecHidsDAO.getAlertsForPeriod(
+    val alerts: List[Alert] = testOssecHidsDAO.getAlertsForPeriod(
       1,
       fromDateTime,
       toDateTime

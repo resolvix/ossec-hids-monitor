@@ -2,7 +2,8 @@ package com.resolvix.ohm.dao
 import java.time.{Instant, LocalDateTime}
 
 import com.resolvix.ohm.{Category, Location, Signature, SignatureCategoryMaplet}
-import com.resolvix.ohm.api.{Alert => AlertT, ModuleAlertStatus => ModuleAlertStatusT}
+import com.resolvix.ohm.api.{ModuleAlertStatus => ModuleAlertStatusT}
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.{Success, Try}
@@ -18,7 +19,7 @@ class TestOssecHidsDAO
     id: Int,
     locationId: Int,
     ruleId: Int
-  ) extends AlertT {
+  ) extends Alert {
     override def getId: Int = id
 
     override def getAlertId: String = ???
@@ -45,7 +46,7 @@ class TestOssecHidsDAO
     moduleId: Int,
     reference: String,
     statusId: Int
-  ) extends ModuleAlertStatusT
+  ) extends ModuleAlertStatus
   {
     override def getId: Int = alertId
 
@@ -60,8 +61,8 @@ class TestOssecHidsDAO
     serverId: Int,
     fromDateTime: LocalDateTime,
     toDateTime: LocalDateTime
-  ): Try[List[AlertT]] = {
-    val listAlert: List[AlertT] = List[AlertT](
+  ): Try[List[Alert]] = {
+    val listAlert: List[Alert] = List[Alert](
       new TestAlert(1, 1, 1),
       new TestAlert(2, 2, 2),
       new TestAlert(3, 3, 3),
@@ -113,11 +114,11 @@ class TestOssecHidsDAO
     Success(listSignatureCategoryMaplet)
   }
 
-  override def getModuleAlertStatusesById(id: Int): Try[List[ModuleAlertStatusT]] = {
-    Success(List[ModuleAlertStatusT]())
+  override def getModuleAlertStatusesById(id: Int): Try[List[ModuleAlertStatus]] = {
+    Success(List[ModuleAlertStatus]())
   }
 
-  private val listBuffer: ListBuffer[ModuleAlertStatusT] = new ListBuffer[ModuleAlertStatusT]()
+  private val listBuffer: ListBuffer[ModuleAlertStatus] = new ListBuffer[ModuleAlertStatus]()
 
   override def setModuleAlertStatus(
     alertId: Int,

@@ -10,8 +10,8 @@ import java.util.NoSuchElementException
 import com.resolvix.ohm.OssecHidsMonitor.AvailableModuleType
 import com.resolvix.ohm.api.{AvailableModule, Consumer, ModuleAlertProcessingException, ModuleAlertStatus, Producer, Alert => AlertT, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
-import com.resolvix.ohm.module.{NewStage, jira, sink, text}
-import com.resolvix.ohm.module.api.NewStageAlert
+import com.resolvix.ohm.module.{NewStage, api, jira, sink, text}
+import com.resolvix.ohm.module.api.{ModuleAlertStatus, NewStageAlert}
 import com.resolvix.ohm.module.jira.JiraModule
 import com.resolvix.ohm.module.sink.SinkModule
 import com.resolvix.ohm.module.text.TextModule
@@ -27,8 +27,8 @@ object OssecHidsMonitor {
 
   class FailureModuleAlertStatus(
     alert: api.Alert,
-    module: api.Module[AlertT, api.ModuleAlertStatus]
-  ) extends api.ModuleAlertStatus {
+    module: api.Module[api.Alert, ModuleAlertStatus]
+  ) extends ModuleAlertStatus {
     override def getId: Int = alert.getId
 
     override def getModuleId: Int = module.getId
@@ -53,7 +53,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    private val module: api.Module[_ <: api.Alert, _ <: api.ModuleAlertStatus],
+    private val module: api.Module[_ <: api.Alert, _ <: ModuleAlertStatus],
 
     //
     //
@@ -70,7 +70,7 @@ object OssecHidsMonitor {
     //  to the data store without having to make reference
     //  to the mechanics of storage.
     //
-    private val updateModuleAlertStatus: Function[api.ModuleAlertStatus, Try[Boolean]],
+    private val updateModuleAlertStatus: Function[ModuleAlertStatus, Try[Boolean]],
 
     //
     //  The function to execute to log a failure.
@@ -81,19 +81,19 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.Module[api.Alert, api.ModuleAlertStatus]
+  ) extends api.Module[api.Alert, ModuleAlertStatus]
   {
 
     //
     //
     //
-    private val mapPromiseModuleAlertStatus: mutable.Map[Int, Promise[api.ModuleAlertStatus]]
-      = new mutable.HashMap[Int, Promise[api.ModuleAlertStatus]]
+    private val mapPromiseModuleAlertStatus: mutable.Map[Int, Promise[ModuleAlertStatus]]
+      = new mutable.HashMap[Int, Promise[ModuleAlertStatus]]
 
-    private val mapFutureModuleAlertStatus: mutable.Map[Int, Future[api.ModuleAlertStatus]]
-    = new mutable.HashMap[Int, Future[api.ModuleAlertStatus]]
+    private val mapFutureModuleAlertStatus: mutable.Map[Int, Future[ModuleAlertStatus]]
+    = new mutable.HashMap[Int, Future[ModuleAlertStatus]]
 
-    def onComplete: Function[Try[api.ModuleAlertStatus], Unit] = {
+    def onComplete: Function[Try[ModuleAlertStatus], Unit] = {
       case Success(moduleAlertStatus: ModuleAlertStatus) =>
         println(
           "AID: "
@@ -108,7 +108,7 @@ object OssecHidsMonitor {
 
         updateModuleAlertStatus(moduleAlertStatus)
 
-      case Failure(e: ModuleAlertProcessingException[AlertT, ModuleAlertStatus] @unchecked) => {
+      case Failure(e: ModuleAlertProcessingException[api.Alert, ModuleAlertStatus] @unchecked) => {
         updateModuleAlertStatus(
           new FailureModuleAlertStatus(
             e.getAlert,
@@ -125,7 +125,7 @@ object OssecHidsMonitor {
 
     def appendPromiseModuleAlertStatus(
       alert: api.Alert,
-      promiseModuleAlertStatus: Promise[api.ModuleAlertStatus]
+      promiseModuleAlertStatus: Promise[ModuleAlertStatus]
     ): Try[Boolean] = {
       try {
         //
@@ -618,7 +618,7 @@ class OssecHidsMonitor(
   }
 
   private def updateModuleAlertStatus(
-    moduleAlertStatus: api.ModuleAlertStatus
+    moduleAlertStatus: ModuleAlertStatus
   ): Try[Boolean] = {
     println("updateModuleAlertStatus: ")
     ossecHidsDAO.setModuleAlertStatus(

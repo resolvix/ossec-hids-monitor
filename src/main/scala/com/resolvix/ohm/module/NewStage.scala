@@ -2,9 +2,10 @@ package com.resolvix.ohm.module
 
 import java.time.Instant
 
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus}
+
 //import com.resolvix.concurrent.api.RunnableConsumerProducer
 import com.resolvix.ohm.{Location, Signature}
-import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
 import com.resolvix.ohm.module.api.NewStageAlert
 

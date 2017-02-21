@@ -2,10 +2,10 @@ package com.resolvix.ohm.module.sink
 
 import com.resolvix.ohm.OssecHidsMonitor.ActiveModule
 import com.resolvix.ohm.{Location, Signature, api}
-import com.resolvix.ohm.api.{Alert, Module, ModuleAlertStatus, AvailableModule}
+import com.resolvix.ohm.api.{AvailableModule, Module, ModuleAlertStatus}
 import com.resolvix.ohm.module
 import com.resolvix.ohm.module.AbstractModule
-import com.resolvix.ohm.module.api.NewStageAlert
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus, NewStageAlert}
 
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
@@ -50,7 +50,7 @@ class SinkModule(
     private val moduleId: Int,
     private val reference: String,
     private val statusId: Int
-  ) extends api.ModuleAlertStatus {
+  ) extends ModuleAlertStatus {
     override def getId: Int = id
 
     override def getModuleId: Int = moduleId

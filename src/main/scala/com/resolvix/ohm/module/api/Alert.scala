@@ -1,8 +1,6 @@
-package com.resolvix.ohm.api
+package com.resolvix.ohm.module.api
 
 import java.time.Instant
-
-import scala.util.Try
 
 trait Alert {
 
