@@ -3,9 +3,9 @@ package com.resolvix.ohm
 import java.time.LocalDateTime
 
 import com.resolvix.ohm.OssecHidsMonitor.AvailableModuleType
+import com.resolvix.ohm.api.ModuleAlertStatus
 import com.resolvix.ohm.dao.TestOssecHidsDAO
 import com.resolvix.ohm.module.api
-import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus}
 import org.scalatest.FlatSpec
 
 import scala.util.{Failure, Success}

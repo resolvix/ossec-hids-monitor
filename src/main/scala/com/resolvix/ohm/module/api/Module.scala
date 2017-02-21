@@ -2,6 +2,7 @@ package com.resolvix.ohm.module.api
 
 import java.util.Properties
 
+import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 import com.typesafe.config.Config
 
 import scala.util.Try

@@ -4,8 +4,8 @@ import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 import com.resolvix.ccs.runnable.ConsumerProducer
-import com.resolvix.ohm.api.{Consumer, Producer}
-import com.resolvix.ohm.module.api.{Alert, Instance, ModuleAlertStatus}
+import com.resolvix.ohm.api.{Alert, Consumer, ModuleAlertStatus, Producer}
+import com.resolvix.ohm.module.api.Instance
 import com.typesafe.config.{Config, ConfigValue}
 
 import scala.concurrent._
@@ -78,7 +78,7 @@ abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
     *
     * @tparam M
     */
-  abstract class AbstractInstance[AI <: AbstractInstance[AI, A, M], A <: Alert, M <: ModuleAlertStatus]
+  abstract class AbstractInstance[AI <: AbstractInstance[AI]]
     extends api.Instance[A, M]
       with ConsumerProducer[AI, A, M]
   {

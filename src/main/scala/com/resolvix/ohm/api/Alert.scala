@@ -1,4 +1,4 @@
-package com.resolvix.ohm.module.api
+package com.resolvix.ohm.api
 
 import java.time.Instant
 

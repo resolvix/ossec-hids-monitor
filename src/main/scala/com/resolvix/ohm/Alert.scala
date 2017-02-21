@@ -1,8 +1,6 @@
 package com.resolvix.ohm
 import java.time.Instant
 
-import com.resolvix.ohm.module.api.Alert
-
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
@@ -72,7 +70,7 @@ class Alert(
   //
   private val alertId: String
 
-) extends Alert {
+) extends api.Alert {
 
   override def getId: Int = id
 

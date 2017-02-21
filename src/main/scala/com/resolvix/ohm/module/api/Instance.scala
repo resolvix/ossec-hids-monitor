@@ -1,5 +1,7 @@
 package com.resolvix.ohm.module.api
 
+import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
+
 import scala.util.Try
 
 /**

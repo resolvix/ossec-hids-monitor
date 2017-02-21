@@ -8,10 +8,10 @@ import java.lang.Thread
 import java.util.NoSuchElementException
 
 import com.resolvix.ohm.OssecHidsMonitor.AvailableModuleType
-import com.resolvix.ohm.api.{AvailableModule, Consumer, ModuleAlertProcessingException, ModuleAlertStatus, Producer, Alert => AlertT, Module => ModuleT}
+import com.resolvix.ohm.api.{AvailableModule, Consumer, ModuleAlertProcessingException, ModuleAlertStatus, Producer, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
 import com.resolvix.ohm.module.{NewStage, api, jira, sink, text}
-import com.resolvix.ohm.module.api.{ModuleAlertStatus, NewStageAlert}
+import com.resolvix.ohm.module.api.NewStageAlert
 import com.resolvix.ohm.module.jira.JiraModule
 import com.resolvix.ohm.module.sink.SinkModule
 import com.resolvix.ohm.module.text.TextModule
@@ -53,7 +53,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    private val module: api.Module[_ <: api.Alert, _ <: ModuleAlertStatus],
+    private val module: api.Module[_ <: Alert, _ <: ModuleAlertStatus],
 
     //
     //
@@ -81,7 +81,7 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.Module[api.Alert, ModuleAlertStatus]
+  ) extends api.Module[Alert, ModuleAlertStatus]
   {
 
     //
@@ -108,7 +108,7 @@ object OssecHidsMonitor {
 
         updateModuleAlertStatus(moduleAlertStatus)
 
-      case Failure(e: ModuleAlertProcessingException[api.Alert, ModuleAlertStatus] @unchecked) => {
+      case Failure(e: ModuleAlertProcessingException[api.Alert, api.ModuleAlertStatus] @unchecked) => {
         updateModuleAlertStatus(
           new FailureModuleAlertStatus(
             e.getAlert,
@@ -124,7 +124,7 @@ object OssecHidsMonitor {
     }
 
     def appendPromiseModuleAlertStatus(
-      alert: api.Alert,
+      alert: Alert,
       promiseModuleAlertStatus: Promise[ModuleAlertStatus]
     ): Try[Boolean] = {
       try {
@@ -250,8 +250,8 @@ object OssecHidsMonitor {
   //
   //
   //
-  private final val AvailableModules: List[AvailableModule]
-    = List[AvailableModule](
+  private final val AvailableModules: List[Module]
+    = List[Module](
       jira.JiraModule,
       text.TextModule,
       sink.SinkModule
@@ -452,7 +452,7 @@ class OssecHidsMonitor(
 
   import OssecHidsMonitor.ActiveModule
 
-  type ActiveModuleType = ActiveModule[api.Alert]
+  type ActiveModuleType = ActiveModule[Alert]
 
   def logFailure: PartialFunction[Throwable, Try[Boolean]] = {
     case (t: Throwable) => Success(true)

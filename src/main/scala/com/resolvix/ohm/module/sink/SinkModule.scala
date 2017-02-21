@@ -2,26 +2,31 @@ package com.resolvix.ohm.module.sink
 
 import com.resolvix.ohm.OssecHidsMonitor.ActiveModule
 import com.resolvix.ohm.{Location, Signature, api}
-import com.resolvix.ohm.api.{AvailableModule, Module, ModuleAlertStatus}
+import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 import com.resolvix.ohm.module
 import com.resolvix.ohm.module.AbstractModule
-import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus, NewStageAlert}
+import com.resolvix.ohm.module.api.{Instance, Module, NewStageAlert}
 
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
 object SinkModule
-  extends AvailableModule
+  extends AbstractModule[Alert, ModuleAlertStatus]
+  with Module[Alert, ModuleAlertStatus]
 {
-  def doInstantiate(
-    configuration: Map[String, Any]
-  ): Module[_ <: Alert, _ <: ModuleAlertStatus] = {
-    new SinkModule(configuration)
-  }
+  override protected def getConfigurations: Array[String] = ???
 
-  override def getDescriptor: String = "Module for sinking OSSEC HIDS alerts."
+  override def getDescription: String = "Module for sinking OSSEC HIDS alerts."
 
   override def getHandle: String = "SINK"
+
+  protected override def newInstance(
+    configuration: Map[String, Any]
+  ): Try[Instance[Alert, ModuleAlertStatus]] = {
+    Success(
+      new SinkModule(configuration)
+    )
+  }
 }
 
 /**
@@ -29,15 +34,20 @@ object SinkModule
   */
 class SinkModule(
   configuration: Map[String, Any]
-) extends AbstractModule[SinkModule, Alert, ModuleAlertStatus] {
+) extends AbstractModule[Alert, ModuleAlertStatus]#AbstractInstance[SinkModule]
+  with Instance[Alert, ModuleAlertStatus]
+{
   override def doConsume(c: Alert): Try[Boolean] = {
     println("SinkModule.doConsume: " + c.toString)
     Success(true)
   }
 
-  def getDescriptor: String = SinkModule.getDescriptor
 
-  def getHandle: String = SinkModule.getHandle
+  /**
+    *
+    * @return
+    */
+  override def getModule: Module[Alert, ModuleAlertStatus] = SinkModule
 
   override def getId: Int = 2
 

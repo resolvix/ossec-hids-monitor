@@ -1,7 +1,6 @@
 package com.resolvix.ohm.api
 
 import com.resolvix.ccs.runnable.ConsumerProducer
-import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus}
 
 import scala.util.Try
 
