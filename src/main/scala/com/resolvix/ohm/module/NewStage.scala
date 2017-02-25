@@ -1,5 +1,6 @@
 package com.resolvix.ohm.module
 
+import java.nio.channels.Pipe
 import java.time.Instant
 
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
@@ -53,7 +54,7 @@ class NewStage(
     def getSignature: Option[Signature] = signature
   }
 
-  override val pipe: Pipe[Alert] = new Pipe[Alert]()
+  //override val pipe: Pipe[Alert] = new Pipe[Alert]()
 
   override def apply(alert: Alert): AugmentedAlert = {
     val moduleAlertStatuses: List[ModuleAlertStatus]

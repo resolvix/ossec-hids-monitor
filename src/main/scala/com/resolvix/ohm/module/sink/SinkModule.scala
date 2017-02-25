@@ -34,7 +34,7 @@ object SinkModule
   */
 class SinkModule(
   configuration: Map[String, Any]
-) extends AbstractModule[Alert, ModuleAlertStatus]#AbstractInstance[SinkModule]
+) extends AbstractModule.AbstractInstance[SinkModule, Alert, ModuleAlertStatus]
   with Instance[Alert, ModuleAlertStatus]
 {
   override def doConsume(c: Alert): Try[Boolean] = {

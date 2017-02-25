@@ -27,11 +27,20 @@ object JiraModule
       new JiraModule(configuration)
     )
   }
+
+  /**
+    *
+    * @param configuration
+    * @return
+    */
+  override def getInstance(
+    configuration: Map[String, Any]
+  ): Try[Instance[NewStageAlert, ModuleAlertStatus]] = ???
 }
 
 class JiraModule(
   configuration: Map[String, Any]
-) extends AbstractModule[NewStageAlert, ModuleAlertStatus]#AbstractInstance[JiraModule]
+) extends AbstractModule.AbstractInstance[JiraModule, NewStageAlert, ModuleAlertStatus]
   with Instance[NewStageAlert, ModuleAlertStatus]
 {
   override def doConsume(c: NewStageAlert): Try[Boolean] = ???
@@ -54,6 +63,16 @@ class JiraModule(
     Promise()
   }*/
 
+
+  /**
+    *
+    */
+  override def run(): Unit = ???
+
+  /**
+    *
+    * @return
+    */
   override def terminate(): Try[Boolean] = {
     Success(false)
   }

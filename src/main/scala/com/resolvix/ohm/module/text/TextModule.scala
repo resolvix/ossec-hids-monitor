@@ -33,7 +33,7 @@ object TextModule
 
 class TextModule(
   configuration: Map[String, Any]
-) extends AbstractModule[NewStageAlert, ModuleAlertStatus]#AbstractInstance[TextModule]
+) extends AbstractModule.AbstractInstance[TextModule, NewStageAlert, ModuleAlertStatus]
   with Instance[NewStageAlert, ModuleAlertStatus]
 {
   override def doConsume(c: NewStageAlert): Try[Boolean] = ???
@@ -58,6 +58,11 @@ class TextModule(
   ): Promise[ModuleAlertStatus] = {
     Promise()
   }*/
+
+  /**
+    *
+    */
+  override def run(): Unit = ???
 
   override def terminate(): Try[Boolean] = {
     Success(false)

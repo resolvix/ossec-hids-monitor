@@ -3,14 +3,76 @@ package com.resolvix.ohm.module
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 
-import com.resolvix.ccs.runnable.ConsumerProducer
 import com.resolvix.ohm.api.{Alert, Consumer, ModuleAlertStatus, Producer}
-import com.resolvix.ohm.module.api.Instance
 import com.typesafe.config.{Config, ConfigValue}
 
 import scala.concurrent._
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
+
+object AbstractModule
+{
+
+  /**
+    *
+    * @tparam AI
+    * @tparam A
+    *    refers to the type of alert to be consumed by the module
+    *
+    * @tparam M
+    */
+  abstract class AbstractInstance[AI <: AbstractInstance[AI, A, M], A <: Alert, M <: ModuleAlertStatus]
+    extends com.resolvix.ohm.module.api.Instance[A, M]
+      with com.resolvix.ccs.runnable.api.ConsumerProducer[AI, A, M]
+  {
+    /**
+      *
+      * @param C
+      * @return
+      */
+    def doConsume(c: A): Try[Boolean]
+
+    /**
+      *
+      */
+    /*def run(): Unit = {
+      val consumerC: Consumer[A] = getConsumer
+
+      val consumerPipe: ConsumerPipe[A] = consumerC.openX match {
+        case Success(consumerPipe: ConsumerPipe[A]) =>
+          consumerPipe
+
+        case Failure(t: Throwable) =>
+          throw t
+      }
+
+      while (super.isRunning || super.isFinishing) {
+        consumerPipe.read(5000, TimeUnit.MILLISECONDS) match {
+          case Success(a: A @unchecked) =>
+            doConsume(a)
+
+          case Failure(e: TimeoutException) =>
+            //
+            //  Do nothing
+            //
+            if (super.isFinishing) {
+              finished()
+            }
+
+          case Failure(t: Throwable) =>
+            throw t
+        }
+      }
+    }*/
+
+    /**
+      *
+      */
+    def finish(): Unit = {
+
+    }
+  }
+}
 
 /**
   *
@@ -18,6 +80,7 @@ import scala.util.{Failure, Success, Try}
 abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
   extends api.Module[A, M]
 {
+  import AbstractModule._
   /*class ConsumerC[C]
     extends Consumer[C]
   {
@@ -69,66 +132,6 @@ abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
       */
     override def initialise(configuration: Configuration): Try[Boolean] = ???
   }*/
-
-  /**
-    *
-    * @tparam AI
-    * @tparam A
-    *    refers to the type of alert to be consumed by the module
-    *
-    * @tparam M
-    */
-  abstract class AbstractInstance[AI <: AbstractInstance[AI]]
-    extends api.Instance[A, M]
-      with ConsumerProducer[AI, A, M]
-  {
-    /**
-      *
-      * @param c
-      * @return
-      */
-    def doConsume(c: A): Try[Boolean]
-
-    /**
-      *
-      */
-    def run(): Unit = {
-      val consumerC: Consumer[A] = getConsumer
-
-      val consumerPipe: ConsumerPipe[A] = consumerC.openX match {
-        case Success(consumerPipe: ConsumerPipe[A]) =>
-          consumerPipe
-
-        case Failure(t: Throwable) =>
-          throw t
-      }
-
-      while (super.isRunning || super.isFinishing) {
-        consumerPipe.read(5000, TimeUnit.MILLISECONDS) match {
-          case Success(a: A @unchecked) =>
-            doConsume(a)
-
-          case Failure(e: TimeoutException) =>
-            //
-            //  Do nothing
-            //
-            if (super.isFinishing) {
-              finished()
-            }
-
-          case Failure(t: Throwable) =>
-            throw t
-        }
-      }
-    }
-
-    /**
-      *
-      */
-    def finish(): Unit = {
-
-    }
-  }
 
   /**
     *

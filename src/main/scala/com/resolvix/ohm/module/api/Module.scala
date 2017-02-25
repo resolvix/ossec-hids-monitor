@@ -49,6 +49,15 @@ trait Module[A <: Alert, M <: ModuleAlertStatus]
 
   /**
     *
+    * @param configuration
+    * @return
+    */
+  def getInstance(
+    configuration: Map[String, Any]
+  ): Try[Instance[A, M]]
+
+  /**
+    *
     * @param properties
     * @return
     */

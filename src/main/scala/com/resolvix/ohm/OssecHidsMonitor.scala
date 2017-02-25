@@ -10,8 +10,8 @@ import java.util.NoSuchElementException
 import com.resolvix.ohm.OssecHidsMonitor.AvailableModuleType
 import com.resolvix.ohm.api.{AvailableModule, Consumer, ModuleAlertProcessingException, ModuleAlertStatus, Producer, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
-import com.resolvix.ohm.module.{NewStage, api, jira, sink, text}
-import com.resolvix.ohm.module.api.NewStageAlert
+import com.resolvix.ohm.module.{NewStage, jira, sink, text}
+import com.resolvix.ohm.module.api.{Module, Instance, NewStageAlert}
 import com.resolvix.ohm.module.jira.JiraModule
 import com.resolvix.ohm.module.sink.SinkModule
 import com.resolvix.ohm.module.text.TextModule
@@ -42,7 +42,7 @@ object OssecHidsMonitor {
     * The ModuleHandle class is intended to wrap modules with local
     * application state and module specific functionality.
     *
-    * @param module
+    * @param instance
     * @param isEnabled
     * @param updateModuleAlertStatus
     * @param logFailure
@@ -53,7 +53,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    private val module: api.Module[_ <: Alert, _ <: ModuleAlertStatus],
+    private val instance: Instance[_ <: Alert, _ <: ModuleAlertStatus],
 
     //
     //
@@ -151,19 +151,19 @@ object OssecHidsMonitor {
     }
 
     override def getDescriptor: String = {
-      module.getDescriptor
+      instance.getModule.getDescription
     }
 
     override def getHandle: String = {
-      module.getHandle
+      instance.getModule.getHandle
     }
 
     override def getId: Int = {
-      module.getId
+      instance.getId
     }
 
     override def initialise(): Try[Boolean] = {
-      module.initialise()
+      instance.initialise()
     }
 
     var thread: Thread = null
@@ -178,7 +178,7 @@ object OssecHidsMonitor {
     }
 
     override def terminate(): Try[Boolean] = {
-      module.terminate()
+      instance.terminate()
     }
   }
 
@@ -245,18 +245,26 @@ object OssecHidsMonitor {
   //
   private final val IsoDateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
+  //
+  //
+  //
+  type AvailableModuleType = Module[_ <: Alert, _ <: ModuleAlertStatus]
 
-  type AvailableModuleType = AvailableModule
   //
   //
   //
-  private final val AvailableModules: List[Module]
-    = List[Module](
-      jira.JiraModule,
-      text.TextModule,
-      sink.SinkModule
+  private final val AvailableModules: List[AvailableModuleType]
+    = List[AvailableModuleType](
+      jira.JiraModule.asInstanceOf[AvailableModuleType],
+      text.TextModule.asInstanceOf[AvailableModuleType],
+      sink.SinkModule.asInstanceOf[AvailableModuleType]
     )
 
+  /**
+    *
+    * @param dateTime
+    * @return
+    */
   private def determineFromDateTime(
     dateTime: String
   ): Try[LocalDateTime] = {
@@ -329,12 +337,12 @@ object OssecHidsMonitor {
   }
 
   def displayModules(): Unit = {
-    for (availableModule: AvailableModuleType <- AvailableModules) {
+    for (availableModule <- AvailableModules) {
       println(
         availableModule.getHandle
           + " "
-          + availableModule.getDescriptor
-        )
+          + availableModule.getDescription
+      )
     }
   }
 
@@ -435,9 +443,14 @@ object OssecHidsMonitor {
   def getAvailableModules(
     filter: Function[AvailableModuleType, Boolean]
   ): List[AvailableModuleType] = {
-    (for (module: AvailableModuleType <- AvailableModules if filter.apply(module))
-      yield { module }).toList
+    (
+      for (module: AvailableModuleType <- AvailableModules if filter.apply(module))
+        yield {
+          module
+        }
+    ).toList
   }
+
 
   def main(
     args: Array[String]
@@ -638,7 +651,7 @@ class OssecHidsMonitor(
 
     val activeModules: List[ActiveModuleType] = modules.map(
       (am: AvailableModuleType) => new ActiveModuleType(
-        am.instantiate(configuration.toMap).get,
+        am.getInstance(configuration.toMap).get,
         false,
         updateModuleAlertStatus,
         logFailure
