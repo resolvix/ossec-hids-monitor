@@ -2,6 +2,8 @@ package com.resolvix.ohm.module.jira
 
 import java.io.{File, InputStream}
 import java.net.URI
+import java.time.format.DateTimeFormatter
+import java.time.{Instant, OffsetDateTime, ZoneId}
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
@@ -12,17 +14,33 @@ import com.atlassian.httpclient.api.factory.HttpClientOptions
 import com.atlassian.httpclient.spi.ThreadLocalContextManager
 import com.atlassian.jira.rest.client.api._
 import com.atlassian.jira.rest.client.api.domain._
-import com.atlassian.jira.rest.client.api.domain.input.{IssueInput, IssueInputBuilder}
+import com.atlassian.jira.rest.client.api.domain.input.{FieldInput, IssueInput, IssueInputBuilder}
 import com.atlassian.jira.rest.client.auth.BasicHttpAuthenticationHandler
 import com.atlassian.jira.rest.client.internal.async.{AsynchronousHttpClientFactory, AsynchronousJiraRestClient, AtlassianHttpClientDecorator, DisposableHttpClient}
 import com.atlassian.sal.api.ApplicationProperties
 import com.atlassian.util.concurrent.{Effect, Promise}
+import com.sun.scenario.effect.Offset
 
 import scala.util.{Failure, Success, Try}
 import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
 
 object JiraSession {
+
+  private final val DefaultTimeZoneId: ZoneId = ZoneId.systemDefault()
+
+  //
+  //  JIRA date / time fields are specified in the form -
+  //
+  //   "2017-03-10T00:16:00.000+0000"
+  //
+  //  For more details see the following link -
+  //
+  //    https://developer.atlassian.com/jiradev/jira-apis/jira-rest-apis/jira-rest-api-tutorials/jira-rest-api-example-create-issue#JIRARESTAPIExample-CreateIssue-Examplesofcreatinganissue
+  //
+  private final val JiraDateTimeFormatter: DateTimeFormatter
+    = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SZ")
+
   /**
     *
     */
@@ -128,6 +146,30 @@ object JiraSession {
       )
     }
   }
+
+  class FieldMap(
+    val fields: Iterable[Field]
+  ) {
+    val fieldByName: Map[String, Field] = fields.map {
+      (f: Field) => (f.getName, f)
+    }.toMap
+
+    val fieldById: Map[String, Field] = fields.map {
+      (f: Field) => (f.getId, f)
+    }.toMap
+
+    def getById(
+      id: String
+    ): Option[Field] = {
+      fieldById.get(id)
+    }
+
+    def getByName(
+      name: String
+    ): Option[Field] = {
+      fieldByName.get(name)
+    }
+  }
 }
 
 class JiraSession(
@@ -142,21 +184,57 @@ class JiraSession(
     *
     * @tparam T
     */
-  abstract class Creator[T] {
-    def create(): Try[T]
+  abstract class Builder[T] {
+    def build(): Try[T]
   }
 
   /**
     *
     */
-  class IssueCreator(
+  class IssueBuilder(
     project: BasicProject,
     issueType: IssueType
-  ) extends Creator[Issue] {
+  ) extends Builder[Issue] {
     private val issueInputBuilder: IssueInputBuilder
       = new IssueInputBuilder(project, issueType)
 
-    override def create(): Try[Issue] = {
+    def addField[T](
+      field: Field,
+      t: T
+    ): IssueBuilder = {
+      issueInputBuilder.setFieldInput(
+        new FieldInput(field.getId, t)
+      )
+      this
+    }
+
+    def addField(
+      field: Field,
+      instant: Instant,
+      zoneId: ZoneId
+    ): IssueBuilder = {
+      issueInputBuilder.setFieldInput(
+        new FieldInput(
+          field.getId,
+          OffsetDateTime.ofInstant(instant, zoneId)
+            .format(JiraDateTimeFormatter)
+        )
+      )
+      this
+    }
+
+    def addField(
+      field: Field,
+      instant: Instant
+    ): IssueBuilder = {
+      addField(
+        field,
+        instant,
+        DefaultTimeZoneId
+      )
+    }
+
+    override def build(): Try[Issue] = {
       val issue: Promise[BasicIssue] = issueRestClient.createIssue(
         issueInputBuilder.build()
       )
@@ -172,28 +250,28 @@ class JiraSession(
 
     def setComponents(
       components: Iterable[BasicComponent]
-    ): IssueCreator = {
+    ): IssueBuilder = {
       issueInputBuilder.setComponents(components.asJava)
       this
     }
 
     def setDescription(
       description: String
-    ): IssueCreator = {
+    ): IssueBuilder = {
       issueInputBuilder.setDescription(description)
       this
     }
 
     def setPriority(
       priority: Priority
-    ): IssueCreator = {
+    ): IssueBuilder = {
       issueInputBuilder.setPriority(priority)
       this
     }
 
     def setSummary(
       summary: String
-    ): IssueCreator = {
+    ): IssueBuilder = {
       issueInputBuilder.setSummary(summary)
       this
     }
@@ -463,7 +541,7 @@ class JiraSession(
   def newIssue(
     project: Project,
     issueType: IssueType
-  ): IssueCreator = {
-    new IssueCreator(project, issueType)
+  ): IssueBuilder = {
+    new IssueBuilder(project, issueType)
   }
 }
