@@ -53,7 +53,7 @@ object OssecHidsMonitor {
     //
     //
     //
-    private val instance: Instance[_ <: Alert, _ <: ModuleAlertStatus],
+    private val instance: Instance[_ <: Instance[_, _, _], _ <: Alert, _ <: ModuleAlertStatus],
 
     //
     //
@@ -248,7 +248,7 @@ object OssecHidsMonitor {
   //
   //
   //
-  type AvailableModuleType = Module[_ <: Alert, _ <: ModuleAlertStatus]
+  type AvailableModuleType = Module[_<: Instance[_, _, _], _ <: Alert, _ <: ModuleAlertStatus]
 
   //
   //

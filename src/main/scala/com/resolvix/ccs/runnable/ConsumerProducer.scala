@@ -2,7 +2,7 @@ package com.resolvix.ccs.runnable
 
 import scala.util.Try
 
-trait ConsumerProducer[CP <: ConsumerProducer[CP, C, P], C, P]
+trait ConsumerProducer[CP <: api.ConsumerProducer[CP, C, P], C, P]
   extends api.ConsumerProducer[CP, C, P]
 {
 

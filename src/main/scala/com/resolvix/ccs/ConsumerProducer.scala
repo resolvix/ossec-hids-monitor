@@ -37,7 +37,7 @@ import scala.util.{Success, Try}
   * @tparam P
   *   refers to the type of messages represented by P
   */
-trait ConsumerProducer[CP <: ConsumerProducer[CP, C, P], C, P]
+trait ConsumerProducer[CP <: api.ConsumerProducer[CP, C, P], C, P]
   extends api.ConsumerProducer[CP, C, P]
 {
 

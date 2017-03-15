@@ -11,8 +11,8 @@ import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
 object SinkModule
-  extends AbstractModule[Alert, ModuleAlertStatus]
-  with Module[Alert, ModuleAlertStatus]
+  extends AbstractModule[SinkModule, Alert, ModuleAlertStatus]
+  with Module[SinkModule, Alert, ModuleAlertStatus]
 {
   override protected def getConfigurations: Array[String] = ???
 
@@ -22,7 +22,7 @@ object SinkModule
 
   protected override def newInstance(
     configuration: Map[String, Any]
-  ): Try[Instance[Alert, ModuleAlertStatus]] = {
+  ): Try[SinkModule] = {
     Success(
       new SinkModule(configuration)
     )
@@ -35,7 +35,7 @@ object SinkModule
 class SinkModule(
   configuration: Map[String, Any]
 ) extends AbstractModule.AbstractInstance[SinkModule, Alert, ModuleAlertStatus]
-  with Instance[Alert, ModuleAlertStatus]
+  with Instance[SinkModule, Alert, ModuleAlertStatus]
 {
   override def doConsume(c: Alert): Try[Boolean] = {
     println("SinkModule.doConsume: " + c.toString)
@@ -47,7 +47,7 @@ class SinkModule(
     *
     * @return
     */
-  override def getModule: Module[Alert, ModuleAlertStatus] = SinkModule
+  override def getModule: Module[SinkModule, Alert, ModuleAlertStatus] = SinkModule
 
   override def getId: Int = 2
 

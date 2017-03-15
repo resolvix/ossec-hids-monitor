@@ -10,8 +10,8 @@ import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Success, Try}
 
 object TextModule
-  extends AbstractModule[NewStageAlert, ModuleAlertStatus]
-  with Module[NewStageAlert, ModuleAlertStatus]
+  extends AbstractModule[TextModule, NewStageAlert, ModuleAlertStatus]
+  with Module[TextModule, NewStageAlert, ModuleAlertStatus]
 {
 
   override protected def getConfigurations: Array[String] = ???
@@ -22,7 +22,7 @@ object TextModule
 
   override protected def newInstance(
     configuration: Map[String, Any]
-  ): Try[Instance[NewStageAlert, ModuleAlertStatus]] = {
+  ): Try[TextModule] = {
     Success(
       new TextModule(configuration)
     )
@@ -34,13 +34,13 @@ object TextModule
 class TextModule(
   configuration: Map[String, Any]
 ) extends AbstractModule.AbstractInstance[TextModule, NewStageAlert, ModuleAlertStatus]
-  with Instance[NewStageAlert, ModuleAlertStatus]
+  with Instance[TextModule, NewStageAlert, ModuleAlertStatus]
 {
   override def doConsume(c: NewStageAlert): Try[Boolean] = ???
 
   override def doProduce(): Try[ModuleAlertStatus] = ???
 
-  override def getModule: Module[NewStageAlert, ModuleAlertStatus]
+  override def getModule: Module[TextModule, NewStageAlert, ModuleAlertStatus]
     = TextModule
 
   override def getId: Int = ???

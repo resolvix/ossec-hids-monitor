@@ -1,18 +1,14 @@
 package com.resolvix.ohm.module.jira
 
-import com.resolvix.ohm.OssecHidsMonitor.ActiveModule
-import com.resolvix.ohm.{Category, Location, Signature}
 import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 import com.resolvix.ohm.module.AbstractModule
-import com.resolvix.ohm.module.api.{Module, Instance, NewStageAlert}
+import com.resolvix.ohm.module.api.{Instance, Module, NewStageAlert}
 
-import scala.concurrent.{ExecutionContext, Promise}
-import scala.util.control.NonFatal
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 object JiraModule
-  extends AbstractModule[NewStageAlert, ModuleAlertStatus]
-  with Module[NewStageAlert, ModuleAlertStatus]
+  extends AbstractModule[JiraModule, NewStageAlert, ModuleAlertStatus]
+  with Module[JiraModule, NewStageAlert, ModuleAlertStatus]
 {
   override protected def getConfigurations: Array[String] = ???
 
@@ -20,34 +16,33 @@ object JiraModule
 
   override def getHandle: String = "JIRA"
 
-  protected override def newInstance(
+  /*protected override def newInstance(
     configuration: Map[String, Any]
-  ): Try[Instance[NewStageAlert, ModuleAlertStatus]] = {
+  ): Try[JiraModule] = {
     Success(
       new JiraModule(configuration)
     )
-  }
+  }*/
 
-  /**
-    *
-    * @param configuration
-    * @return
-    */
-  override def getInstance(
-    configuration: Map[String, Any]
-  ): Try[Instance[NewStageAlert, ModuleAlertStatus]] = ???
+  override def newInstance(
+    config: Map[String, Any]
+  ): Try[Instance[JiraModule, NewStageAlert, ModuleAlertStatus]] = {
+    Success(
+      new JiraModule(config)
+    )
+  }
 }
 
 class JiraModule(
   configuration: Map[String, Any]
 ) extends AbstractModule.AbstractInstance[JiraModule, NewStageAlert, ModuleAlertStatus]
-  with Instance[NewStageAlert, ModuleAlertStatus]
+  with Instance[JiraModule, NewStageAlert, ModuleAlertStatus]
 {
   override def doConsume(c: NewStageAlert): Try[Boolean] = ???
 
   override def doProduce(): Try[ModuleAlertStatus] = ???
 
-  override def getModule: Module[NewStageAlert, ModuleAlertStatus] = JiraModule
+  override def getModule: Module[JiraModule, NewStageAlert, ModuleAlertStatus] = JiraModule
 
   override def getId: Int = ???
 

@@ -4,6 +4,7 @@ import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 import com.resolvix.ohm.api.{Alert, Consumer, ModuleAlertStatus, Producer}
+import com.resolvix.ohm.module.api.Instance
 import com.typesafe.config.{Config, ConfigValue}
 
 import scala.concurrent._
@@ -14,15 +15,18 @@ object AbstractModule
 {
 
   /**
+    * Provides an abstract implementation of a module instance.
     *
     * @tparam AI
+    *   refers to the
+    *
     * @tparam A
-    *    refers to the type of alert to be consumed by the module
+    *   refers to the type of alert to be consumed by the module
     *
     * @tparam M
     */
   abstract class AbstractInstance[AI <: AbstractInstance[AI, A, M], A <: Alert, M <: ModuleAlertStatus]
-    extends com.resolvix.ohm.module.api.Instance[A, M]
+    extends com.resolvix.ohm.module.api.Instance[AI, A, M]
       with com.resolvix.ccs.runnable.api.ConsumerProducer[AI, A, M]
   {
     /**
@@ -77,8 +81,8 @@ object AbstractModule
 /**
   *
   */
-abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
-  extends api.Module[A, M]
+abstract class AbstractModule[I <: Instance[I, A, M], A <: Alert, M <: ModuleAlertStatus]
+  extends api.Module[I, A, M]
 {
   import AbstractModule._
   /*class ConsumerC[C]
@@ -164,13 +168,13 @@ abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
     */
   protected def newInstance(
     config: Map[String, Any]
-  ): Try[Instance[A, M]] = ???
+  ): Try[Instance[I, A, M]] = ???
 
   /**
     *
     * @return
     */
-  override def getInstance(): Try[Instance[A, M]] = {
+  override def getInstance(): Try[Instance[I, A, M]] = {
     newInstance(Map[String, Any]())
   }
 
@@ -181,7 +185,7 @@ abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
     */
   override def getInstance(
     config: Config
-  ): Try[Instance[A, M]] = {
+  ): Try[Instance[I, A, M]] = {
     newInstance(
       getConfigurations.map(
         (h: String) => config.getValue(h) match {
@@ -194,12 +198,23 @@ abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
 
   /**
     *
+    * @param config
+    * @return
+    */
+  override def getInstance(
+    config: Map[String, Any]
+  ): Try[Instance[I, A, M]] = {
+    newInstance(config)
+  }
+
+  /**
+    *
     * @param properties
     * @return
     */
   override def getInstance(
     properties: Properties
-  ): Try[Instance[A, M]] = {
+  ): Try[Instance[I, A, M]] = {
     newInstance(
       getConfigurations.map(
         (h: String) => properties.get(h) match {

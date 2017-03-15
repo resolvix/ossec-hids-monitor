@@ -13,8 +13,8 @@ import scala.util.Try
   *    refers to the type of alert to be consumed by the module
   *
   */
-trait Instance[A <: Alert, M <: ModuleAlertStatus]
-  extends com.resolvix.ccs.runnable.api.ConsumerProducer[Instance[A, M], A, M]
+trait Instance[I <: Instance[I, A, M], A <: Alert, M <: ModuleAlertStatus]
+  extends com.resolvix.ccs.runnable.api.ConsumerProducer[I, A, M]
 {
   /**
     *
@@ -26,7 +26,7 @@ trait Instance[A <: Alert, M <: ModuleAlertStatus]
     *
     * @return
     */
-  def getModule: Module[A, M]
+  def getModule: Module[I, A, M]
 
   /**
     *
