@@ -22,7 +22,7 @@ class Signature(
   //
   private val description: String
 
-) extends api.Signature {
+) extends module.api.Signature {
 
   //
   //

@@ -1,5 +1,7 @@
 package com.resolvix.ohm.api
 
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus}
+
 class ModuleAlertProcessingException[C <: Alert, M <: ModuleAlertStatus](
   private val alert: Alert,
   private val module: Module[C, M],

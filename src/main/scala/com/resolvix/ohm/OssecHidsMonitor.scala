@@ -7,11 +7,10 @@ import java.time.temporal.ChronoUnit
 import java.lang.Thread
 import java.util.NoSuchElementException
 
+import com.resolvix.ccs.runnable.api.{Consumer, ConsumerProducer, Producer, ProducerConsumer}
 import com.resolvix.ohm.OssecHidsMonitor.AvailableModuleType
-import com.resolvix.ohm.api.{AvailableModule, Consumer, ModuleAlertProcessingException, ModuleAlertStatus, Producer, Module => ModuleT}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
-import com.resolvix.ohm.module.{NewStage, jira, sink, text}
-import com.resolvix.ohm.module.api.{Module, Instance, NewStageAlert}
+import com.resolvix.ohm.module.api.{Instance, Module, ModuleAlertStatus, NewStageAlert}
 import com.resolvix.ohm.module.jira.JiraModule
 import com.resolvix.ohm.module.sink.SinkModule
 import com.resolvix.ohm.module.text.TextModule
@@ -25,9 +24,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object OssecHidsMonitor {
 
-  class FailureModuleAlertStatus(
-    alert: api.Alert,
-    module: api.Module[api.Alert, ModuleAlertStatus]
+  /*class FailureModuleAlertStatus(
+    alert: module.api.Alert,
+    module: Module[module.api.Alert, ModuleAlertStatus]
   ) extends ModuleAlertStatus {
     override def getId: Int = alert.getId
 
@@ -36,11 +35,11 @@ object OssecHidsMonitor {
     override def getReference: String = "<none>"
 
     override def getStatusId: Int = 0x00
-  }
+  }*/
 
   /**
-    * The ModuleHandle class is intended to wrap modules with local
-    * application state and module specific functionality.
+    * The ActiveModule class is intended to wrap available module instances
+    * with local application state.
     *
     * @param instance
     * @param isEnabled
@@ -48,12 +47,12 @@ object OssecHidsMonitor {
     * @param logFailure
     * @tparam C
     */
-  class ActiveModule[C <: api.Alert] (
+  class ActiveModule[A <: module.api.Alert, M <: module.api.ModuleAlertStatus] (
 
     //
     //
     //
-    private val instance: Instance[_ <: Instance[_, _, _], _ <: Alert, _ <: ModuleAlertStatus],
+    private val instance: Instance[A, M],
 
     //
     //
@@ -81,8 +80,7 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends api.Module[Alert, ModuleAlertStatus]
-  {
+  ) {
 
     //
     //
@@ -108,7 +106,7 @@ object OssecHidsMonitor {
 
         updateModuleAlertStatus(moduleAlertStatus)
 
-      case Failure(e: ModuleAlertProcessingException[api.Alert, api.ModuleAlertStatus] @unchecked) => {
+      /*case Failure(e: ModuleAlertProcessingException[api.Alert, ModuleAlertStatus] @unchecked) => {
         updateModuleAlertStatus(
           new FailureModuleAlertStatus(
             e.getAlert,
@@ -116,7 +114,7 @@ object OssecHidsMonitor {
           )
         )
         logFailure(e)
-      }
+      }*/
 
       case Failure(t: Throwable) => {
         logFailure(t)
@@ -150,34 +148,35 @@ object OssecHidsMonitor {
       }
     }
 
-    override def getDescriptor: String = {
+    def getDescription: String = {
       instance.getModule.getDescription
     }
 
-    override def getHandle: String = {
+    def getHandle: String = {
       instance.getModule.getHandle
     }
 
-    override def getId: Int = {
+    def getId: Int = {
       instance.getId
     }
 
-    override def initialise(): Try[Boolean] = {
-      instance.initialise()
+    def initialise(): Try[Boolean] = {
+      //instance.initialise()
+      Success(true)
     }
 
     var thread: Thread = null
 
-    override def run(): Unit = {
+    def run(): Unit = {
       thread = new Thread()
-      thread.start()
+      //thread.start()
     }
 
-    override def finish(): Unit = {
+    def finish(): Unit = {
       thread.join()
     }
 
-    override def terminate(): Try[Boolean] = {
+    def terminate(): Try[Boolean] = {
       instance.terminate()
     }
   }
@@ -248,16 +247,16 @@ object OssecHidsMonitor {
   //
   //
   //
-  type AvailableModuleType = Module[_<: Instance[_, _, _], _ <: Alert, _ <: ModuleAlertStatus]
+  type AvailableModuleType = module.api.Module[_ <: module.api.Alert, _ <: module.api.ModuleAlertStatus]
 
   //
   //
   //
   private final val AvailableModules: List[AvailableModuleType]
     = List[AvailableModuleType](
-      jira.JiraModule.asInstanceOf[AvailableModuleType],
-      text.TextModule.asInstanceOf[AvailableModuleType],
-      sink.SinkModule.asInstanceOf[AvailableModuleType]
+      JiraModule,
+      TextModule,
+      SinkModule
     )
 
   /**
@@ -465,7 +464,7 @@ class OssecHidsMonitor(
 
   import OssecHidsMonitor.ActiveModule
 
-  type ActiveModuleType = ActiveModule[Alert]
+  type ActiveModuleType = ActiveModule[module.api.Alert, module.api.ModuleAlertStatus]
 
   def logFailure: PartialFunction[Throwable, Try[Boolean]] = {
     case (t: Throwable) => Success(true)
@@ -623,7 +622,7 @@ class OssecHidsMonitor(
       configuration
     )*/
 
-    val ns: NewStage = new NewStage(ossecHidsDAO, locationMap, signatureMap)
+    val ns: module.NewStage = new module.NewStage(ossecHidsDAO, locationMap, signatureMap)
 
     //val p: OssecHidsMonitor.ProducerP = new OssecHidsMonitor.ProducerP(alerts, configuration)
     //p.register(ns)
@@ -644,14 +643,15 @@ class OssecHidsMonitor(
   }
 
   def process(
-    alerts: List[api.Alert],
+    alerts: List[module.api.Alert],
     modules: List[AvailableModuleType],
     configuration: Map[String, Any]
   ): Unit = {
 
     val activeModules: List[ActiveModuleType] = modules.map(
       (am: AvailableModuleType) => new ActiveModuleType(
-        am.getInstance(configuration.toMap).get,
+        am.getInstance(configuration.toMap).get
+          .asInstanceOf[Instance[module.api.Alert, module.api.ModuleAlertStatus]],
         false,
         updateModuleAlertStatus,
         logFailure
@@ -666,7 +666,7 @@ class OssecHidsMonitor(
     )
 
     for (
-      alert: api.Alert <- alerts;
+      alert: module.api.Alert <- alerts;
       activeModule: ActiveModuleType <- activeModules
     ) {
 

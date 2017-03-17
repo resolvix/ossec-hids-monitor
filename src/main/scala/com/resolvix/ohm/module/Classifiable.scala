@@ -1,7 +1,7 @@
 package com.resolvix.ohm.module
 
 
-import com.resolvix.ohm.api.Alert
+import com.resolvix.ohm.module.api.Alert
 
 import scala.util.{Failure, Success, Try}
 

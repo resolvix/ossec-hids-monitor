@@ -5,7 +5,7 @@ import org.scalatest.FunSpec
 
 import scala.util.{Failure, Success, Try}
 
-class ProducerConsumerTest
+class ProducerXConsumerXTest
   extends FunSpec
 {
   class X(

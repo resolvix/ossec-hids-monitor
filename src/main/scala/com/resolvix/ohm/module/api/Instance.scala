@@ -1,7 +1,5 @@
 package com.resolvix.ohm.module.api
 
-import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
-
 import scala.util.Try
 
 /**
@@ -13,8 +11,7 @@ import scala.util.Try
   *    refers to the type of alert to be consumed by the module
   *
   */
-trait Instance[I <: Instance[I, A, M], A <: Alert, M <: ModuleAlertStatus]
-  extends com.resolvix.ccs.runnable.api.ConsumerProducer[I, A, M]
+trait Instance[A <: Alert, M <: ModuleAlertStatus]
 {
   /**
     *
@@ -26,7 +23,7 @@ trait Instance[I <: Instance[I, A, M], A <: Alert, M <: ModuleAlertStatus]
     *
     * @return
     */
-  def getModule: Module[I, A, M]
+  def getModule: Module[A, M]
 
   /**
     *

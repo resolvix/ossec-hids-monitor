@@ -2,7 +2,7 @@ package com.resolvix.ohm.dao
 import java.time.{Instant, LocalDateTime}
 
 import com.resolvix.ohm.{Category, Location, Signature, SignatureCategoryMaplet}
-import com.resolvix.ohm.api.{Alert, ModuleAlertStatus, ModuleAlertStatus => ModuleAlertStatusT}
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.{Success, Try}

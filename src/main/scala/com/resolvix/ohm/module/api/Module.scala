@@ -2,7 +2,6 @@ package com.resolvix.ohm.module.api
 
 import java.util.Properties
 
-import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 import com.typesafe.config.Config
 
 import scala.util.Try
@@ -12,7 +11,7 @@ import scala.util.Try
   * @tparam A
   * @tparam M
   */
-trait Module[I <: Instance[I, A, M], A <: Alert, M <: ModuleAlertStatus]
+trait Module[A <: Alert, M <: ModuleAlertStatus]
 {
   /**
     *
@@ -36,7 +35,7 @@ trait Module[I <: Instance[I, A, M], A <: Alert, M <: ModuleAlertStatus]
     *
     * @return
     */
-  def getInstance(): Try[Instance[I, A, M]]
+  def getInstance(): Try[Instance[A, M]]
 
   /**
     *
@@ -45,7 +44,7 @@ trait Module[I <: Instance[I, A, M], A <: Alert, M <: ModuleAlertStatus]
     */
   def getInstance(
     config: Config
-  ): Try[Instance[I, A, M]]
+  ): Try[Instance[A, M]]
 
   /**
     *
@@ -54,7 +53,7 @@ trait Module[I <: Instance[I, A, M], A <: Alert, M <: ModuleAlertStatus]
     */
   def getInstance(
     configuration: Map[String, Any]
-  ): Try[Instance[I, A, M]]
+  ): Try[Instance[A, M]]
 
   /**
     *
@@ -63,7 +62,7 @@ trait Module[I <: Instance[I, A, M], A <: Alert, M <: ModuleAlertStatus]
     */
   def getInstance(
     properties: Properties
-  ): Try[Instance[I, A, M]]
+  ): Try[Instance[A, M]]
 
   /**
     *

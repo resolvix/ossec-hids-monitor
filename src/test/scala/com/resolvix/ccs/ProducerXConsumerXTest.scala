@@ -10,7 +10,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by rwbisson on 07/11/16.
   */
-class ProducerConsumerTest
+class ProducerXConsumerXTest
   extends FunSpec {
 
   class X(

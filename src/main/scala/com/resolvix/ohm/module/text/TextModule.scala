@@ -2,16 +2,15 @@ package com.resolvix.ohm.module.text
 
 import com.resolvix.ohm.OssecHidsMonitor.ActiveModule
 import com.resolvix.ohm.{Category, Location, Signature, api}
-import com.resolvix.ohm.api.ModuleAlertStatus
 import com.resolvix.ohm.module.AbstractModule
-import com.resolvix.ohm.module.api.{Instance, Module, NewStageAlert}
+import com.resolvix.ohm.module.api.{Instance, Module, ModuleAlertStatus, NewStageAlert}
 
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Success, Try}
 
 object TextModule
-  extends AbstractModule[TextModule, NewStageAlert, ModuleAlertStatus]
-  with Module[TextModule, NewStageAlert, ModuleAlertStatus]
+  extends AbstractModule[NewStageAlert, ModuleAlertStatus]
+  with Module[NewStageAlert, ModuleAlertStatus]
 {
 
   override protected def getConfigurations: Array[String] = ???
@@ -34,13 +33,19 @@ object TextModule
 class TextModule(
   configuration: Map[String, Any]
 ) extends AbstractModule.AbstractInstance[TextModule, NewStageAlert, ModuleAlertStatus]
-  with Instance[TextModule, NewStageAlert, ModuleAlertStatus]
+  with Instance[NewStageAlert, ModuleAlertStatus]
 {
   override def doConsume(c: NewStageAlert): Try[Boolean] = ???
 
   override def doProduce(): Try[ModuleAlertStatus] = ???
 
-  override def getModule: Module[TextModule, NewStageAlert, ModuleAlertStatus]
+
+  /**
+    *
+    */
+  override def finish(): Unit = ???
+
+  override def getModule: Module[NewStageAlert, ModuleAlertStatus]
     = TextModule
 
   override def getId: Int = ???

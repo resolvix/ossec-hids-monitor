@@ -70,7 +70,7 @@ class Alert(
   //
   private val alertId: String
 
-) extends api.Alert {
+) extends module.api.Alert {
 
   override def getId: Int = id
 

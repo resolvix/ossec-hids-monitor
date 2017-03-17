@@ -1,6 +1,6 @@
 package com.resolvix.ohm.api
 
-import com.resolvix.ohm.module.api.NewStageAlert
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus, NewStageAlert}
 
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -8,6 +8,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by rwbisson on 16/02/17.
   */
+@deprecated("Not used at present", "2017/03/17")
 trait AvailableModule {
 
   def doInstantiate(

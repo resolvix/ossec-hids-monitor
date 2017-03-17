@@ -1,14 +1,13 @@
 package com.resolvix.ohm.module.jira
 
-import com.resolvix.ohm.api.{Alert, ModuleAlertStatus}
 import com.resolvix.ohm.module.AbstractModule
-import com.resolvix.ohm.module.api.{Instance, Module, NewStageAlert}
+import com.resolvix.ohm.module.api.{Instance, Module, ModuleAlertStatus, NewStageAlert}
 
 import scala.util.{Success, Try}
 
 object JiraModule
-  extends AbstractModule[JiraModule, NewStageAlert, ModuleAlertStatus]
-  with Module[JiraModule, NewStageAlert, ModuleAlertStatus]
+  extends AbstractModule[NewStageAlert, ModuleAlertStatus]
+  with Module[NewStageAlert, ModuleAlertStatus]
 {
   override protected def getConfigurations: Array[String] = ???
 
@@ -26,7 +25,7 @@ object JiraModule
 
   override def newInstance(
     config: Map[String, Any]
-  ): Try[Instance[JiraModule, NewStageAlert, ModuleAlertStatus]] = {
+  ): Try[Instance[NewStageAlert, ModuleAlertStatus]] = {
     Success(
       new JiraModule(config)
     )
@@ -36,13 +35,25 @@ object JiraModule
 class JiraModule(
   configuration: Map[String, Any]
 ) extends AbstractModule.AbstractInstance[JiraModule, NewStageAlert, ModuleAlertStatus]
-  with Instance[JiraModule, NewStageAlert, ModuleAlertStatus]
+  with Instance[NewStageAlert, ModuleAlertStatus]
 {
-  override def doConsume(c: NewStageAlert): Try[Boolean] = ???
 
-  override def doProduce(): Try[ModuleAlertStatus] = ???
+  /*class ConsumerProducer
+    extends com.resolvix.ccs.ConsumerProducer
+    with com.resolvix.ccs.
+  {
+    override def doConsume(c: NewStageAlert): Try[Boolean] = ???
 
-  override def getModule: Module[JiraModule, NewStageAlert, ModuleAlertStatus] = JiraModule
+    override def doProduce(): Try[ModuleAlertStatus] = ???
+  }*/
+
+
+  /**
+    *
+    */
+  override def finish(): Unit = ???
+
+  override def getModule: Module[NewStageAlert, ModuleAlertStatus] = JiraModule
 
   override def getId: Int = ???
 

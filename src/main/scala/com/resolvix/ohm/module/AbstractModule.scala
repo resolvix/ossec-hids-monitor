@@ -1,15 +1,11 @@
 package com.resolvix.ohm.module
 
 import java.util.Properties
-import java.util.concurrent.TimeUnit
 
-import com.resolvix.ohm.api.{Alert, Consumer, ModuleAlertStatus, Producer}
-import com.resolvix.ohm.module.api.Instance
+import com.resolvix.ohm.module.api.{Alert, Instance, ModuleAlertStatus}
 import com.typesafe.config.{Config, ConfigValue}
 
-import scala.concurrent._
-import scala.util.control.NonFatal
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 object AbstractModule
 {
@@ -26,63 +22,29 @@ object AbstractModule
     * @tparam M
     */
   abstract class AbstractInstance[AI <: AbstractInstance[AI, A, M], A <: Alert, M <: ModuleAlertStatus]
-    extends com.resolvix.ohm.module.api.Instance[AI, A, M]
-      with com.resolvix.ccs.runnable.api.ConsumerProducer[AI, A, M]
+    extends com.resolvix.ohm.module.api.Instance[A, M]
   {
-    /**
-      *
-      * @param C
-      * @return
-      */
-    def doConsume(c: A): Try[Boolean]
 
-    /**
-      *
-      */
-    /*def run(): Unit = {
-      val consumerC: Consumer[A] = getConsumer
-
-      val consumerPipe: ConsumerPipe[A] = consumerC.openX match {
-        case Success(consumerPipe: ConsumerPipe[A]) =>
-          consumerPipe
-
-        case Failure(t: Throwable) =>
-          throw t
-      }
-
-      while (super.isRunning || super.isFinishing) {
-        consumerPipe.read(5000, TimeUnit.MILLISECONDS) match {
-          case Success(a: A @unchecked) =>
-            doConsume(a)
-
-          case Failure(e: TimeoutException) =>
-            //
-            //  Do nothing
-            //
-            if (super.isFinishing) {
-              finished()
-            }
-
-          case Failure(t: Throwable) =>
-            throw t
-        }
-      }
-    }*/
-
-    /**
-      *
-      */
-    def finish(): Unit = {
-
+    abstract class ConsumerProducer
+      extends  com.resolvix.ccs.runnable.ConsumerProducer[ConsumerProducer, A, M]
+    {
+      /**
+        *
+        * @param C
+        * @return
+        */
+      def doConsume(c: A): Try[Boolean]
     }
+
+
   }
 }
 
 /**
   *
   */
-abstract class AbstractModule[I <: Instance[I, A, M], A <: Alert, M <: ModuleAlertStatus]
-  extends api.Module[I, A, M]
+abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
+  extends api.Module[A, M]
 {
   import AbstractModule._
   /*class ConsumerC[C]
@@ -168,13 +130,13 @@ abstract class AbstractModule[I <: Instance[I, A, M], A <: Alert, M <: ModuleAle
     */
   protected def newInstance(
     config: Map[String, Any]
-  ): Try[Instance[I, A, M]] = ???
+  ): Try[Instance[A, M]] = ???
 
   /**
     *
     * @return
     */
-  override def getInstance(): Try[Instance[I, A, M]] = {
+  override def getInstance(): Try[Instance[A, M]] = {
     newInstance(Map[String, Any]())
   }
 
@@ -185,7 +147,7 @@ abstract class AbstractModule[I <: Instance[I, A, M], A <: Alert, M <: ModuleAle
     */
   override def getInstance(
     config: Config
-  ): Try[Instance[I, A, M]] = {
+  ): Try[Instance[A, M]] = {
     newInstance(
       getConfigurations.map(
         (h: String) => config.getValue(h) match {
@@ -203,7 +165,7 @@ abstract class AbstractModule[I <: Instance[I, A, M], A <: Alert, M <: ModuleAle
     */
   override def getInstance(
     config: Map[String, Any]
-  ): Try[Instance[I, A, M]] = {
+  ): Try[Instance[A, M]] = {
     newInstance(config)
   }
 
@@ -214,7 +176,7 @@ abstract class AbstractModule[I <: Instance[I, A, M], A <: Alert, M <: ModuleAle
     */
   override def getInstance(
     properties: Properties
-  ): Try[Instance[I, A, M]] = {
+  ): Try[Instance[A, M]] = {
     newInstance(
       getConfigurations.map(
         (h: String) => properties.get(h) match {

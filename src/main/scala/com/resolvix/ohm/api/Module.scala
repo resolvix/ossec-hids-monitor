@@ -1,6 +1,6 @@
 package com.resolvix.ohm.api
 
-import com.resolvix.ccs.runnable.ConsumerProducer
+import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus}
 
 import scala.util.Try
 
@@ -13,6 +13,7 @@ import scala.util.Try
   *    refers to the type of alert to be consumed by the module
   *
   */
+@deprecated("Deprecated in favour of the version under com.resolvix.ohm.module.api", "2017/03/17")
 trait Module[A <: Alert, M <: ModuleAlertStatus]
   extends com.resolvix.ccs.runnable.api.ConsumerProducer[Module[A, M], A, M]
 {

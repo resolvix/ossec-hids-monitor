@@ -12,7 +12,7 @@ class Category(
   //
   private val name: String
 
-) extends api.Category {
+) extends module.api.Category {
 
   //
   //
