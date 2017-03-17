@@ -4,8 +4,6 @@ import java.time.LocalDateTime
 
 import com.resolvix.ohm.OssecHidsMonitor.AvailableModuleType
 import com.resolvix.ohm.dao.TestOssecHidsDAO
-import com.resolvix.ohm.module.api
-import com.resolvix.ohm.module.api.ModuleAlertStatus
 import org.scalatest.FlatSpec
 
 import scala.util.{Failure, Success}
@@ -13,7 +11,7 @@ import scala.util.{Failure, Success}
 /**
   * Created by rwbisson on 10/10/16.
   */
-class OssecHidMonitorTest
+class OssecHidsMonitorTest
   extends FlatSpec
 {
   val testOssecHidsDAO: dao.api.OssecHidsDAO = new TestOssecHidsDAO
@@ -28,12 +26,12 @@ class OssecHidMonitorTest
 
   it should "xxx" in {
 
-    val alerts: List[Alert] = testOssecHidsDAO.getAlertsForPeriod(
+    val alerts: List[module.api.Alert] = testOssecHidsDAO.getAlertsForPeriod(
       1,
       fromDateTime,
       toDateTime
     ) match {
-      case Success(listAlert: List[api.Alert]) =>
+      case Success(listAlert: List[module.api.Alert]) =>
         listAlert
 
       case Failure(t: Throwable) =>

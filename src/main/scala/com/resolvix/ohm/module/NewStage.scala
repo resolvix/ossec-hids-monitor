@@ -56,7 +56,7 @@ class NewStage(
 
   //override val pipe: Pipe[Alert] = new Pipe[Alert]()
 
-  override def apply(alert: Alert): AugmentedAlert = {
+  def apply(alert: Alert): AugmentedAlert = {
     val moduleAlertStatuses: List[ModuleAlertStatus]
       = ossecHidsDAO.getModuleAlertStatusesById(
         alert.getId

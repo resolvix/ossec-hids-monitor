@@ -36,12 +36,12 @@ class SinkModule(
 ) extends AbstractModule.AbstractInstance[SinkModule, Alert, ModuleAlertStatus]
   with Instance[Alert, ModuleAlertStatus]
 {
-  override def doConsume(c: Alert): Try[Boolean] = {
+  /*override def doConsume(c: Alert): Try[Boolean] = {
     println("SinkModule.doConsume: " + c.toString)
     Success(true)
   }
 
-  override def doProduce(): Try[ModuleAlertStatus] = ???
+  override def doProduce(): Try[ModuleAlertStatus] = ???*/
 
   /**
     *

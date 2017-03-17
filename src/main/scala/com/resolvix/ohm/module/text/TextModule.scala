@@ -35,9 +35,9 @@ class TextModule(
 ) extends AbstractModule.AbstractInstance[TextModule, NewStageAlert, ModuleAlertStatus]
   with Instance[NewStageAlert, ModuleAlertStatus]
 {
-  override def doConsume(c: NewStageAlert): Try[Boolean] = ???
+  /*override def doConsume(c: NewStageAlert): Try[Boolean] = ???
 
-  override def doProduce(): Try[ModuleAlertStatus] = ???
+  override def doProduce(): Try[ModuleAlertStatus] = ???*/
 
 
   /**
