@@ -1,16 +1,18 @@
-package com.resolvix.ohm.module.text
+package com.resolvix.ohm.module.endpoint.text
 
+import com.resolvix.ccs.runnable.api.{Consumer, Producer}
 import com.resolvix.ohm.OssecHidsMonitor.ActiveModule
 import com.resolvix.ohm.{Category, Location, Signature, api}
-import com.resolvix.ohm.module.AbstractModule
-import com.resolvix.ohm.module.api.{Instance, Module, ModuleAlertStatus, NewStageAlert}
+import com.resolvix.ohm.module.api.{Module, Result}
+import com.resolvix.ohm.module.endpoint.AbstractEndpoint
+import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
 
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Success, Try}
 
-object TextModule
-  extends AbstractModule[NewStageAlert, ModuleAlertStatus]
-  with Module[NewStageAlert, ModuleAlertStatus]
+object TextEndpoint
+  extends AbstractEndpoint[NewStageAlert, Result]
+  with com.resolvix.ohm.module.endpoint.api.Endpoint[NewStageAlert, Result]
 {
 
   override protected def getConfigurations: Array[String] = ???
@@ -21,39 +23,49 @@ object TextModule
 
   override protected def newInstance(
     configuration: Map[String, Any]
-  ): Try[TextModule] = {
+  ): Try[TextEndpoint] = {
     Success(
-      new TextModule(configuration)
+      new TextEndpoint(configuration)
     )
   }
-
-
 }
 
-class TextModule(
+class TextEndpoint(
   configuration: Map[String, Any]
-) extends AbstractModule.AbstractInstance[TextModule, NewStageAlert, ModuleAlertStatus]
-  with Instance[NewStageAlert, ModuleAlertStatus]
+) extends AbstractEndpoint.AbstractInstance[TextEndpoint, NewStageAlert, Result]
+  with com.resolvix.ohm.module.endpoint.api.Instance[NewStageAlert, Result]
 {
   /*override def doConsume(c: NewStageAlert): Try[Boolean] = ???
 
   override def doProduce(): Try[ModuleAlertStatus] = ???*/
 
+  /**
+    * Returns the 'Consumer' of 'Alert' objects for the instance.
+    *
+    * @return
+    */
+  override def getAlertConsumer: Consumer[NewStageAlert] = ???
+
+  /**
+    * Returns the 'Producer' of 'Result' objects for the instance.
+    *
+    * @return
+    */
+  override def getResultProducer: Producer[Result] = ???
 
   /**
     *
     */
   override def finish(): Unit = ???
 
-  override def getModule: Module[NewStageAlert, ModuleAlertStatus]
-    = TextModule
+  override def getModule: Module[NewStageAlert, Result]
+    = TextEndpoint
 
   override def getId: Int = ???
 
   override def initialise(): Try[Boolean] = {
     Success(true)
   }
-
 
 
   /*override def process(

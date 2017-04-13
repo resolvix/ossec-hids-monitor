@@ -3,7 +3,7 @@ package com.resolvix.ohm.module.api
 /**
   * Created by rwbisson on 08/10/16.
   */
-trait ModuleAlertStatus {
+trait Result {
 
   def getId: Int
 

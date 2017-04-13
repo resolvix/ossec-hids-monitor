@@ -1,4 +1,4 @@
-package com.resolvix.ohm.module.jira
+package com.resolvix.ohm.module.endpoint.jira
 
 import java.net.URI
 

@@ -3,16 +3,14 @@ package com.resolvix.ohm.module.api
 import scala.util.Try
 
 /**
-  * The Instance trait defines the basic intercom framework for receiving
-  * alert objects from an alert producing actor, and for transmitting
-  * module status updates to a module status update consuming actor.
-  *
-  * @tparam A
-  *    refers to the type of alert to be consumed by the module
+  * Defines the intercom framework for receiving alert objects from an alert
+  * producing actor, and for transmitting module status updates to a module
+  * status update consuming actor.
   *
   */
-trait Instance[A <: Alert, M <: ModuleAlertStatus]
+trait Instance[A <: Alert, R <: Result]
 {
+
   /**
     *
     * @return
@@ -20,12 +18,14 @@ trait Instance[A <: Alert, M <: ModuleAlertStatus]
   def getId: Int
 
   /**
+    * Returns the parent 'Module' for the module instance.
     *
     * @return
     */
-  def getModule: Module[A, M]
+  def getModule: Module[A, R]
 
   /**
+    * A method to
     *
     */
   def finish(): Unit
@@ -37,11 +37,13 @@ trait Instance[A <: Alert, M <: ModuleAlertStatus]
   def initialise(): Try[Boolean]
 
   /**
+    * Instantiate the consumer for the module.
     *
     */
   def run(): Unit
 
   /**
+    * Terminate the consumer for the module.
     *
     * @return
     */

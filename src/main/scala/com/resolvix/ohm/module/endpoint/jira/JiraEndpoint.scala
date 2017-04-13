@@ -1,13 +1,17 @@
-package com.resolvix.ohm.module.jira
+package com.resolvix.ohm.module.endpoint.jira
 
+
+import com.resolvix.ccs.runnable.api.{Consumer, Producer}
 import com.resolvix.ohm.module.AbstractModule
-import com.resolvix.ohm.module.api.{Instance, Module, ModuleAlertStatus, NewStageAlert}
+import com.resolvix.ohm.module.api.{Instance, Module, Result}
+import com.resolvix.ohm.module.endpoint.AbstractEndpoint
+import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
 
 import scala.util.{Success, Try}
 
-object JiraModule
-  extends AbstractModule[NewStageAlert, ModuleAlertStatus]
-  with Module[NewStageAlert, ModuleAlertStatus]
+object JiraEndpoint
+  extends AbstractEndpoint[NewStageAlert, Result]
+  with com.resolvix.ohm.module.endpoint.api.Endpoint[NewStageAlert, Result]
 {
   override protected def getConfigurations: Array[String] = ???
 
@@ -25,17 +29,17 @@ object JiraModule
 
   override def newInstance(
     config: Map[String, Any]
-  ): Try[Instance[NewStageAlert, ModuleAlertStatus]] = {
+  ): Try[Instance[NewStageAlert, Result]] = {
     Success(
-      new JiraModule(config)
+      new JiraEndpoint(config)
     )
   }
 }
 
-class JiraModule(
+class JiraEndpoint(
   configuration: Map[String, Any]
-) extends AbstractModule.AbstractInstance[JiraModule, NewStageAlert, ModuleAlertStatus]
-  with Instance[NewStageAlert, ModuleAlertStatus]
+) extends AbstractEndpoint.AbstractInstance[JiraEndpoint, NewStageAlert, Result]
+  with com.resolvix.ohm.module.endpoint.api.Instance[NewStageAlert, Result]
 {
 
   /*class ConsumerProducer
@@ -49,11 +53,25 @@ class JiraModule(
 
 
   /**
+    * Returns the 'Consumer' of 'Alert' objects for the instance.
+    *
+    * @return
+    */
+  override def getAlertConsumer: Consumer[NewStageAlert] = ???
+
+  /**
+    * Returns the 'Producer' of 'Result' objects for the instance.
+    *
+    * @return
+    */
+  override def getResultProducer: Producer[Result] = ???
+
+  /**
     *
     */
   override def finish(): Unit = ???
 
-  override def getModule: Module[NewStageAlert, ModuleAlertStatus] = JiraModule
+  override def getModule: Module[NewStageAlert, Result] = JiraEndpoint
 
   override def getId: Int = ???
 

@@ -2,16 +2,23 @@ package com.resolvix.ohm.module.api
 
 import java.util.Properties
 
+import com.resolvix.ccs.runnable.api.{Consumer, Producer}
 import com.typesafe.config.Config
 
 import scala.util.Try
 
 /**
+  * The module API specification that provides methods for module
+  * interrogation and instantiation.
   *
   * @tparam A
-  * @tparam M
+  *   refers to the type of alert to be consumed by the module.
+  *
+  * @tparam R
+  *   refers to the type of module alert status to be produced by the module.
+  *
   */
-trait Module[A <: Alert, M <: ModuleAlertStatus]
+trait Module[A <: Alert, R <: Result]
 {
   /**
     *
@@ -35,7 +42,7 @@ trait Module[A <: Alert, M <: ModuleAlertStatus]
     *
     * @return
     */
-  def getInstance(): Try[Instance[A, M]]
+  def getInstance(): Try[Instance[A, R]]
 
   /**
     *
@@ -44,7 +51,7 @@ trait Module[A <: Alert, M <: ModuleAlertStatus]
     */
   def getInstance(
     config: Config
-  ): Try[Instance[A, M]]
+  ): Try[Instance[A, R]]
 
   /**
     *
@@ -53,7 +60,7 @@ trait Module[A <: Alert, M <: ModuleAlertStatus]
     */
   def getInstance(
     configuration: Map[String, Any]
-  ): Try[Instance[A, M]]
+  ): Try[Instance[A, R]]
 
   /**
     *
@@ -62,7 +69,7 @@ trait Module[A <: Alert, M <: ModuleAlertStatus]
     */
   def getInstance(
     properties: Properties
-  ): Try[Instance[A, M]]
+  ): Try[Instance[A, R]]
 
   /**
     *

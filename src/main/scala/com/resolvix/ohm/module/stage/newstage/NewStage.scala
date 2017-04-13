@@ -1,16 +1,16 @@
-package com.resolvix.ohm.module
+package com.resolvix.ohm.module.stage.newstage
 
-import java.nio.channels.Pipe
 import java.time.Instant
 
-import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus}
+import com.resolvix.ohm.module.api.{Alert, Result}
+import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
+import com.resolvix.ohm.module.{Classifiable, Summarizable}
 
 //import com.resolvix.concurrent.api.RunnableConsumerProducer
-import com.resolvix.ohm.{Location, Signature}
 import com.resolvix.ohm.dao.api.OssecHidsDAO
-import com.resolvix.ohm.module.api.NewStageAlert
+import com.resolvix.ohm.{Location, Signature}
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 /**
   * Created by rwbisson on 16/10/16.
@@ -24,7 +24,7 @@ class NewStage(
     private val alert: Alert,
     private val location: Option[Location],
     private val signature: Option[Signature],
-    private val moduleAlertStatuses: List[ModuleAlertStatus]
+    private val moduleAlertStatuses: List[Result]
   ) extends NewStageAlert
     with Classifiable
     with Summarizable
@@ -57,15 +57,15 @@ class NewStage(
   //override val pipe: Pipe[Alert] = new Pipe[Alert]()
 
   def apply(alert: Alert): AugmentedAlert = {
-    val moduleAlertStatuses: List[ModuleAlertStatus]
+    val moduleAlertStatuses: List[Result]
       = ossecHidsDAO.getModuleAlertStatusesById(
         alert.getId
       ) match {
-        case Success(moduleAlertStatuses: List[ModuleAlertStatus]) =>
+        case Success(moduleAlertStatuses: List[Result]) =>
           moduleAlertStatuses
 
         case Failure(t: Throwable) =>
-          List[ModuleAlertStatus]()
+          List[Result]()
       }
 
     println("convert: ")

@@ -1,6 +1,6 @@
 package com.resolvix.ohm.api
 
-import com.resolvix.ohm.module.api.{Alert, ModuleAlertStatus, NewStageAlert}
+import com.resolvix.ohm.module.api.{Alert, Result}
 
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -13,7 +13,7 @@ trait AvailableModule {
 
   def doInstantiate(
     configuration: Map[String, Any]
-  ): Module[_ <: Alert, _ <: ModuleAlertStatus]
+  ): Module[_ <: Alert, _ <: Result]
 
   def getDescriptor: String
 
@@ -21,7 +21,7 @@ trait AvailableModule {
 
   final def instantiate(
     configuration: Map[String, Any]
-  ): Try[Module[_ <: Alert, _ <: ModuleAlertStatus]] = {
+  ): Try[Module[_ <: Alert, _ <: Result]] = {
     try {
       Success(doInstantiate(configuration))
     } catch {

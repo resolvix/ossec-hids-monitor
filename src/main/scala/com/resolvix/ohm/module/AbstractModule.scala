@@ -2,7 +2,7 @@ package com.resolvix.ohm.module
 
 import java.util.Properties
 
-import com.resolvix.ohm.module.api.{Alert, Instance, ModuleAlertStatus}
+import com.resolvix.ohm.module.api.{Alert, Instance, Result}
 import com.typesafe.config.{Config, ConfigValue}
 
 import scala.util.Try
@@ -14,91 +14,38 @@ object AbstractModule
     * Provides an abstract implementation of a module instance.
     *
     * @tparam AI
-    *   refers to the
+    *   refers to the relevant 'AbstractInstance' -derived subclass.
     *
     * @tparam A
-    *   refers to the type of alert to be consumed by the module
+    *   refers to the type of alert consumed by the module
     *
-    * @tparam M
+    * @tparam R
+    *   refers to the type of result produced by the module.
+    *
     */
-  abstract class AbstractInstance[AI <: AbstractInstance[AI, A, M], A <: Alert, M <: ModuleAlertStatus]
-    extends com.resolvix.ohm.module.api.Instance[A, M]
+  abstract class AbstractInstance[AI <: AbstractInstance[AI, A, R], A <: Alert, R <: Result]
+    extends com.resolvix.ohm.module.api.Instance[A, R]
   {
 
+    /**
+      * Abstract class definition for the module consumer / producer.
+      */
     abstract class ConsumerProducer
-      extends  com.resolvix.ccs.runnable.ConsumerProducer[ConsumerProducer, A, M]
+      extends  com.resolvix.ccs.runnable.ConsumerProducer[ConsumerProducer, A, R]
     {
-      /**
-        *
-        * @param C
-        * @return
-        */
-      def doConsume(c: A): Try[Boolean]
+      override def doConsume(c: A): Try[Boolean]
+
+      override def doProduce(): Try[R]
     }
-
-
   }
 }
 
 /**
   *
   */
-abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
-  extends api.Module[A, M]
+abstract class AbstractModule[A <: Alert, R <: Result]
+  extends api.Module[A, R]
 {
-  import AbstractModule._
-  /*class ConsumerC[C]
-    extends Consumer[C]
-  {
-    override protected def getSelf: Consumer[C] = this
-
-    /**
-      *
-      * @param configuration
-      * @return
-      */
-    override def initialise(configuration: Configuration): Try[Boolean] = ???
-  }
-
-  class ProducerC[C]
-    extends Producer[C]
-  {
-    override protected def getSelf: Producer[C] = this
-
-    /**
-      *
-      * @param configuration
-      * @return
-      */
-    override def initialise(configuration: Configuration): Try[Boolean] = ???
-  }
-
-  class ConsumerP[P]
-    extends Consumer[P]
-  {
-    override protected def getSelf: Consumer[P] = this
-
-    /**
-      *
-      * @param configuration
-      * @return
-      */
-    override def initialise(configuration: Configuration): Try[Boolean] = ???
-  }
-
-  class ProducerP[P]
-    extends Producer[P]
-  {
-    override protected def getSelf: Producer[P] = this
-
-    /**
-      *
-      * @param configuration
-      * @return
-      */
-    override def initialise(configuration: Configuration): Try[Boolean] = ???
-  }*/
-
   /**
     *
     * @return
@@ -130,14 +77,16 @@ abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
     */
   protected def newInstance(
     config: Map[String, Any]
-  ): Try[Instance[A, M]] = ???
+  ): Try[Instance[A, R]]
 
   /**
     *
     * @return
     */
-  override def getInstance(): Try[Instance[A, M]] = {
-    newInstance(Map[String, Any]())
+  override def getInstance(): Try[Instance[A, R]] = {
+    newInstance(
+      Map[String, Any]()
+    )
   }
 
   /**
@@ -147,7 +96,7 @@ abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
     */
   override def getInstance(
     config: Config
-  ): Try[Instance[A, M]] = {
+  ): Try[Instance[A, R]] = {
     newInstance(
       getConfigurations.map(
         (h: String) => config.getValue(h) match {
@@ -165,7 +114,7 @@ abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
     */
   override def getInstance(
     config: Map[String, Any]
-  ): Try[Instance[A, M]] = {
+  ): Try[Instance[A, R]] = {
     newInstance(config)
   }
 
@@ -176,7 +125,7 @@ abstract class AbstractModule[A <: Alert, M <: ModuleAlertStatus]
     */
   override def getInstance(
     properties: Properties
-  ): Try[Instance[A, M]] = {
+  ): Try[Instance[A, R]] = {
     newInstance(
       getConfigurations.map(
         (h: String) => properties.get(h) match {

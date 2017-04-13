@@ -1,4 +1,6 @@
-package com.resolvix.ohm.module.api
+package com.resolvix.ohm.module.stage.newstage.api
+
+import com.resolvix.ohm.module.api.{Alert, Location, Signature}
 
 trait NewStageAlert
   extends Alert
