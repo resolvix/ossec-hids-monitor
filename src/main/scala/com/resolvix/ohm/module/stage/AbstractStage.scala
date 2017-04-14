@@ -12,11 +12,11 @@ object AbstractStage
   /**
     *
     * @tparam AI
-    * @tparam A
-    * @tparam R
+    * @tparam I
+    * @tparam O
     */
-  abstract class AbstractInstance[AI <: AbstractInstance[AI, A, R], A <: Alert, R <: Result]
-    extends com.resolvix.ohm.module.stage.api.Instance[A, R]
+  abstract class AbstractInstance[AI <: AbstractInstance[AI, I, O], I, O]
+    extends com.resolvix.ohm.module.stage.api.Instance[I, O]
   {
 
   }
@@ -25,8 +25,8 @@ object AbstractStage
 /**
   * Created by rwbisson on 13/04/17.
   */
-abstract class AbstractStage[A <: Alert, R <: Result]
-  extends AbstractModule[A, R]
+abstract class AbstractStage[I, O]
+  extends AbstractModule[I, O]
 {
 
 }

@@ -12,11 +12,11 @@ object AbstractEndpoint
   /**
     *
     * @tparam AI
-    * @tparam A
-    * @tparam R
+    * @tparam I
+    * @tparam O
     */
-  abstract class AbstractInstance[AI <: AbstractInstance[AI, A, R], A <: Alert, R <: Result]
-    extends com.resolvix.ohm.module.api.Instance[A, R]
+  abstract class AbstractInstance[AI <: AbstractInstance[AI, I, O], I, O]
+    extends com.resolvix.ohm.module.api.Instance[I, O]
   {
 
   }
@@ -24,11 +24,11 @@ object AbstractEndpoint
 
 /**
   *
-  * @tparam A
-  * @tparam R
+  * @tparam I
+  * @tparam O
   */
-abstract class AbstractEndpoint[A <: Alert, R <: Result]
-  extends AbstractModule[A, R]
+abstract class AbstractEndpoint[I, O]
+  extends AbstractModule[I, O]
 {
 
 }

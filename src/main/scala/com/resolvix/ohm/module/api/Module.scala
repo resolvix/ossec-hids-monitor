@@ -11,14 +11,16 @@ import scala.util.Try
   * The module API specification that provides methods for module
   * interrogation and instantiation.
   *
-  * @tparam A
-  *   refers to the type of alert to be consumed by the module.
+  * @tparam I
+  *   refers to the type of object to be consumed by an instance of
+  *   the module.
   *
-  * @tparam R
-  *   refers to the type of module alert status to be produced by the module.
+  * @tparam O
+  *   refers to the type of object to be produced by the module in
+  *   response to consumption of an object.
   *
   */
-trait Module[A <: Alert, R <: Result]
+trait Module[I, O]
 {
   /**
     *
@@ -42,7 +44,7 @@ trait Module[A <: Alert, R <: Result]
     *
     * @return
     */
-  def getInstance(): Try[Instance[A, R]]
+  def getInstance(): Try[Instance[I, O]]
 
   /**
     *
@@ -51,7 +53,7 @@ trait Module[A <: Alert, R <: Result]
     */
   def getInstance(
     config: Config
-  ): Try[Instance[A, R]]
+  ): Try[Instance[I, O]]
 
   /**
     *
@@ -60,7 +62,7 @@ trait Module[A <: Alert, R <: Result]
     */
   def getInstance(
     configuration: Map[String, Any]
-  ): Try[Instance[A, R]]
+  ): Try[Instance[I, O]]
 
   /**
     *
@@ -69,7 +71,7 @@ trait Module[A <: Alert, R <: Result]
     */
   def getInstance(
     properties: Properties
-  ): Try[Instance[A, R]]
+  ): Try[Instance[I, O]]
 
   /**
     *

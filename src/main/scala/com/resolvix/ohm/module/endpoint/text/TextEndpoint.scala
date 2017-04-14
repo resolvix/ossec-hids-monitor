@@ -35,28 +35,14 @@ class TextEndpoint(
 ) extends AbstractEndpoint.AbstractInstance[TextEndpoint, NewStageAlert, Result]
   with com.resolvix.ohm.module.endpoint.api.Instance[NewStageAlert, Result]
 {
-  /*override def doConsume(c: NewStageAlert): Try[Boolean] = ???
 
-  override def doProduce(): Try[ModuleAlertStatus] = ???*/
+  override def close(): Try[Boolean] = ???
 
-  /**
-    * Returns the 'Consumer' of 'Alert' objects for the instance.
-    *
-    * @return
-    */
-  override def getAlertConsumer: Consumer[NewStageAlert] = ???
+  override def consume(in: NewStageAlert, out: (Result) => Unit): Try[Boolean] = ???
 
-  /**
-    * Returns the 'Producer' of 'Result' objects for the instance.
-    *
-    * @return
-    */
-  override def getResultProducer: Producer[Result] = ???
+  override def flush(out: (Result) => Unit): Try[Boolean] = ???
 
-  /**
-    *
-    */
-  override def finish(): Unit = ???
+  override def open(): Try[Boolean] = ???
 
   override def getModule: Module[NewStageAlert, Result]
     = TextEndpoint
@@ -66,20 +52,6 @@ class TextEndpoint(
   override def initialise(): Try[Boolean] = {
     Success(true)
   }
-
-
-  /*override def process(
-    alert: Alert,
-    location: Option[Location],
-    signature: Option[Signature]
-  ): Promise[ModuleAlertStatus] = {
-    Promise()
-  }*/
-
-  /**
-    *
-    */
-  override def run(): Unit = ???
 
   override def terminate(): Try[Boolean] = {
     Success(false)

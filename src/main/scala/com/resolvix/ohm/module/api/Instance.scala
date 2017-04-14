@@ -3,13 +3,53 @@ package com.resolvix.ohm.module.api
 import scala.util.Try
 
 /**
-  * Defines the intercom framework for receiving alert objects from an alert
-  * producing actor, and for transmitting module status updates to a module
-  * status update consuming actor.
+  * Defines a runtime instance of a module,
   *
   */
-trait Instance[A <: Alert, R <: Result]
+trait Instance[I, O]
 {
+  /**
+    *
+    */
+  def close(): Try[Boolean]
+
+  /**
+    * Consume and object of type 'I', and invoke the function give by 'out'
+    * as appropriate.
+    *
+    * @param in
+    *   an object representing the input to the module.
+    *
+    * @param out
+    *   the function through which one or more objects of type 'O' should be
+    *   directed in response.
+    *
+    * @return
+    *   a value of type 'Try[Boolean]' indicating whether the operation was
+    *   successful or otherwise.
+    *
+    */
+  def consume(
+    in: I,
+    out: O => Unit
+  ): Try[Boolean]
+
+  /**
+    * Flush any buffers maintained by the instance in the course of processing
+    * objects of type I, and invoke the function given by 'out' as appropriate.
+    *
+    * @param out
+    *    the function through which one or more objects of type 'O' should be
+    *    directed.
+    *
+    * @return
+    *    a value of type 'Try[Boolean]' indicating whether the operation was
+    *    successful or otherwise.
+    *
+    */
+  def flush(
+    out: O => Unit
+  ): Try[Boolean]
 
   /**
     *
@@ -22,13 +62,7 @@ trait Instance[A <: Alert, R <: Result]
     *
     * @return
     */
-  def getModule: Module[A, R]
-
-  /**
-    * A method to
-    *
-    */
-  def finish(): Unit
+  def getModule: Module[I, O]
 
   /**
     *
@@ -40,7 +74,7 @@ trait Instance[A <: Alert, R <: Result]
     * Instantiate the consumer for the module.
     *
     */
-  def run(): Unit
+  def open(): Try[Boolean]
 
   /**
     * Terminate the consumer for the module.

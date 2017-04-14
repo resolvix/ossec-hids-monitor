@@ -37,31 +37,37 @@ class SinkEndpoint(
 ) extends AbstractEndpoint.AbstractInstance[SinkEndpoint, Alert, Result]
   with com.resolvix.ohm.module.endpoint.api.Instance[Alert, Result]
 {
-  /*override def doConsume(c: Alert): Try[Boolean] = {
-    println("SinkModule.doConsume: " + c.toString)
-    Success(true)
+
+  override def close(): Try[Boolean] = ???
+
+  override def consume(in: Alert, out: (Result) => Unit): Try[Boolean] = {
+    /*println(
+      "AID: "
+        + alert.getId
+        + ", RID: "
+        + alert.getRuleId
+        + ", LID: "
+        + alert.getLocationId
+        + ", L: "
+        + location.get.getName
+        + ", S: "
+        + signature.get.getDescription
+    )
+
+    val a = new module.AugmentedAlert(alert)
+
+    val x = a.summarize
+    val y = a.classify
+
+    val f = Promise[ModuleAlertStatus]()
+    f.success(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))
+    f*/
+    ???
   }
 
-  override def doProduce(): Try[ModuleAlertStatus] = ???*/
+  override def flush(out: (Result) => Unit): Try[Boolean] = ???
 
-  /**
-    * Returns the 'Consumer' of 'Alert' objects for the instance.
-    *
-    * @return
-    */
-  override def getAlertConsumer: Consumer[Alert] = ???
-
-  /**
-    * Returns the 'Producer' of 'Result' objects for the instance.
-    *
-    * @return
-    */
-  override def getResultProducer: Producer[Result] = ???
-
-  /**
-    *
-    */
-  override def finish(): Unit = ???
+  override def open(): Try[Boolean] = ???
 
   /**
     *
@@ -88,42 +94,6 @@ class SinkEndpoint(
     override def getReference: String = reference
 
     override def getStatusId: Int = statusId
-  }
-
-
-
-  /*override def process(
-    alert: Alert,
-    location: Option[Location],
-    signature: Option[Signature]
-  ): Promise[ModuleAlertStatus] = {
-    println(
-      "AID: "
-        + alert.getId
-        + ", RID: "
-        + alert.getRuleId
-        + ", LID: "
-        + alert.getLocationId
-        + ", L: "
-        + location.get.getName
-        + ", S: "
-        + signature.get.getDescription
-    )
-
-    val a = new module.AugmentedAlert(alert)
-
-    val x = a.summarize
-    val y = a.classify
-
-    val f = Promise[ModuleAlertStatus]()
-    f.success(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))
-    f
-  }*/
-
-  override def run(): Unit = {
-    println("SinkModule.run: starting thread")
-    //super.run()
-    println("SinkModule.run: thread finished")
   }
 
   override def terminate(): Try[Boolean] = {

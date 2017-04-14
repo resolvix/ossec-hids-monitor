@@ -16,35 +16,25 @@ object AbstractModule
     * @tparam AI
     *   refers to the relevant 'AbstractInstance' -derived subclass.
     *
-    * @tparam A
+    * @tparam I
     *   refers to the type of alert consumed by the module
     *
-    * @tparam R
+    * @tparam O
     *   refers to the type of result produced by the module.
     *
     */
-  abstract class AbstractInstance[AI <: AbstractInstance[AI, A, R], A <: Alert, R <: Result]
-    extends com.resolvix.ohm.module.api.Instance[A, R]
+  abstract class AbstractInstance[AI <: AbstractInstance[AI, I, O], I, O]
+    extends com.resolvix.ohm.module.api.Instance[I, O]
   {
 
-    /**
-      * Abstract class definition for the module consumer / producer.
-      */
-    abstract class ConsumerProducer
-      extends  com.resolvix.ccs.runnable.ConsumerProducer[ConsumerProducer, A, R]
-    {
-      override def doConsume(c: A): Try[Boolean]
-
-      override def doProduce(): Try[R]
-    }
   }
 }
 
 /**
   *
   */
-abstract class AbstractModule[A <: Alert, R <: Result]
-  extends api.Module[A, R]
+abstract class AbstractModule[I, O]
+  extends api.Module[I, O]
 {
   /**
     *
@@ -77,13 +67,13 @@ abstract class AbstractModule[A <: Alert, R <: Result]
     */
   protected def newInstance(
     config: Map[String, Any]
-  ): Try[Instance[A, R]]
+  ): Try[Instance[I, O]]
 
   /**
     *
     * @return
     */
-  override def getInstance(): Try[Instance[A, R]] = {
+  override def getInstance(): Try[Instance[I, O]] = {
     newInstance(
       Map[String, Any]()
     )
@@ -96,7 +86,7 @@ abstract class AbstractModule[A <: Alert, R <: Result]
     */
   override def getInstance(
     config: Config
-  ): Try[Instance[A, R]] = {
+  ): Try[Instance[I, O]] = {
     newInstance(
       getConfigurations.map(
         (h: String) => config.getValue(h) match {
@@ -114,7 +104,7 @@ abstract class AbstractModule[A <: Alert, R <: Result]
     */
   override def getInstance(
     config: Map[String, Any]
-  ): Try[Instance[A, R]] = {
+  ): Try[Instance[I, O]] = {
     newInstance(config)
   }
 
@@ -125,7 +115,7 @@ abstract class AbstractModule[A <: Alert, R <: Result]
     */
   override def getInstance(
     properties: Properties
-  ): Try[Instance[A, R]] = {
+  ): Try[Instance[I, O]] = {
     newInstance(
       getConfigurations.map(
         (h: String) => properties.get(h) match {

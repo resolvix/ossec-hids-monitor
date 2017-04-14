@@ -42,34 +42,51 @@ class JiraEndpoint(
   with com.resolvix.ohm.module.endpoint.api.Instance[NewStageAlert, Result]
 {
 
-  /*class ConsumerProducer
-    extends com.resolvix.ccs.ConsumerProducer
-    with com.resolvix.ccs.
-  {
-    override def doConsume(c: NewStageAlert): Try[Boolean] = ???
-
-    override def doProduce(): Try[ModuleAlertStatus] = ???
-  }*/
 
 
   /**
-    * Returns the 'Consumer' of 'Alert' objects for the instance.
+    *
+    */
+  override def close(): Try[Boolean] = ???
+
+  /**
+    * Consume and object of type 'I', and invoke the function give by 'out'
+    * as appropriate.
+    *
+    * @param in
+    * an object representing the input to the module.
+    *
+    * @param out
+    * the function through which one or more objects of type 'O' should be
+    * directed in response.
     *
     * @return
+    * a value of type 'Try[Boolean]' indicating whether the operation was
+    * successful or otherwise.
+    *
     */
-  override def getAlertConsumer: Consumer[NewStageAlert] = ???
+  override def consume(in: NewStageAlert, out: (Result) => Unit): Try[Boolean] = ???
 
   /**
-    * Returns the 'Producer' of 'Result' objects for the instance.
+    * Flush any buffers maintained by the instance in the course of processing
+    * objects of type I, and invoke the function given by 'out' as appropriate.
+    *
+    * @param out
+    * the function through which one or more objects of type 'O' should be
+    * directed.
     *
     * @return
-    */
-  override def getResultProducer: Producer[Result] = ???
-
-  /**
+    * a value of type 'Try[Boolean]' indicating whether the operation was
+    * successful or otherwise.
     *
     */
-  override def finish(): Unit = ???
+  override def flush(out: (Result) => Unit): Try[Boolean] = ???
+
+  /**
+    * Instantiate the consumer for the module.
+    *
+    */
+  override def open(): Try[Boolean] = ???
 
   override def getModule: Module[NewStageAlert, Result] = JiraEndpoint
 
@@ -78,20 +95,6 @@ class JiraEndpoint(
   override def initialise(): Try[Boolean] = {
     Success(false)
   }
-
-  /*override def process(
-    alert: Alert,
-    location: Option[Location],
-    signature: Option[Signature]
-  ): Promise[ModuleAlertStatus] = {
-    Promise()
-  }*/
-
-
-  /**
-    *
-    */
-  override def run(): Unit = ???
 
   /**
     *
