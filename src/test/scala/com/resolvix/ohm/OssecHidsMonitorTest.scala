@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 import com.resolvix.ohm.OssecHidsMonitor.AvailableModuleType
 import com.resolvix.ohm.dao.TestOssecHidsDAO
-import org.scalatest.FlatSpec
+import org.scalatest.{FlatSpec, FunSpec}
 
 import scala.util.{Failure, Success}
 
@@ -12,48 +12,48 @@ import scala.util.{Failure, Success}
   * Created by rwbisson on 10/10/16.
   */
 class OssecHidsMonitorTest
-  extends FlatSpec
+  extends FunSpec
 {
   val testOssecHidsDAO: dao.api.OssecHidsDAO = new TestOssecHidsDAO
-  val ossecHidsMonitor: OssecHidsMonitor = new OssecHidsMonitor(testOssecHidsDAO)
+  var ossecHidsMonitor: OssecHidsMonitor = _
+  var alerts: List[module.api.Alert] = _
+  var modules: List[AvailableModuleType] = _
 
   val fromDateTime: LocalDateTime = null
   val toDateTime: LocalDateTime = null
 
-  "OssecHidsMonitor" should "accept a DAO to enable it to initialise itself" in {
+  describe("OssecHidsMonitor") {
 
-  }
-
-  it should "xxx" in {
-
-    val alerts: List[module.api.Alert] = testOssecHidsDAO.getAlertsForPeriod(
-      1,
-      fromDateTime,
-      toDateTime
-    ) match {
-      case Success(listAlert: List[module.api.Alert]) =>
-        listAlert
-
-      case Failure(t: Throwable) =>
-        throw t
+    it("should accept a DAO to enable it to initialise itself") {
+      ossecHidsMonitor = new OssecHidsMonitor(testOssecHidsDAO)
     }
 
-    val modules: List[AvailableModuleType] = OssecHidsMonitor.getAvailableModules(
-      (m: AvailableModuleType) => m.getHandle.equalsIgnoreCase("sink")
-    )
+    it("should obtain a list of alerts for a given period ") {
+      alerts = testOssecHidsDAO.getAlertsForPeriod(
+        1,
+        fromDateTime,
+        toDateTime
+      ) match {
+        case Success(listAlert: List[module.api.Alert]) =>
+          listAlert
 
-    ossecHidsMonitor.process(
-      alerts,
-      modules,
-      Map[String, Any]()
-    )
-  }
+        case Failure(t: Throwable) =>
+          throw t
+      }
+    }
 
-  it should "process alerts between " in {
+    it("should obtain a list of available modules") {
+      modules = OssecHidsMonitor.getAvailableModules(
+        (m: AvailableModuleType) => m.getHandle.equalsIgnoreCase("sink")
+      )
+    }
 
-  }
-
-  it should "yyy" in {
-
+    it("should process alerts for the relevant period using the available modules") {
+      ossecHidsMonitor.process(
+        alerts,
+        modules,
+        Map[String, Any]()
+      )
+    }
   }
 }

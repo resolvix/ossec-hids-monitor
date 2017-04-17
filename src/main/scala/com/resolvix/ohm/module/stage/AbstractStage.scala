@@ -1,32 +1,14 @@
-package com.resolvix.ohm.stage
-
-import com.resolvix.ohm.module.AbstractModule
-import com.resolvix.ohm.module.api.{Alert, Result}
+package com.resolvix.ohm.module.stage
 
 /**
-  * Created by rwbisson on 13/04/17.
+  *
+  * @tparam AI
+  * @tparam I
+  * @tparam O
   */
-object AbstractStage
-{
-
-  /**
-    *
-    * @tparam AI
-    * @tparam I
-    * @tparam O
-    */
-  abstract class AbstractInstance[AI <: AbstractInstance[AI, I, O], I, O]
-    extends com.resolvix.ohm.module.stage.api.Instance[I, O]
-  {
-
-  }
-}
-
-/**
-  * Created by rwbisson on 13/04/17.
-  */
-abstract class AbstractStage[I, O]
-  extends AbstractModule[I, O]
+abstract class AbstractStage[AI <: AbstractStage[AI, I, O], I, O]
+  extends com.resolvix.ohm.module.AbstractModule[AI, I, O]
+  with api.Stage[I, O]
 {
 
 }

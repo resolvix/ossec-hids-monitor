@@ -1,8 +1,8 @@
 package com.resolvix.ohm.api
 
-import com.resolvix.ohm.module.api.{Alert, Result}
+import com.resolvix.ohm.module.api.{Alert, ResultX}
 
-class ModuleAlertProcessingException[C <: Alert, M <: Result](
+class ModuleAlertProcessingException[C <: Alert, M <: ResultX](
   private val alert: Alert,
   private val module: Module[C, M],
   message: String,

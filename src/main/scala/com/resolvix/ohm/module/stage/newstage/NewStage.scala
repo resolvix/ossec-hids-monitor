@@ -2,7 +2,7 @@ package com.resolvix.ohm.module.stage.newstage
 
 import java.time.Instant
 
-import com.resolvix.ohm.module.api.{Alert, Result}
+import com.resolvix.ohm.module.api.{Alert, ResultX}
 import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
 import com.resolvix.ohm.module.{Classifiable, Summarizable}
 
@@ -24,7 +24,7 @@ class NewStage(
     private val alert: Alert,
     private val location: Option[Location],
     private val signature: Option[Signature],
-    private val moduleAlertStatuses: List[Result]
+    private val moduleAlertStatuses: List[ResultX]
   ) extends NewStageAlert
     with Classifiable
     with Summarizable
@@ -57,15 +57,15 @@ class NewStage(
   //override val pipe: Pipe[Alert] = new Pipe[Alert]()
 
   def apply(alert: Alert): AugmentedAlert = {
-    val moduleAlertStatuses: List[Result]
+    val moduleAlertStatuses: List[ResultX]
       = ossecHidsDAO.getModuleAlertStatusesById(
         alert.getId
       ) match {
-        case Success(moduleAlertStatuses: List[Result]) =>
+        case Success(moduleAlertStatuses: List[ResultX]) =>
           moduleAlertStatuses
 
         case Failure(t: Throwable) =>
-          List[Result]()
+          List[ResultX]()
       }
 
     println("convert: ")

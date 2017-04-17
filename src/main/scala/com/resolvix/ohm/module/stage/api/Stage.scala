@@ -1,6 +1,4 @@
-package com.resolvix.ohm.module.stage.newstage.api
-
-import com.resolvix.ohm.module.api.{Alert, Result}
+package com.resolvix.ohm.module.stage.api
 
 /**
   * Created by rwbisson on 13/04/17.

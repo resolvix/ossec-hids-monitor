@@ -1,16 +1,9 @@
 package com.resolvix.ohm.module.api
 
 /**
-  * Created by rwbisson on 08/10/16.
+  * Created by rwbisson on 17/04/17.
   */
-trait Result {
-
-  def getId: Int
-
-  def getModuleId: Int
-
-  def getReference: String
-
-  def getStatusId: Int
+trait Result
+{
 
 }

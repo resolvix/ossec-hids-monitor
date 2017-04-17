@@ -1,46 +1,20 @@
 package com.resolvix.ohm.module.endpoint.sink
 
-import com.resolvix.ccs.runnable.api.{Consumer, Producer}
-import com.resolvix.ohm.OssecHidsMonitor.ActiveModule
-import com.resolvix.ohm.{Location, Signature, api}
-import com.resolvix.ohm.module
-import com.resolvix.ohm.module.api._
-import com.resolvix.ohm.module.endpoint.AbstractEndpoint
+import com.resolvix.ohm.module.api.{Alert, ModuleDescriptor, Result, ResultX}
 
-import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
-
-object SinkEndpoint
-  extends AbstractEndpoint[Alert, Result]
-  with com.resolvix.ohm.module.endpoint.api.Endpoint[Alert, Result]
-{
-  override protected def getConfigurations: Array[String] = ???
-
-  override def getDescription: String = "Module for sinking OSSEC HIDS alerts."
-
-  override def getHandle: String = "SINK"
-
-  protected override def newInstance(
-    configuration: Map[String, Any]
-  ): Try[SinkEndpoint] = {
-    Success(
-      new SinkEndpoint(configuration)
-    )
-  }
-}
 
 /**
   * Created by rwbisson on 10/10/16.
   */
 class SinkEndpoint(
   configuration: Map[String, Any]
-) extends AbstractEndpoint.AbstractInstance[SinkEndpoint, Alert, Result]
-  with com.resolvix.ohm.module.endpoint.api.Instance[Alert, Result]
-{
+) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[SinkEndpoint, Alert, Result]
+  with com.resolvix.ohm.module.endpoint.api.Endpoint[Alert, Result] {
 
   override def close(): Try[Boolean] = ???
 
-  override def consume(in: Alert, out: (Result) => Unit): Try[Boolean] = {
+  override def process[R <: Result](input: Alert): Try[R] = {
     /*println(
       "AID: "
         + alert.getId
@@ -65,7 +39,7 @@ class SinkEndpoint(
     ???
   }
 
-  override def flush(out: (Result) => Unit): Try[Boolean] = ???
+  override def flush[R <: Result](): Try[R] = ???
 
   override def open(): Try[Boolean] = ???
 
@@ -73,7 +47,8 @@ class SinkEndpoint(
     *
     * @return
     */
-  override def getModule: Module[Alert, Result] = SinkEndpoint
+  override def getModule: ModuleDescriptor[Alert, Result]
+    = SinkEndpointDescriptor
 
   override def getId: Int = 2
 
@@ -86,7 +61,7 @@ class SinkEndpoint(
     private val moduleId: Int,
     private val reference: String,
     private val statusId: Int
-  ) extends Result {
+  ) extends ResultX {
     override def getId: Int = id
 
     override def getModuleId: Int = moduleId

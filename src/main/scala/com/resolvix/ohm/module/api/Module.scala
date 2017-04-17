@@ -1,38 +1,46 @@
 package com.resolvix.ohm.module.api
 
-import java.util.Properties
-
-import com.resolvix.ccs.runnable.api.{Consumer, Producer}
-import com.typesafe.config.Config
-
 import scala.util.Try
 
-/**
-  * The module API specification that provides methods for module
-  * interrogation and instantiation.
-  *
-  * @tparam I
-  *   refers to the type of object to be consumed by an instance of
-  *   the module.
-  *
-  * @tparam O
-  *   refers to the type of object to be produced by the module in
-  *   response to consumption of an object.
-  *
-  */
 trait Module[I, O]
 {
   /**
     *
-    * @return
     */
-  def getDescription: String
+  def close(): Try[Boolean]
 
   /**
+    * Consume and object of type 'I', and return an object that implements
+    * the 'Result' trait.
+    *
+    * @param input
+    *   an object representing the input to the module.
+    *
+    * @tparam R
+    *   the result type.
     *
     * @return
+    *   a value of type 'Try[R]' indicating whether the operation was
+    *   successful or otherwise.
+    *
     */
-  def getHandle: String
+  def process[R <: Result](
+    input: I
+  ): Try[R]
+
+  /**
+    * Flush any buffers maintained by the instance in the course of processing
+    * objects of type I, and return an object that implements the 'Result' trait.
+    *
+    * @tparam R
+    *   the result type.
+    *
+    * @return
+    *    a value of type 'Try[R]' indicating whether the operation was
+    *    successful or otherwise.
+    *
+    */
+  def flush[R <: Result](): Try[R]
 
   /**
     *
@@ -41,41 +49,28 @@ trait Module[I, O]
   def getId: Int
 
   /**
+    * Returns the parent 'Module' for the module instance.
     *
     * @return
     */
-  def getInstance(): Try[Instance[I, O]]
-
-  /**
-    *
-    * @param config
-    * @return
-    */
-  def getInstance(
-    config: Config
-  ): Try[Instance[I, O]]
-
-  /**
-    *
-    * @param configuration
-    * @return
-    */
-  def getInstance(
-    configuration: Map[String, Any]
-  ): Try[Instance[I, O]]
-
-  /**
-    *
-    * @param properties
-    * @return
-    */
-  def getInstance(
-    properties: Properties
-  ): Try[Instance[I, O]]
+  def getModule: ModuleDescriptor[I, O]
 
   /**
     *
     * @return
     */
-  def getName: String
+  def initialise(): Try[Boolean]
+
+  /**
+    * Instantiate the consumer for the module.
+    *
+    */
+  def open(): Try[Boolean]
+
+  /**
+    * Terminate the consumer for the module.
+    *
+    * @return
+    */
+  def terminate(): Try[Boolean]
 }
