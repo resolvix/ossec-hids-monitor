@@ -1,8 +1,9 @@
 package com.resolvix.ohm.dao
 import java.time.{Instant, LocalDateTime}
 
+import com.resolvix.ohm.api.AlertStatus
 import com.resolvix.ohm.{Category, Location, Signature, SignatureCategoryMaplet}
-import com.resolvix.ohm.module.api.{Alert, ResultX}
+import com.resolvix.ohm.module.api.Alert
 
 import scala.collection.mutable.ListBuffer
 import scala.util.{Success, Try}
@@ -58,7 +59,7 @@ class TestOssecHidsDAO
     moduleId: Int,
     reference: String,
     statusId: Int
-  ) extends ResultX
+  ) extends AlertStatus
   {
     override def getId: Int = alertId
 
@@ -126,11 +127,11 @@ class TestOssecHidsDAO
     Success(listSignatureCategoryMaplet)
   }
 
-  override def getModuleAlertStatusesById(id: Int): Try[List[ResultX]] = {
-    Success(List[ResultX]())
+  override def getModuleAlertStatusesById(id: Int): Try[List[AlertStatus]] = {
+    Success(List[AlertStatus]())
   }
 
-  private val listBuffer: ListBuffer[ResultX] = new ListBuffer[ResultX]()
+  private val listBuffer: ListBuffer[AlertStatus] = new ListBuffer[AlertStatus]()
 
   override def setModuleAlertStatus(
     alertId: Int,

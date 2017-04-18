@@ -1,13 +1,14 @@
 package com.resolvix.ohm.module.endpoint.text
 
+import com.resolvix.ohm.api.AlertStatus
 import com.resolvix.ohm.module.api.Result
 import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
 
 import scala.util.{Success, Try}
 
 object TextEndpointDescriptor
-  extends com.resolvix.ohm.module.endpoint.AbstractEndpointDescriptor[NewStageAlert, Result]
-    with com.resolvix.ohm.module.api.ModuleDescriptor[NewStageAlert, Result]
+  extends com.resolvix.ohm.module.endpoint.AbstractEndpointDescriptor[NewStageAlert, AlertStatus]
+    with com.resolvix.ohm.module.api.ModuleDescriptor[NewStageAlert, AlertStatus]
 {
 
   override protected def getConfigurations: Array[String] = ???

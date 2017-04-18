@@ -1,6 +1,7 @@
 package com.resolvix.ohm.module.endpoint.jira
 
-import com.resolvix.ohm.module.api.{ModuleDescriptor, Result, ResultX}
+import com.resolvix.ohm.api.AlertStatus
+import com.resolvix.ohm.module.api.{ModuleDescriptor, Result}
 import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
 
 import scala.util.{Success, Try}
@@ -11,8 +12,8 @@ import scala.util.{Success, Try}
   */
 class JiraEndpoint(
   configuration: Map[String, Any]
-) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[JiraEndpoint, NewStageAlert, Result]
-  with com.resolvix.ohm.module.endpoint.api.Endpoint[NewStageAlert, Result]
+) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[JiraEndpoint, NewStageAlert, AlertStatus]
+  with com.resolvix.ohm.module.endpoint.api.Endpoint[NewStageAlert, AlertStatus]
 {
   /**
     *
@@ -29,7 +30,7 @@ class JiraEndpoint(
     */
   override def open(): Try[Boolean] = ???
 
-  override def getModule: ModuleDescriptor[NewStageAlert, Result] = JiraEndpointDescriptor
+  override def getModule: ModuleDescriptor[NewStageAlert, AlertStatus] = JiraEndpointDescriptor
 
   override def getId: Int = ???
 

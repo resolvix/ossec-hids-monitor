@@ -1,6 +1,9 @@
 package com.resolvix.ohm.module.endpoint.sink
 
-import com.resolvix.ohm.module.api.{Alert, ModuleDescriptor, Result, ResultX}
+import com.resolvix.log.Loggable
+import com.resolvix.ohm.api.AlertStatus
+import com.resolvix.ohm.module.api.{Alert, ModuleDescriptor, Result}
+import com.resolvix.ohm.module.endpoint.EndpointResult
 
 import scala.util.{Failure, Success, Try}
 
@@ -9,45 +12,60 @@ import scala.util.{Failure, Success, Try}
   */
 class SinkEndpoint(
   configuration: Map[String, Any]
-) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[SinkEndpoint, Alert, Result]
-  with com.resolvix.ohm.module.endpoint.api.Endpoint[Alert, Result] {
+) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[SinkEndpoint, Alert, AlertStatus]
+  with com.resolvix.ohm.module.endpoint.api.Endpoint[Alert, AlertStatus]
+  with Loggable
+{
 
-  override def close(): Try[Boolean] = ???
-
-  override def process[R <: Result](input: Alert): Try[R] = {
-    /*println(
-      "AID: "
-        + alert.getId
-        + ", RID: "
-        + alert.getRuleId
-        + ", LID: "
-        + alert.getLocationId
-        + ", L: "
-        + location.get.getName
-        + ", S: "
-        + signature.get.getDescription
-    )
-
-    val a = new module.AugmentedAlert(alert)
-
-    val x = a.summarize
-    val y = a.classify
-
-    val f = Promise[ModuleAlertStatus]()
-    f.success(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))
-    f*/
-    ???
+  override def close(): Try[Boolean] = {
+    Success(false)
   }
 
-  override def flush[R <: Result](): Try[R] = ???
+  override def process[R <: Result](input: Alert): Try[R] = {
+    log.debug(
+      "AID: "
+        + input.getId
+        + ", RID: "
+        + input.getRuleId
+        + ", LID: "
+        + input.getLocationId
+    )
 
-  override def open(): Try[Boolean] = ???
+    /*val a = new module.AugmentedAlert(input)
+
+    val x = a.summarize
+    val y = a.classify*/
+
+    /*val f = Promise[ModuleAlertStatus]()
+    f.success(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))
+    f*/
+    Success(
+      new EndpointResult(
+        Array[AlertStatus](
+          new LocalAlertStatus(
+            input.getId,
+            0x00,
+            "SINK",
+            0x00
+          )
+        )
+      ).asInstanceOf[R]
+    )
+  }
+
+  override def flush[R <: Result](): Try[R] = {
+    Success(new EndpointResult(Array[AlertStatus]()).asInstanceOf[R])
+  }
+
+  override def open(): Try[Boolean] = {
+    Success(false)
+  }
 
   /**
     *
     * @return
     */
-  override def getModule: ModuleDescriptor[Alert, Result]
+  override def getModule: ModuleDescriptor[Alert, AlertStatus]
     = SinkEndpointDescriptor
 
   override def getId: Int = 2
@@ -61,7 +79,7 @@ class SinkEndpoint(
     private val moduleId: Int,
     private val reference: String,
     private val statusId: Int
-  ) extends ResultX {
+  ) extends AlertStatus {
     override def getId: Int = id
 
     override def getModuleId: Int = moduleId

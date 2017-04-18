@@ -8,9 +8,12 @@ import java.lang.Thread
 import java.util.NoSuchElementException
 
 import com.resolvix.ccs.runnable.api.{Consumer, ConsumerProducer, Producer, ProducerConsumer}
+import com.resolvix.log.Loggable
 import com.resolvix.ohm.OssecHidsMonitor.{AvailableModuleType, ModuleType}
+import com.resolvix.ohm.api.AlertStatus
 import com.resolvix.ohm.dao.api.OssecHidsDAO
-import com.resolvix.ohm.module.api.{Module, ModuleDescriptor, Result, ResultX}
+import com.resolvix.ohm.module.api.{Module, ModuleDescriptor, Result}
+import com.resolvix.ohm.module.endpoint.EndpointResult
 import com.resolvix.ohm.module.endpoint.jira.JiraEndpointDescriptor
 import com.resolvix.ohm.module.endpoint.sink.{SinkEndpoint, SinkEndpointDescriptor}
 import com.resolvix.ohm.module.endpoint.text.{TextEndpoint, TextEndpointDescriptor}
@@ -26,7 +29,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   *
   */
-object OssecHidsMonitor {
+object OssecHidsMonitor
+  extends Loggable
+{
 
   /*class FailureModuleAlertStatus(
     alert: module.api.Alert,
@@ -74,7 +79,7 @@ object OssecHidsMonitor {
     //  to the data store without having to make reference
     //  to the mechanics of storage.
     //
-    private val updateModuleAlertStatus: Function[ResultX, Try[Boolean]],
+    private val updateModuleAlertStatus: Function[AlertStatus, Try[Boolean]],
 
     //
     //  The function to execute to log a failure.
@@ -85,20 +90,22 @@ object OssecHidsMonitor {
     //
     private val logFailure: Function[Throwable, Try[Boolean]]
 
-  ) extends Module[I, O] {
+  ) extends Module[I, O]
+      with Loggable
+  {
 
     //
     //
     //
-    private val mapPromiseModuleAlertStatus: mutable.Map[Int, Promise[ResultX]]
-      = new mutable.HashMap[Int, Promise[ResultX]]
+    private val mapPromiseModuleAlertStatus: mutable.Map[Int, Promise[AlertStatus]]
+      = new mutable.HashMap[Int, Promise[AlertStatus]]
 
-    private val mapFutureModuleAlertStatus: mutable.Map[Int, Future[ResultX]]
-    = new mutable.HashMap[Int, Future[ResultX]]
+    private val mapFutureModuleAlertStatus: mutable.Map[Int, Future[AlertStatus]]
+    = new mutable.HashMap[Int, Future[AlertStatus]]
 
-    def onComplete: Function[Try[ResultX], Unit] = {
-      case Success(moduleAlertStatus: ResultX) =>
-        println(
+    def onComplete: Function[Try[AlertStatus], Unit] = {
+      case Success(moduleAlertStatus: AlertStatus) =>
+        log.debug(
           "AID: "
             + moduleAlertStatus.getId
             + ", MID: "
@@ -128,7 +135,7 @@ object OssecHidsMonitor {
 
     def appendPromiseModuleAlertStatus(
       alert: Alert,
-      promiseModuleAlertStatus: Promise[ResultX]
+      promiseModuleAlertStatus: Promise[AlertStatus]
     ): Try[Boolean] = {
       try {
         //
@@ -153,9 +160,13 @@ object OssecHidsMonitor {
       }
     }
 
-    override def close(): Try[Boolean] = ???
+    override def close(): Try[Boolean] = {
+      module.close()
+    }
 
-    override def flush[R <: Result](): Try[R] = ???
+    override def flush[R <: Result](): Try[R] = {
+      module.flush()
+    }
 
     def getDescription: String = {
       module.getModule.getDescription
@@ -170,15 +181,20 @@ object OssecHidsMonitor {
     }
 
     override def initialise(): Try[Boolean] = {
-      //instance.initialise()
-      Success(true)
+      module.initialise()
     }
 
-    override def process[R <: Result](input: I): Try[R] = ???
+    override def process[R <: Result](input: I): Try[R] = {
+      module.process(input)
+    }
 
-    override def getModule: ModuleDescriptor[I, O] = ???
+    override def getModule: ModuleDescriptor[I, O] = {
+      module.getModule
+    }
 
-    override def open(): Try[Boolean] = ???
+    override def open(): Try[Boolean] = {
+      module.open()
+    }
 
     override def terminate(): Try[Boolean] = {
       module.terminate()
@@ -190,7 +206,7 @@ object OssecHidsMonitor {
     * @tparam A
     * @tparam M
     */
-  class ProducerConsumer[A <: Alert, M <: ResultX]
+  class ProducerConsumer[A <: Alert, M <: AlertStatus]
     extends com.resolvix.ccs.runnable.ProducerConsumer[ProducerConsumer[A, M], A, M]
   {
     override def doConsume(c: M): Try[Boolean] = ???
@@ -251,22 +267,22 @@ object OssecHidsMonitor {
   //
   //
   //
-  type AvailableModuleType = module.api.ModuleDescriptor[_ <: module.api.Alert, _ <: module.api.Result]
+  type AvailableModuleType = module.api.ModuleDescriptor[_ <: module.api.Alert, _ <: AlertStatus]
 
   //
   //
   //
-  type ModuleType = module.api.Module[_ <: module.api.Alert, _ <: module.api.Result]
+  type ModuleType = module.api.Module[_ <: module.api.Alert, _ <: AlertStatus]
 
   //
   //
   //
-  type EndpointType = module.endpoint.api.Endpoint[_ <: module.api.Alert, _ <: module.api.Result]
+  type EndpointType = module.endpoint.api.Endpoint[_ <: module.api.Alert, _ <: AlertStatus]
 
   //
   //
   //
-  type StageType = module.stage.api.Stage[_ <: module.api.Alert, _ <:  module.api.Result]
+  type StageType = module.stage.api.Stage[_ <: module.api.Alert, _ <:  AlertStatus]
 
   //
   //
@@ -513,12 +529,15 @@ object OssecHidsMonitor {
   * @param ossecHidsDAO
   */
 class OssecHidsMonitor(
+  //
+  //
+  //
   ossecHidsDAO: OssecHidsDAO
-) {
+) extends Loggable {
 
   import OssecHidsMonitor.ActiveModule
 
-  type ActiveModuleType = ActiveModule[module.api.Alert, module.api.ResultX]
+  type ActiveModuleType = ActiveModule[module.api.Alert, api.AlertStatus]
 
   def logFailure: PartialFunction[Throwable, Try[Boolean]] = {
     case (t: Throwable) => Success(true)
@@ -769,9 +788,9 @@ class OssecHidsMonitor(
   }
 
   private def updateModuleAlertStatus(
-    moduleAlertStatus: ResultX
+    moduleAlertStatus: AlertStatus
   ): Try[Boolean] = {
-    println("updateModuleAlertStatus: ")
+    log.debug("updateModuleAlertStatus: ")
     ossecHidsDAO.setModuleAlertStatus(
       moduleAlertStatus.getId,
       moduleAlertStatus.getModuleId,
@@ -790,7 +809,7 @@ class OssecHidsMonitor(
     val activeModules: List[ActiveModuleType] = modules.map(
       (am: AvailableModuleType) => new ActiveModuleType(
         am.getModule(configuration.toMap).get
-          .asInstanceOf[Module[module.api.Alert, module.api.ResultX]],
+          .asInstanceOf[Module[module.api.Alert, AlertStatus]],
         false,
         updateModuleAlertStatus,
         logFailure
@@ -810,46 +829,50 @@ class OssecHidsMonitor(
     ) {
 
       try {
-        val moduleAlertStatuses: List[ResultX]
+        val moduleAlertStatuses: List[AlertStatus]
           = ossecHidsDAO.getModuleAlertStatusesById(
             alert.getId
           ) match {
-            case Success(moduleAlertStatuses: List[ResultX]) =>
+            case Success(moduleAlertStatuses: List[AlertStatus]) =>
               moduleAlertStatuses
 
             case Failure(t: Throwable) =>
-              List[ResultX]()
+              List[AlertStatus]()
           }
 
-        val moduleAlertStatus: Option[ResultX]
-          = moduleAlertStatuses.collectFirst[ResultX]({
-          case (moduleAlertStatus: ResultX)
+        val moduleAlertStatus: Option[AlertStatus]
+          = moduleAlertStatuses.collectFirst[AlertStatus]({
+          case (moduleAlertStatus: AlertStatus)
             if moduleAlertStatus.getModuleId == activeModule.getId =>
               moduleAlertStatus
         })
 
         if (moduleAlertStatus.isEmpty) {
+            val resultTry: Try[Result] = activeModule.process(alert)
+            resultTry match {
+              case Success(er: EndpointResult[_]) => {
+                log.debug(er.getClass.getName())
+                er.getAlertStatuses.map(
+                  (as: AlertStatus) =>
+                    updateModuleAlertStatus(as)
+                )
+              }
 
-          //moduleHandle.module.(alert)
-
-          /*moduleHandle.appendPromiseModuleAlertStatus(
-            alert,
-            moduleHandle.process(
-              alert,
-              locationMap.get(alert.getLocationId),
-              signatureMap.get(alert.getRuleId)
-            )
-          )*/
+              case Failure(t: Throwable) =>
+                //
+                //  TODO: Log the failure
+                //
+            }
         }
       } catch {
         case t: Throwable =>
           //
-          //  Log the issue
+          //  TODO: Log the failure
           //
       }
     }
 
-    println("alert processing complete")
+    log.info("OssecHidsMonitor::process: alert processing complete")
 
     activeModules.foreach(
       (activeModule: ActiveModuleType) => {

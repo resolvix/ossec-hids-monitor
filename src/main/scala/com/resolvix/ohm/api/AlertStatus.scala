@@ -1,9 +1,9 @@
-package com.resolvix.ohm.module.api
+package com.resolvix.ohm.api
 
 /**
   * Created by rwbisson on 08/10/16.
   */
-trait ResultX {
+trait AlertStatus {
 
   def getId: Int
 

@@ -1,6 +1,6 @@
 package com.resolvix.ohm.api
 
-import com.resolvix.ohm.module.api.{Alert, ResultX}
+import com.resolvix.ohm.module.api.Alert
 
 import scala.util.Try
 
@@ -14,7 +14,7 @@ import scala.util.Try
   *
   */
 @deprecated("Deprecated in favour of the version under com.resolvix.ohm.module.api", "2017/03/17")
-trait Module[A <: Alert, M <: ResultX]
+trait Module[A <: Alert, M <: AlertStatus]
   extends com.resolvix.ccs.runnable.api.ConsumerProducer[Module[A, M], A, M]
 {
   def getDescriptor: String

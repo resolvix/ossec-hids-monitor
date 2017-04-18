@@ -1,5 +1,6 @@
 package com.resolvix.ohm.module.endpoint.text
 
+import com.resolvix.ohm.api.AlertStatus
 import com.resolvix.ohm.module.api.{ModuleDescriptor, Result}
 import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
 
@@ -7,8 +8,8 @@ import scala.util.{Success, Try}
 
 class TextEndpoint(
   configuration: Map[String, Any]
-) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[TextEndpoint, NewStageAlert, Result]
-  with com.resolvix.ohm.module.endpoint.api.Endpoint[NewStageAlert, Result]
+) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[TextEndpoint, NewStageAlert, AlertStatus]
+  with com.resolvix.ohm.module.endpoint.api.Endpoint[NewStageAlert, AlertStatus]
 {
 
   override def close(): Try[Boolean] = ???
@@ -19,7 +20,7 @@ class TextEndpoint(
 
   override def open(): Try[Boolean] = ???
 
-  override def getModule: ModuleDescriptor[NewStageAlert, Result]
+  override def getModule: ModuleDescriptor[NewStageAlert, AlertStatus]
     = TextEndpointDescriptor
 
   override def getId: Int = ???

@@ -1,12 +1,13 @@
 package com.resolvix.ohm.module.endpoint.sink
 
+import com.resolvix.ohm.api.AlertStatus
 import com.resolvix.ohm.module.api.{Alert, Result}
 
 import scala.util.{Success, Try}
 
 object SinkEndpointDescriptor
-  extends com.resolvix.ohm.module.endpoint.AbstractEndpointDescriptor[Alert, Result]
-    with com.resolvix.ohm.module.api.ModuleDescriptor[Alert, Result]
+  extends com.resolvix.ohm.module.endpoint.AbstractEndpointDescriptor[Alert, AlertStatus]
+    with com.resolvix.ohm.module.api.ModuleDescriptor[Alert, AlertStatus]
 {
   override protected def getConfigurations: Array[String] = ???
 
