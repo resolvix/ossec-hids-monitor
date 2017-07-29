@@ -629,7 +629,7 @@ class OssecHidsMonitor(
 
     val signatureCategoryListMap: mutable.Map[Int, ListBuffer[Category]]
       = mutable.Map[Int, ListBuffer[Category]]()
-
+##
     val categorySignatureListMap: mutable.Map[Int, ListBuffer[Signature]]
       = mutable.Map[Int, ListBuffer[Signature]]()
 
