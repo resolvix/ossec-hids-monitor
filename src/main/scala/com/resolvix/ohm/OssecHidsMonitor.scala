@@ -93,16 +93,22 @@ object OssecHidsMonitor
   ) extends Module[I, O]
       with Loggable
   {
-
-    //
-    //
-    //
+    /**
+      *
+      */
     private val mapPromiseModuleAlertStatus: mutable.Map[Int, Promise[AlertStatus]]
       = new mutable.HashMap[Int, Promise[AlertStatus]]
 
+    /**
+      *
+      */
     private val mapFutureModuleAlertStatus: mutable.Map[Int, Future[AlertStatus]]
     = new mutable.HashMap[Int, Future[AlertStatus]]
 
+    /**
+      *
+      * @return
+      */
     def onComplete: Function[Try[AlertStatus], Unit] = {
       case Success(moduleAlertStatus: AlertStatus) =>
         log.debug(
@@ -544,7 +550,7 @@ class OssecHidsMonitor(
   }
 
   //
-  //
+  //  The list of locations
   //
   private val locations: List[Location] = ossecHidsDAO.getLocations match {
     case Success(locations: List[Location]) =>
@@ -670,12 +676,13 @@ class OssecHidsMonitor(
 
   /**
     * Register the instance with the requisite producer and consumer modules,
-    * to setup the relevant 'Alert' and 'ModuleAlertStatus' pipelines.
+    * to setup the relevant 'Alert' and 'ModuleAlertStatus' message pipelines.
     *
     * @param instance
     *   the instance to be registered with producer and consumer modules.
     *
     * @return
+    *
     */
   def registerModules(
     instance: ModuleType
@@ -704,11 +711,8 @@ class OssecHidsMonitor(
 
     producerHandles.foreach {
       (producerHandle: String) => {
-        val consumerX: Consumer[_ <: module.api.Country]
-          =
-
         val consumer: Consumer[_ <: module.api.Country]
-          = p.register(consume)
+          = p.register(consumer)
         c.register(producerHandle)
       }
     }
@@ -728,6 +732,11 @@ class OssecHidsMonitor(
     ???
   }
 
+  /**
+    *
+    * @param modules
+    * @param configuration
+    */
   def instantiateModules(
     modules: List[AvailableModuleType],
     configuration: Map[String, Any]
@@ -744,7 +753,9 @@ class OssecHidsMonitor(
           case Success(i: ModuleType) =>
             registerModules(i) match {
               case Success(b: Boolean) =>
-
+                //
+                //  TODO: determine what to do with successful registration attempts
+                //
 
               case Failure(t: Throwable) =>
                 //
@@ -763,6 +774,13 @@ class OssecHidsMonitor(
 
   }
 
+  /**
+    *
+    * @param modules
+    * @param configuration
+    * @param fromDateTime
+    * @param toDateTime
+    */
   def execute(
     modules: List[AvailableModuleType],
     configuration: Map[String, Any],
@@ -787,6 +805,11 @@ class OssecHidsMonitor(
     val ns: NewStage = new NewStage(ossecHidsDAO, locationMap, signatureMap)
   }
 
+  /**
+    *
+    * @param moduleAlertStatus
+    * @return
+    */
   private def updateModuleAlertStatus(
     moduleAlertStatus: AlertStatus
   ): Try[Boolean] = {
@@ -800,6 +823,12 @@ class OssecHidsMonitor(
     Success(true)
   }
 
+  /**
+    *
+    * @param alerts
+    * @param modules
+    * @param configuration
+    */
   def process(
     alerts: List[module.api.Alert],
     modules: List[AvailableModuleType],

@@ -29,7 +29,8 @@
         <junit.version>4.12</junit.version>
         <scala.version>2.11.8</scala.version>
         <scalactic.version>3.0.0</scalactic.version>
-        <scalatest.version>3.0.1-SNAP1</scalatest.version>
+        <scalamock.version>3.6.0</scalamock.version>
+        <scalatest.version>3.0.3</scalatest.version>
     </properties>
 
     <repositories>
@@ -141,6 +142,15 @@
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.11</artifactId>
             <version>${scalatest.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Mocking frameworks -->
+
+        <dependency>
+            <groupId>org.scalamock</groupId>
+            <artifactId>scalamock-scalatest-support_2.11</artifactId>
+            <version>${scalamock.version}</version>
             <scope>test</scope>
         </dependency>
 
