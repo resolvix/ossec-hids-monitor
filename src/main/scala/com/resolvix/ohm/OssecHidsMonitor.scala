@@ -445,7 +445,7 @@ object OssecHidsMonitor
     * Displays the list of available modules.
     */
   def displayModules(): Unit = {
-    for (availableModule <- AvailableModules) {
+    for (availableModule <- availableModules) {
       println(
         availableModule.getHandle
           + " "
