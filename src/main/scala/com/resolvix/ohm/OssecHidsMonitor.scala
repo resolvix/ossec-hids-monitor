@@ -50,22 +50,24 @@ object OssecHidsMonitor
     * The ActiveModule class is intended to wrap available module instances
     * with local application state.
     *
-    * @param module
-    * @param isEnabled
-    * @param updateModuleAlertStatus
-    * @param logFailure
-    * @tparam I
-    * @tparam O
+    * @param module the module
+    * @param isEnabled true, if the module is enabled; false, otherwise
+    * @param updateModuleAlertStatus a reference to the function to be invoked
+    *   upon an update to an alert status for a module
+    * @param logFailure a reference to the function to be invoked upon the
+    *   need to log a failure
+    * @tparam I the type of an input to the module
+    * @tparam O the type of an output from the module
     */
   class ActiveModule[I, O] (
 
     //
-    //
+    //  The module.
     //
     private val module: Module[I, O],
 
     //
-    //
+    //  Whether the module is enabled, or disabled.
     //
     private val isEnabled: Boolean,
 
@@ -100,6 +102,9 @@ object OssecHidsMonitor
     private val mapPromiseModuleAlertStatus: mutable.Map[Int, Promise[AlertStatus]]
       = new mutable.HashMap[Int, Promise[AlertStatus]]
 
+    //
+    //
+    //
     private val mapFutureModuleAlertStatus: mutable.Map[Int, Future[AlertStatus]]
     = new mutable.HashMap[Int, Future[AlertStatus]]
 
