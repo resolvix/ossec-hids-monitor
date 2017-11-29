@@ -47,8 +47,10 @@ object OssecHidsMonitor
   }*/
 
   /**
-    * The ActiveModule class is intended to wrap available module instances
-    * with local application state.
+    * The ActiveModule class is intended to wrap active module instances
+    * with application mainframe state, including but not limited to -
+    *
+    * (1) whether the module is activated for use by OHM;
     *
     * @param module the module
     * @param isEnabled true, if the module is enabled; false, otherwise
@@ -67,8 +69,11 @@ object OssecHidsMonitor
     private val module: Module[I, O],
 
     //
-    //  Whether the module is enabled, or disabled.
+    //  Whether the module is enabled; this property is redundant if the
+    //  definition of an active module is a module that is present, available
+    //  and active.
     //
+    //@deprecated
     private val isEnabled: Boolean,
 
     //
@@ -95,7 +100,6 @@ object OssecHidsMonitor
   ) extends Module[I, O]
       with Loggable
   {
-
     //
     //
     //
@@ -108,6 +112,10 @@ object OssecHidsMonitor
     private val mapFutureModuleAlertStatus: mutable.Map[Int, Future[AlertStatus]]
     = new mutable.HashMap[Int, Future[AlertStatus]]
 
+    /**
+      *
+      * @return
+      */
     def onComplete: Function[Try[AlertStatus], Unit] = {
       case Success(moduleAlertStatus: AlertStatus) =>
         log.debug(
@@ -207,6 +215,9 @@ object OssecHidsMonitor
   }
 
   /**
+    * The ProducerConsumer class provides a template for an outgoing message
+    * queue for alerts (the "alert producer"), and an incoming message queue
+    * for alert status updates and reports (the "alert status consumer").
     *
     * @tparam A
     * @tparam M
@@ -222,7 +233,42 @@ object OssecHidsMonitor
   //
   //
   //
+  type AvailableModuleType = module.api.ModuleDescriptor[_ <: module.api.Alert, _ <: AlertStatus]
+
+  //
+  //
+  //
+  type ModuleType = module.api.Module[_ <: module.api.Alert, _ <: AlertStatus]
+
+  //
+  //
+  //
+  type EndpointType = module.endpoint.api.Endpoint[_ <: module.api.Alert, _ <: AlertStatus]
+
+  //
+  //
+  //
+  type StageType = module.stage.api.Stage[_ <: module.api.Alert, _ <:  AlertStatus]
+
+  //
+  //  Constant: provides a list of built-in modules for OHM.
+  //
+  private final val BuiltInModules: List[AvailableModuleType] = List[AvailableModuleType](
+    JiraEndpointDescriptor,
+    TextEndpointDescriptor,
+    SinkEndpointDescriptor
+  )
+
+  //
+  //  Constant: provides the command line options for OHM.
+  //
   private final val CommandLineOptions: cli.Options = {
+    val configOption: cli.Option = cli.Option.builder("c")
+      .longOpt("config")
+      .desc("The configuration file")
+      .hasArg()
+      .build()
+
     val helpOption: cli.Option = cli.Option.builder("h")
       .longOpt("help")
       .desc("Display this information")
@@ -250,59 +296,66 @@ object OssecHidsMonitor
     (new cli.Options)
       .addOption(helpOption)
       .addOption(listOption)
+      .addOption(configOption)
       .addOption(fromOption)
       .addOption(toOption)
   }
 
   //
-  //
+  //  Constant: specifies the default time zone for OHM at runtime.
   //
   private final val DefaultZoneId: ZoneId = ZoneId.systemDefault()
 
   //
-  //
+  //  Constant: specifies the default time zone offset for OHM at runtime.
   //
   private final val DefaultZoneOffset: ZoneOffset = ZonedDateTime.now(DefaultZoneId).getOffset
 
   //
-  //
+  //  Constant: provides the date time formatter for ISO-8601 local dates
+  //  (expressed without reference to a specific time zone).
   //
   private final val IsoDateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
   //
+  //  The list of available modules for OHM determined at runtime by reference
+  //  to -
   //
+  //  (1) the list of built-in modules;
   //
-  type AvailableModuleType = module.api.ModuleDescriptor[_ <: module.api.Alert, _ <: AlertStatus]
-
+  //  (2) the results of any reflective scan of packages and classes available
+  //      to OHM through the classpath;
   //
+  //  (3) packages and classes expressly referenced in the OHM configuration
+  //      file.
   //
-  //
-  type ModuleType = module.api.Module[_ <: module.api.Alert, _ <: AlertStatus]
-
-  //
-  //
-  //
-  type EndpointType = module.endpoint.api.Endpoint[_ <: module.api.Alert, _ <: AlertStatus]
-
-  //
-  //
-  //
-  type StageType = module.stage.api.Stage[_ <: module.api.Alert, _ <:  AlertStatus]
-
-  //
-  //
-  //
-  private final val AvailableModules: List[AvailableModuleType]
-    = List[AvailableModuleType](
-      JiraEndpointDescriptor,
-      TextEndpointDescriptor,
-      SinkEndpointDescriptor
-    )
+  private val availableModules: List[AvailableModuleType] = enumerateAvailableModules();
 
   /**
+    * A placeholder for a function responsible for enumerating the available
+    * built in and plugged-in modules, by reference to -
+    *
+    * (1) the list of built-in modules;
+    * (2) the results of any reflective scan of packages and classes available
+    *     to OHM through the classpath; and
+    * (3) packages and classes expressly referenced in the OHM configuration
+    *     file.
+    *
+    * @return
+    *   a list of available modules
+    */
+  private def enumerateAvailableModules(): List[AvailableModuleType] = BuiltInModules
+
+  /**
+    * Interprets the {@literal <date>} argument supplied to OHM using the
+    * `from` or `-f` command line switch.
     *
     * @param dateTime
+    *   the string representing the actual date and time, or a relative date
+    *   and time, from which OSSEC HIDS alert processing should take place
+    *
     * @return
+    *   a {@link LocalDateTime} object
     */
   private def determineFromDateTime(
     dateTime: String
@@ -341,6 +394,17 @@ object OssecHidsMonitor
     }
   }
 
+  /**
+    * Interprets the {@literal <date>} argument supplied to OHM using the
+    * `to` or `-t` command line switch.
+    *
+    * @param dateTime
+    *   the string representing the actual date and time, or a relative date
+    *   and time, to which OSSEC HIDS alert processing should take place
+    *
+    * @return
+    *   a {@link LocalDateTime} object
+    */
   private def determineToDateTime(
     dateTime: String
   ): Try[LocalDateTime] = {
@@ -370,13 +434,19 @@ object OssecHidsMonitor
     }
   }
 
+  /**
+    * Displays OHM command line help.
+    */
   def displayHelp(): Unit = {
     val helpFormatter: cli.HelpFormatter = new cli.HelpFormatter
     helpFormatter.printHelp("ossec-hids-monitor", "", CommandLineOptions, "", true)
   }
 
+  /**
+    * Displays the list of available modules.
+    */
   def displayModules(): Unit = {
-    for (availableModule <- AvailableModules) {
+    for (availableModule <- availableModules) {
       println(
         availableModule.getHandle
           + " "
@@ -508,14 +578,14 @@ object OssecHidsMonitor
   }
 
   def getAvailableModules: List[AvailableModuleType] = {
-    AvailableModules
+    BuiltInModules
   }
 
   def getAvailableModules(
     filter: Function[AvailableModuleType, Boolean]
   ): List[AvailableModuleType] = {
     (
-      for (module: AvailableModuleType <- AvailableModules if filter.apply(module))
+      for (module: AvailableModuleType <- BuiltInModules if filter.apply(module))
         yield {
           module
         }
@@ -549,7 +619,7 @@ class OssecHidsMonitor(
   }
 
   //
-  //
+  //  The list of locations
   //
   private val locations: List[Location] = ossecHidsDAO.getLocations match {
     case Success(locations: List[Location]) =>
@@ -675,12 +745,13 @@ class OssecHidsMonitor(
 
   /**
     * Register the instance with the requisite producer and consumer modules,
-    * to setup the relevant 'Alert' and 'ModuleAlertStatus' pipelines.
+    * to setup the relevant 'Alert' and 'ModuleAlertStatus' message pipelines.
     *
     * @param instance
     *   the instance to be registered with producer and consumer modules.
     *
     * @return
+    *
     */
   def registerModules(
     instance: ModuleType
@@ -709,11 +780,8 @@ class OssecHidsMonitor(
 
     producerHandles.foreach {
       (producerHandle: String) => {
-        val consumerX: Consumer[_ <: module.api.Country]
-          =
-
         val consumer: Consumer[_ <: module.api.Country]
-          = p.register(consume)
+          = p.register(consumer)
         c.register(producerHandle)
       }
     }
@@ -733,6 +801,11 @@ class OssecHidsMonitor(
     ???
   }
 
+  /**
+    *
+    * @param modules
+    * @param configuration
+    */
   def instantiateModules(
     modules: List[AvailableModuleType],
     configuration: Map[String, Any]
@@ -749,7 +822,9 @@ class OssecHidsMonitor(
           case Success(i: ModuleType) =>
             registerModules(i) match {
               case Success(b: Boolean) =>
-
+                //
+                //  TODO: determine what to do with successful registration attempts
+                //
 
               case Failure(t: Throwable) =>
                 //
@@ -768,6 +843,13 @@ class OssecHidsMonitor(
 
   }
 
+  /**
+    *
+    * @param modules
+    * @param configuration
+    * @param fromDateTime
+    * @param toDateTime
+    */
   def execute(
     modules: List[AvailableModuleType],
     configuration: Map[String, Any],
@@ -792,6 +874,11 @@ class OssecHidsMonitor(
     val ns: NewStage = new NewStage(ossecHidsDAO, locationMap, signatureMap)
   }
 
+  /**
+    *
+    * @param moduleAlertStatus
+    * @return
+    */
   private def updateModuleAlertStatus(
     moduleAlertStatus: AlertStatus
   ): Try[Boolean] = {
@@ -805,6 +892,12 @@ class OssecHidsMonitor(
     Success(true)
   }
 
+  /**
+    *
+    * @param alerts
+    * @param modules
+    * @param configuration
+    */
   def process(
     alerts: List[module.api.Alert],
     modules: List[AvailableModuleType],
