@@ -52,14 +52,25 @@ object OssecHidsMonitor
     *
     * (1) whether the module is activated for use by OHM;
     *
-    * @param module the module
-    * @param isEnabled true, if the module is enabled; false, otherwise
-    * @param updateModuleAlertStatus a reference to the function to be invoked
-    *   upon an update to an alert status for a module
-    * @param logFailure a reference to the function to be invoked upon the
-    *   need to log a failure
-    * @tparam I the type of an input to the module
-    * @tparam O the type of an output from the module
+    * @param module
+    *   the module
+    *
+    * @param isEnabled
+    *   true, if the module is enabled; false, otherwise
+    *
+    * @param updateModuleAlertStatus
+    *   a reference to the function to be invoked upon an update to an alert
+    *   status for a module
+    *
+    * @param logFailure
+    *   a reference to the function to be invoked upon the need to log a
+    *   failure
+    *
+    * @tparam I
+    *   the type of an input to the module
+    *
+    * @tparam O
+    *   the type of an output from the module
     */
   class ActiveModule[I, O] (
 
