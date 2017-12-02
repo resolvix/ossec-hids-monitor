@@ -2,45 +2,49 @@ package com.resolvix.ohm.module.api
 
 import scala.util.Try
 
-trait Module[I, O]
-{
+/**
+  * Defines a generic form of module for use as part of a modular data pipeline.
+  *
+  * @tparam I
+  *   the input data type
+  *
+  * @tparam O
+  *   the output data type
+  *
+  * @tparam R
+  *   the result data type being a data type that implements the {@link Result}
+  *   trait
+  */
+trait Module[I, O, R <: Result] {
   /**
     *
     */
   def close(): Try[Boolean]
 
   /**
-    * Consume and object of type 'I', and return an object that implements
-    * the 'Result' trait.
+    * Consumes an object of type I, and return an object of type R.
     *
     * @param input
     *   an object representing the input to the module.
     *
-    * @tparam R
-    *   the result type.
-    *
     * @return
     *   a value of type 'Try[R]' indicating whether the operation was
     *   successful or otherwise.
-    *
     */
-  def process[R <: Result](
+  def process(
     input: I
   ): Try[R]
 
   /**
-    * Flush any buffers maintained by the instance in the course of processing
-    * objects of type I, and return an object that implements the 'Result' trait.
-    *
-    * @tparam R
-    *   the result type.
+    * Flushes any buffers maintained by the instance in the course of
+    * processing objects of type I, and return an object that implements the
+    * [[Result]] trait.
     *
     * @return
-    *    a value of type 'Try[R]' indicating whether the operation was
+    *    a value of type [[Try[R]]] indicating whether the operation was
     *    successful or otherwise.
-    *
     */
-  def flush[R <: Result](): Try[R]
+  def flush(): Try[R]
 
   /**
     *
@@ -53,7 +57,7 @@ trait Module[I, O]
     *
     * @return
     */
-  def getModule: ModuleDescriptor[I, O]
+  def getModule: ModuleDescriptor[I, O, R]
 
   /**
     *

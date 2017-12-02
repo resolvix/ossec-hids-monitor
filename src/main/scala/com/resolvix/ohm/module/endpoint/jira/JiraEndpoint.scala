@@ -2,6 +2,7 @@ package com.resolvix.ohm.module.endpoint.jira
 
 import com.resolvix.ohm.api.AlertStatus
 import com.resolvix.ohm.module.api.{ModuleDescriptor, Result}
+import com.resolvix.ohm.module.endpoint.EndpointResult
 import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
 
 import scala.util.{Success, Try}
@@ -12,17 +13,17 @@ import scala.util.{Success, Try}
   */
 class JiraEndpoint(
   configuration: Map[String, Any]
-) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[JiraEndpoint, NewStageAlert, AlertStatus]
-  with com.resolvix.ohm.module.endpoint.api.Endpoint[NewStageAlert, AlertStatus]
+) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[JiraEndpoint, NewStageAlert, AlertStatus, EndpointResult[AlertStatus]]
+  with com.resolvix.ohm.module.endpoint.api.Endpoint[NewStageAlert, AlertStatus, EndpointResult[AlertStatus]]
 {
   /**
     *
     */
   override def close(): Try[Boolean] = ???
 
-  override def process[R <: Result](input: NewStageAlert): Try[R] = ???
+  override def process(input: NewStageAlert): Try[EndpointResult[AlertStatus]] = ???
 
-  override def flush[R <: Result](): Try[R] = ???
+  override def flush(): Try[EndpointResult[AlertStatus]] = ???
 
   /**
     * Instantiate the consumer for the module.
@@ -30,7 +31,7 @@ class JiraEndpoint(
     */
   override def open(): Try[Boolean] = ???
 
-  override def getModule: ModuleDescriptor[NewStageAlert, AlertStatus] = JiraEndpointDescriptor
+  override def getModule: ModuleDescriptor[NewStageAlert, AlertStatus, EndpointResult[AlertStatus]] = JiraEndpointDescriptor
 
   override def getId: Int = ???
 

@@ -12,8 +12,8 @@ import scala.util.{Failure, Success, Try}
   */
 class SinkEndpoint(
   configuration: Map[String, Any]
-) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[SinkEndpoint, Alert, AlertStatus]
-  with com.resolvix.ohm.module.endpoint.api.Endpoint[Alert, AlertStatus]
+) extends com.resolvix.ohm.module.endpoint.AbstractEndpoint[SinkEndpoint, Alert, AlertStatus, EndpointResult[AlertStatus]]
+  with com.resolvix.ohm.module.endpoint.api.Endpoint[Alert, AlertStatus, EndpointResult[AlertStatus]]
   with Loggable
 {
 
@@ -21,7 +21,7 @@ class SinkEndpoint(
     Success(false)
   }
 
-  override def process[R <: Result](input: Alert): Try[R] = {
+  override def process(input: Alert): Try[EndpointResult[AlertStatus]] = {
     log.debug(
       "AID: "
         + input.getId
@@ -49,12 +49,12 @@ class SinkEndpoint(
             0x00
           )
         )
-      ).asInstanceOf[R]
+      ).asInstanceOf[EndpointResult[AlertStatus]]
     )
   }
 
-  override def flush[R <: Result](): Try[R] = {
-    Success(new EndpointResult(Array[AlertStatus]()).asInstanceOf[R])
+  override def flush(): Try[EndpointResult[AlertStatus]] = {
+    Success(new EndpointResult(Array[AlertStatus]()).asInstanceOf[EndpointResult[AlertStatus]])
   }
 
   override def open(): Try[Boolean] = {
@@ -65,7 +65,7 @@ class SinkEndpoint(
     *
     * @return
     */
-  override def getModule: ModuleDescriptor[Alert, AlertStatus]
+  override def getModule: ModuleDescriptor[Alert, AlertStatus, EndpointResult[AlertStatus]]
     = SinkEndpointDescriptor
 
   override def getId: Int = 2
