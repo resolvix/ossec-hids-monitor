@@ -1,5 +1,7 @@
 # OSSEC HIDS Monitor
 
+[![CodeFactor](https://www.codefactor.io/repository/github/resolvix/ossec-hids-monitor/badge/master)](https://www.codefactor.io/repository/github/resolvix/ossec-hids-monitor/overview/master) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/14a29ba9494b4581ac82beebd097ee11)](https://www.codacy.com/app/rwbisson/ossec-hids-monitor?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=resolvix/ossec-hids-monitor&amp;utm_campaign=Badge_Grade)
+
 OSSEC HIDS Monitor ("OHM") is an application designed to monitor, and process
 security alerts logged to a centralised repository by [OSSEC HIDS](https://ossec.github.io/),
 a popular open source host intrusion detection system.
