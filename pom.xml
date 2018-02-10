@@ -191,7 +191,6 @@
                         <jvmArg>-Xmx1024m</jvmArg>
                     </jvmArgs>
                     <excludes>
-                        <exclude>com/resolvix/concurrent/**/*.scala</exclude>
                         <exclude>com/resolvix/ccs/parked/**/*.scala</exclude>
                         <exclude>com/resolvix/ohm/**/*.scala</exclude>
                     </excludes>
