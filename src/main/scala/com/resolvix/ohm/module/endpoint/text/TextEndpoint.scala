@@ -21,7 +21,7 @@ class TextEndpoint(
 
   override def open(): Try[Boolean] = ???
 
-  override def get: ModuleDescriptor[NewStageAlert, AlertStatus, EndpointResult[AlertStatus]]
+  override def getDescriptor: ModuleDescriptor[NewStageAlert, AlertStatus, EndpointResult[AlertStatus]]
     = TextEndpointDescriptor
 
   override def getId: Int = ???

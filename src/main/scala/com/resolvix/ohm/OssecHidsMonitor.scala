@@ -89,7 +89,7 @@ object OssecHidsMonitor
     //  to the data store without having to make reference
     //  to the mechanics of storage.
     //
-    private val updateModuleAlertStatus: Function[AlertStatus, Try[Boolean]],
+    private val updateModuleAlertStatus: Option[Function[AlertStatus, Try[Boolean]]],
 
     //
     //  The function to execute to log a failure.
@@ -98,7 +98,7 @@ object OssecHidsMonitor
     //  host application for modules to enable them to log messages
     //  without having to make reference to the mechanics of logging.
     //
-    private val logFailure: Function[Throwable, Try[Boolean]]
+    private val logFailure: Option[Function[Throwable, Try[Boolean]]]
 
   ) extends Module[I, O, R]
       with Loggable
@@ -132,7 +132,7 @@ object OssecHidsMonitor
             + moduleAlertStatus.getStatusId
         )
 
-        updateModuleAlertStatus(moduleAlertStatus)
+        updateModuleAlertStatus.get(moduleAlertStatus)
 
       /*case Failure(e: ModuleAlertProcessingException[api.Alert, ModuleAlertStatus] @unchecked) => {
         updateModuleAlertStatus(
@@ -145,7 +145,7 @@ object OssecHidsMonitor
       }*/
 
       case Failure(t: Throwable) => {
-        logFailure(t)
+        logFailure.get(t)
       }
     }
 
@@ -185,11 +185,11 @@ object OssecHidsMonitor
     }
 
     def getDescription: String = {
-      module.get.getDescription
+      module.getDescriptor.getDescription
     }
 
     def getHandle: String = {
-      module.get.getHandle
+      module.getDescriptor.getHandle
     }
 
     override def getId: Int = {
@@ -204,8 +204,8 @@ object OssecHidsMonitor
       module.process(input)
     }
 
-    override def get: ModuleDescriptor[I, O, R] = {
-      module.get
+    override def getDescriptor: ModuleDescriptor[I, O, R] = {
+      module.getDescriptor
     }
 
     override def open(): Try[Boolean] = {
@@ -912,8 +912,8 @@ class OssecHidsMonitor(
         am.getModule(configuration.toMap).get
           .asInstanceOf[Module[module.api.Alert, AlertStatus, module.api.Result]],
         false,
-        updateModuleAlertStatus,
-        logFailure
+        Some(updateModuleAlertStatus),
+        Some(logFailure)
       )
     )
 

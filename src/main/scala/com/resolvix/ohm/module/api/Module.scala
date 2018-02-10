@@ -12,7 +12,7 @@ import scala.util.Try
   *   the output data type
   *
   * @tparam R
-  *   the result data type being a data type that implements the {@link Result}
+  *   the result data type being a data type that implements the [[Result]]
   *   trait
   */
 trait Module[I, O, R <: Result] {
@@ -28,7 +28,7 @@ trait Module[I, O, R <: Result] {
     *   an object representing the input to the module.
     *
     * @return
-    *   a value of type 'Try[R]' indicating whether the operation was
+    *   a value of type [[Try]] indicating whether the operation was
     *   successful or otherwise.
     */
   def process(
@@ -41,7 +41,7 @@ trait Module[I, O, R <: Result] {
     * [[Result]] trait.
     *
     * @return
-    *    a value of type [[Try[R]]] indicating whether the operation was
+    *    a value of type [[Try]] indicating whether the operation was
     *    successful or otherwise.
     */
   def flush(): Try[R]
@@ -53,11 +53,12 @@ trait Module[I, O, R <: Result] {
   def getId: Int
 
   /**
-    * Returns the parent 'Module' for the module instance.
+    * Returns the [[ModuleDescriptor]] for the module instance.
     *
     * @return
+    *    the [[ModuleDescriptor]]
     */
-  def get: ModuleDescriptor[I, O, R]
+  def getDescriptor: ModuleDescriptor[I, O, R]
 
   /**
     *

@@ -31,7 +31,7 @@ class JiraEndpoint(
     */
   override def open(): Try[Boolean] = ???
 
-  override def get: ModuleDescriptor[NewStageAlert, AlertStatus, EndpointResult[AlertStatus]] = JiraEndpointDescriptor
+  override def getDescriptor: ModuleDescriptor[NewStageAlert, AlertStatus, EndpointResult[AlertStatus]] = JiraEndpointDescriptor
 
   override def getId: Int = ???
 
