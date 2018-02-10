@@ -65,7 +65,7 @@ class SinkEndpoint(
     *
     * @return
     */
-  override def getModule: ModuleDescriptor[Alert, AlertStatus, EndpointResult[AlertStatus]]
+  override def get: ModuleDescriptor[Alert, AlertStatus, EndpointResult[AlertStatus]]
     = SinkEndpointDescriptor
 
   override def getId: Int = 2

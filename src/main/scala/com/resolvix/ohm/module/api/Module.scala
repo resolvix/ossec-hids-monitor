@@ -57,7 +57,7 @@ trait Module[I, O, R <: Result] {
     *
     * @return
     */
-  def getModule: ModuleDescriptor[I, O, R]
+  def get: ModuleDescriptor[I, O, R]
 
   /**
     *

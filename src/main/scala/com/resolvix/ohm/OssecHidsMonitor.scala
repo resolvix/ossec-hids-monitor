@@ -185,11 +185,11 @@ object OssecHidsMonitor
     }
 
     def getDescription: String = {
-      module.getModule.getDescription
+      module.get.getDescription
     }
 
     def getHandle: String = {
-      module.getModule.getHandle
+      module.get.getHandle
     }
 
     override def getId: Int = {
@@ -204,8 +204,8 @@ object OssecHidsMonitor
       module.process(input)
     }
 
-    override def getModule: ModuleDescriptor[I, O, R] = {
-      module.getModule
+    override def get: ModuleDescriptor[I, O, R] = {
+      module.get
     }
 
     override def open(): Try[Boolean] = {
