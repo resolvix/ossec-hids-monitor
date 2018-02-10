@@ -3,6 +3,7 @@ package com.resolvix.ohm.module
 
 import com.resolvix.ohm.module.api.Alert
 
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -18,7 +19,7 @@ trait Classifiable {
     try {
       Success(null)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }

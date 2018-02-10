@@ -2,7 +2,7 @@ package com.resolvix.ohm.module
 
 import java.util.Properties
 
-import com.resolvix.ohm.module.api.{Alert, Module}
+import com.resolvix.ohm.module.api.{Alert, Module, Result}
 import com.typesafe.config.{Config, ConfigValue}
 
 import scala.util.Try
@@ -15,8 +15,8 @@ object AbstractModuleDescriptor
 /**
   *
   */
-abstract class AbstractModuleDescriptor[I, O]
-  extends api.ModuleDescriptor[I, O]
+abstract class AbstractModuleDescriptor[I, O, R <: Result]
+  extends api.ModuleDescriptor[I, O, R]
 {
   /**
     *
@@ -49,13 +49,13 @@ abstract class AbstractModuleDescriptor[I, O]
     */
   protected def newModule(
     config: Map[String, Any]
-  ): Try[Module[I, O]]
+  ): Try[Module[I, O, R]]
 
   /**
     *
     * @return
     */
-  override def getModule(): Try[Module[I, O]] = {
+  override def getModule(): Try[Module[I, O, R]] = {
     newModule(
       Map[String, Any]()
     )
@@ -68,7 +68,7 @@ abstract class AbstractModuleDescriptor[I, O]
     */
   override def getModule(
     config: Config
-  ): Try[Module[I, O]] = {
+  ): Try[Module[I, O, R]] = {
     newModule(
       getConfigurations.map(
         (h: String) => config.getValue(h) match {
@@ -86,7 +86,7 @@ abstract class AbstractModuleDescriptor[I, O]
     */
   override def getModule(
     config: Map[String, Any]
-  ): Try[Module[I, O]] = {
+  ): Try[Module[I, O, R]] = {
     newModule(config)
   }
 
@@ -97,7 +97,7 @@ abstract class AbstractModuleDescriptor[I, O]
     */
   override def getModule(
     properties: Properties
-  ): Try[Module[I, O]] = {
+  ): Try[Module[I, O, R]] = {
     newModule(
       getConfigurations.map(
         (h: String) => properties.get(h) match {

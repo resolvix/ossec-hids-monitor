@@ -89,10 +89,10 @@ trait ProducerConsumer[PC <: ProducerConsumer[PC, P, C], P, C]
     this.producerConsumer.registerC(producerConsumer)
   }
 
-  override def crossregister[CP <: com.resolvix.ccs.api.ConsumerProducer[CP, P, C]](
+  override def crossRegister[CP <: com.resolvix.ccs.api.ConsumerProducer[CP, P, C]](
     consumerProducer: CP
   ): Try[Boolean] = {
-    producerConsumer.crossregister(consumerProducer)
+    producerConsumer.crossRegister(consumerProducer)
   }
 
   /*

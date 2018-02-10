@@ -4,6 +4,7 @@ import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue, TimeoutExceptio
 
 import scala.concurrent.Promise
 import scala.concurrent.duration.TimeUnit
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -52,7 +53,7 @@ class Pipe[T]
         Failure(new TimeoutException)
       }
     } catch {
-      case e: InterruptedException =>
+      case NonFatal(e: InterruptedException) =>
         Failure(e)
     }
   }
@@ -68,7 +69,7 @@ class Pipe[T]
     try {
       Success(queue.offer(t))
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }

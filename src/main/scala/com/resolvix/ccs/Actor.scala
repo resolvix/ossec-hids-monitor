@@ -2,6 +2,7 @@ package com.resolvix.ccs
 
 import com.resolvix.ccs.api.Configuration
 
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -104,7 +105,7 @@ trait Actor[
 
       Success(true)
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }
@@ -120,7 +121,7 @@ trait Actor[
         Success(false)
       }
     } catch {
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }

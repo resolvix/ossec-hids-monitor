@@ -19,7 +19,7 @@ import scala.util.Try
   *   response to consumption of an object.
   *
   */
-trait ModuleDescriptor[I, O]
+trait ModuleDescriptor[I, O, R <: Result]
 {
   /**
     *
@@ -43,7 +43,7 @@ trait ModuleDescriptor[I, O]
     *
     * @return
     */
-  def getModule(): Try[Module[I, O]]
+  def getModule(): Try[Module[I, O, R]]
 
   /**
     *
@@ -52,7 +52,7 @@ trait ModuleDescriptor[I, O]
     */
   def getModule(
     config: Config
-  ): Try[Module[I, O]]
+  ): Try[Module[I, O, R]]
 
   /**
     *
@@ -61,7 +61,7 @@ trait ModuleDescriptor[I, O]
     */
   def getModule(
     configuration: Map[String, Any]
-  ): Try[Module[I, O]]
+  ): Try[Module[I, O, R]]
 
   /**
     *
@@ -70,7 +70,7 @@ trait ModuleDescriptor[I, O]
     */
   def getModule(
     properties: Properties
-  ): Try[Module[I, O]]
+  ): Try[Module[I, O, R]]
 
   /**
     *

@@ -2,6 +2,7 @@ package com.resolvix.ccs
 
 import com.resolvix.ccs.api._
 
+import scala.util.control.NonFatal
 import scala.util.{Success, Try}
 
 
@@ -155,35 +156,25 @@ trait ProducerConsumer[
     * @tparam CP
     * @return
     */
-  override def crossregister[CP <: api.ConsumerProducer[CP, P, C]](
+  override def crossRegister[CP <: api.ConsumerProducer[CP, P, C]](
     consumerProducer: CP
   ): Try[Boolean] = {
     val consumerP: api.Consumer[P] = consumerProducer.getConsumer
 
     try {
-
-      getProducer.register(
-        consumerP
-      )
-
+      getProducer.register(consumerP)
       consumerP.register(getProducer)
-
     } catch {
-      case e: Exception => throw e
+      case NonFatal(t: Throwable) => throw t
     }
 
     val producerC: api.Producer[C] = consumerProducer.getProducer
 
     try {
-
-      getConsumer.register(
-        producerC
-      )
-
+      getConsumer.register(producerC)
       producerC.register(getConsumer)
-
     } catch {
-      case e: Exception => throw e
+      case NonFatal(t: Throwable) => throw t
     }
   }
 }
