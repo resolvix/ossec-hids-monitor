@@ -142,7 +142,7 @@ class ProducerXConsumerXTest
     var consumerY: Consumer[Y] = null
 
     it("should be possible to cross-register the ProducerConsumer with the ConsumerProducer") {
-      val b1: Try[Boolean] = producerConsumer.crossregister(consumerProducer)
+      val b1: Try[Boolean] = producerConsumer.crossRegister(consumerProducer)
       //val b2: Try[Boolean] = consumerProducer.crossregister(producerConsumer)
     }
 

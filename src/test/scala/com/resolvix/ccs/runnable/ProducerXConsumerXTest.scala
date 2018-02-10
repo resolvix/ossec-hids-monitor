@@ -71,7 +71,7 @@ class ProducerXConsumerXTest
     var thread2: Thread = null
 
     it("should be possible to cross-registered the ProducerConsumer with the ConsumerProducer") {
-      val b1: Try[Boolean] = producerConsumer.crossregister(consumerProducer)
+      val b1: Try[Boolean] = producerConsumer.crossRegister(consumerProducer)
     }
 
     it("should be possible to open the producer and consumer channels") {

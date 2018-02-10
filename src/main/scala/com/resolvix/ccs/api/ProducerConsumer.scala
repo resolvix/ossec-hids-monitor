@@ -61,7 +61,7 @@ trait ProducerConsumer[
     * @tparam CP
     * @return
     */
-  def crossregister[CP <: ConsumerProducer[CP, P, C]](
+  def crossRegister[CP <: ConsumerProducer[CP, P, C]](
     consumerProducer: CP
   ): Try[Boolean]
 
