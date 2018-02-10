@@ -12,7 +12,7 @@ class Category(
   //
   private val name: String
 
-) {
+) extends module.api.Category {
 
   //
   //
@@ -28,5 +28,4 @@ class Category(
   ): Unit = {
     this.signatures = signatures.toList
   }
-
 }

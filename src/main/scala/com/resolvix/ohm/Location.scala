@@ -17,7 +17,7 @@ class Location(
   //
   private val name: String
 
-) {
+) extends module.api.Location {
 
   def getId: Int = id
 

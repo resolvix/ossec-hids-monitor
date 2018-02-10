@@ -1,8 +1,9 @@
 package com.resolvix.ohm.dao
 import java.time.{Instant, LocalDateTime}
 
+import com.resolvix.ohm.api.AlertStatus
 import com.resolvix.ohm.{Category, Location, Signature, SignatureCategoryMaplet}
-import com.resolvix.ohm.api.{Alert => AlertT, ModuleAlertStatus => ModuleAlertStatusT}
+import com.resolvix.ohm.module.api.Alert
 
 import scala.collection.mutable.ListBuffer
 import scala.util.{Success, Try}
@@ -14,11 +15,17 @@ class TestOssecHidsDAO
   extends api.OssecHidsDAO
 {
 
+  /**
+    *
+    * @param id
+    * @param locationId
+    * @param ruleId
+    */
   class TestAlert(
     id: Int,
     locationId: Int,
     ruleId: Int
-  ) extends AlertT {
+  ) extends Alert {
     override def getId: Int = id
 
     override def getAlertId: String = ???
@@ -40,12 +47,19 @@ class TestOssecHidsDAO
     override def getTimestamp: Instant = ???
   }
 
+  /**
+    *
+    * @param alertId
+    * @param moduleId
+    * @param reference
+    * @param statusId
+    */
   class TestModuleAlertStatus(
     alertId: Int,
     moduleId: Int,
     reference: String,
     statusId: Int
-  ) extends ModuleAlertStatusT
+  ) extends AlertStatus
   {
     override def getId: Int = alertId
 
@@ -60,8 +74,8 @@ class TestOssecHidsDAO
     serverId: Int,
     fromDateTime: LocalDateTime,
     toDateTime: LocalDateTime
-  ): Try[List[AlertT]] = {
-    val listAlert: List[AlertT] = List[AlertT](
+  ): Try[List[Alert]] = {
+    val listAlert: List[Alert] = List[Alert](
       new TestAlert(1, 1, 1),
       new TestAlert(2, 2, 2),
       new TestAlert(3, 3, 3),
@@ -113,11 +127,11 @@ class TestOssecHidsDAO
     Success(listSignatureCategoryMaplet)
   }
 
-  override def getModuleAlertStatusesById(id: Int): Try[List[ModuleAlertStatusT]] = {
-    Success(List[ModuleAlertStatusT]())
+  override def getModuleAlertStatusesById(id: Int): Try[List[AlertStatus]] = {
+    Success(List[AlertStatus]())
   }
 
-  private val listBuffer: ListBuffer[ModuleAlertStatusT] = new ListBuffer[ModuleAlertStatusT]()
+  private val listBuffer: ListBuffer[AlertStatus] = new ListBuffer[AlertStatus]()
 
   override def setModuleAlertStatus(
     alertId: Int,

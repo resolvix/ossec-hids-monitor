@@ -22,7 +22,7 @@ class Signature(
   //
   private val description: String
 
-) {
+) extends module.api.Signature {
 
   //
   //
@@ -42,5 +42,4 @@ class Signature(
   ): Unit = {
     this.categories = categories.toList
   }
-
 }
