@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import com.resolvix.mq.api.Identifiable
 import com.resolvix.mq.api.{Reader, Writer}
-import com.resolvix.mq.impl.MessageQueue
+import com.resolvix.mq.api.MessageQueue
 import org.junit.Assert
 import org.scalatest.{FunSpec, Matchers}
 import org.scalatest.matchers.Matcher
@@ -39,7 +39,7 @@ class MessageQueueTest
   describe("A MessageQueue") {
     it("XX") {
 
-      val mq: MessageQueue[Int] = new MessageQueue[Int]()
+      val mq: MessageQueue[Int] = MessageQueueFactory.newMessageQueue()
 
       val p1: P = new P()
       val c1: C = new C()
