@@ -7,7 +7,7 @@ package api {
     * or consumer of messages.
     *
     */
-  protected trait Actor {
+  protected[mq] trait Actor {
     def getId: Int
 
     def getSelf: Actor

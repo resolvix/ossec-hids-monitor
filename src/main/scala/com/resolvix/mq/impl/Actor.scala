@@ -1,7 +1,7 @@
 package com.resolvix.mq
 
 package impl {
-  private abstract class Actor
+  private[mq] abstract class Actor
     extends api.Actor {
     //
     //  Allocate an identifier for the instant Reader.
