@@ -1,6 +1,8 @@
-package com.resolvix.sio
+package com.resolvix.sio.impl
 
 import java.util.concurrent.{BlockingQueue, LinkedBlockingQueue, TimeoutException}
+
+import com.resolvix.sio.api
 
 import scala.concurrent.duration.TimeUnit
 import scala.util.control.NonFatal

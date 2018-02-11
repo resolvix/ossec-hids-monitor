@@ -2,7 +2,7 @@ package com.resolvix.ccs
 
 import com.resolvix.ccs.api.{Configuration, ProducerNotRegisteredException}
 import com.resolvix.mq.api.{Reader, Writer}
-import com.resolvix.mq.MessageQueue
+import com.resolvix.mq.impl.MessageQueue
 
 import scala.concurrent.duration.TimeUnit
 import scala.util.control.NonFatal
@@ -16,7 +16,7 @@ trait Consumer[V]
     *
     */
   @transient
-  protected var messageQueueReader: MessageQueue[V]#Reader = _
+  protected var messageQueueReader: Reader[V] = _
 
   /**
     *
@@ -48,13 +48,13 @@ trait Consumer[V]
     *
     * @return
     */
-  def getReader: MessageQueue[V]#Reader = {
+  def getReader: Reader[V] = {
     //
     //  If a packet pipe for the Consumer does not already exist, create a
     //  new packet pipe for the Consumer.
     //
     messageQueueReader match {
-      case r: MessageQueue[V]#Reader =>
+      case r: Reader[V] =>
         messageQueueReader
 
       case _ =>
@@ -75,7 +75,7 @@ trait Consumer[V]
     * @return
     *    an object providing the caller with a Reader object.
     */
-  override def open(
+  /*override def open(
     producer: api.Producer[V]
   ): Try[Writer[V]] = {
     if (super.isRegistered(producer)) {
@@ -88,7 +88,7 @@ trait Consumer[V]
     } else {
       Failure(new ProducerNotRegisteredException)
     }
-  }
+  }*/
 
   /**
     * The open method, specified without a parameter, is intended to

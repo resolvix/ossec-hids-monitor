@@ -2,6 +2,7 @@ package com.resolvix.mq
 
 import com.resolvix.mq.api.Identifiable
 import com.resolvix.mq.api.{Reader, Writer}
+import com.resolvix.mq.impl.MessageQueue
 import org.scalatest.FunSpec
 
 import scala.util.{Failure, Success}

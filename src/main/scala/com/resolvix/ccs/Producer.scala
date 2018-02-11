@@ -2,7 +2,7 @@ package com.resolvix.ccs
 
 import com.resolvix.ccs.api.{Configuration, ConsumerNotRegisteredException}
 import com.resolvix.mq.api.{Reader, Writer}
-import com.resolvix.mq.MessageQueue
+import com.resolvix.mq.impl.MessageQueue
 
 import scala.concurrent.duration.TimeUnit
 import scala.util.control.NonFatal

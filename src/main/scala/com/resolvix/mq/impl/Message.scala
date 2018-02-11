@@ -1,4 +1,4 @@
-package com.resolvix.mq
+package com.resolvix.mq.impl
 
 /**
   * Created by rwbisson on 22/10/16.

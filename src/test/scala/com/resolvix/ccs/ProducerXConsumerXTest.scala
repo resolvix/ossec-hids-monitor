@@ -1,8 +1,8 @@
 package com.resolvix.ccs
 
 import com.resolvix.ccs.api.Configuration
-import com.resolvix.mq.MessageQueue
 import com.resolvix.mq.api.{Reader, Writer}
+import com.resolvix.mq.impl.MessageQueue
 import org.scalatest.FunSpec
 
 import scala.util.{Failure, Success, Try}
