@@ -58,9 +58,6 @@ trait ConsumerProducer[CP <: api.ConsumerProducer[CP, C, P], C, P]
       */
     override protected def getSelf: ConsumerC = this
 
-
-    override def open(producer: api.Producer[C]): Try[Writer[C]] = ???
-
     /**
       *
       * @param configuration

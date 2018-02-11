@@ -9,6 +9,8 @@ import scala.util.Try
 trait Reader[V]
   extends Actor
 {
+  override def getSelf: Reader[V]
+
   /**
     *
     * @return

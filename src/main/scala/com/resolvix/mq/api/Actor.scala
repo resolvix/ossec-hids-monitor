@@ -1,13 +1,15 @@
-package com.resolvix.mq.api
+package com.resolvix.mq
 
-/**
-  * An actor, in the context of a message queue, is an identifiable producer
-  * or consumer of messages.
-  *
-  */
-trait Actor
-{
-  def getId: Int
+package api {
 
-  def getSelf: Actor
+  /**
+    * An actor, in the context of a message queue, is an identifiable producer
+    * or consumer of messages.
+    *
+    */
+  protected trait Actor {
+    def getId: Int
+
+    def getSelf: Actor
+  }
 }

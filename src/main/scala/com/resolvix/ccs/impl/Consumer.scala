@@ -1,9 +1,9 @@
 package com.resolvix.ccs.impl
 
 import com.resolvix.ccs.api
-import com.resolvix.ccs.api.Configuration
+import com.resolvix.ccs.api.{Configuration, ProducerNotRegisteredException}
 import com.resolvix.mq.MessageQueueFactory
-import com.resolvix.mq.api.Reader
+import com.resolvix.mq.api.{MessageQueue, Reader, Writer}
 
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -16,7 +16,7 @@ trait Consumer[V]
     *
     */
   @transient
-  protected var messageQueueReader: Reader[V] = _
+  protected var messageQueue: MessageQueue[V] = _
 
   /**
     *
@@ -44,24 +44,23 @@ trait Consumer[V]
     Success(true)
   }
 
+  def getMessageQueue[V] = {
+    messageQueue match {
+      case mq: MessageQueue[V @unchecked] =>
+        messageQueue
+
+      case _ =>
+        messageQueue = MessageQueueFactory.newMessageQueue()
+        messageQueue
+    }
+  }
+
   /**
     *
     * @return
     */
   def getReader: Reader[V] = {
-    //
-    //  If a packet pipe for the Consumer does not already exist, create a
-    //  new packet pipe for the Consumer.
-    //
-    messageQueueReader match {
-      case r: Reader[V] =>
-        messageQueueReader
-
-      case _ =>
-        val messageQueue = MessageQueueFactory.newMessageQueue[V]()
-        this.messageQueueReader = messageQueue.getReader(getSelf)
-        this.messageQueueReader
-    }
+    getMessageQueue.getReader(getSelf)
   }
 
   /**
@@ -75,20 +74,13 @@ trait Consumer[V]
     * @return
     *    an object providing the caller with a Reader object.
     */
-  /*override def open(
+  override def open(
     producer: api.Producer[V]
   ): Try[Writer[V]] = {
-    if (super.isRegistered(producer)) {
-      try {
-        getReader.getWriter(producer)
-      } catch {
-        case NonFatal(t) =>
-          Failure(t)
-      }
-    } else {
-      Failure(new ProducerNotRegisteredException)
-    }
-  }*/
+    if (!super.isRegistered(producer))
+      return Failure(new ProducerNotRegisteredException)
+    Try({getMessageQueue.getWriter(producer, getSelf)})
+  }
 
   /**
     * The open method, specified without a parameter, is intended to

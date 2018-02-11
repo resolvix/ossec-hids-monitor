@@ -8,6 +8,8 @@ import scala.util.Try
 trait Writer[V]
   extends Actor
 {
+  override def getSelf: Writer[V]
+
   /**
     *
     * @param v
@@ -16,6 +18,4 @@ trait Writer[V]
   def write(
     v: V
   ): Try[Boolean]
-
-  override def getSelf: Writer[V]
 }
