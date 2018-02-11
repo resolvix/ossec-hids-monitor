@@ -1,8 +1,8 @@
-package com.resolvix.ccs.runnable.api
+package com.resolvix.ccs.api
 
 import scala.util.Try
 
-trait Consumer[V]
+trait RunnableConsumer[V]
   extends com.resolvix.ccs.api.Consumer[V]
   with Runnable
 {

@@ -1,46 +1,46 @@
-package com.resolvix.ccs.runnable
+package com.resolvix.ccs.impl
 
 import scala.util.Try
 
-trait ConsumerProducer[CP <: api.ConsumerProducer[CP, C, P], C, P]
-  extends api.ConsumerProducer[CP, C, P]
+trait RunnableConsumerProducer[CP <: com.resolvix.ccs.api.RunnableConsumerProducer[CP, C, P], C, P]
+  extends com.resolvix.ccs.api.RunnableConsumerProducer[CP, C, P]
 {
 
   /**
     *
     */
   private class ConsumerProducerCP
-    extends com.resolvix.ccs.ConsumerProducer[ConsumerProducerCP, C, P]
+    extends ConsumerProducer[ConsumerProducerCP, C, P]
   {
 
-    class RunnableConsumer
+    private class RunnableConsumer
       extends ConsumerC
-        with Consumer[C]
+        with com.resolvix.ccs.impl.RunnableConsumer[C]
     {
       override def doConsume(c: C): Try[Boolean] = {
-        ConsumerProducer.this.doConsume(c)
+        RunnableConsumerProducer.this.doConsume(c)
       }
     }
 
     class RunnableProducer
       extends ProducerP
-        with Producer[P]
+        with com.resolvix.ccs.impl.RunnableProducer[P]
     {
       override def doProduce(): Try[P] = {
-        ConsumerProducer.this.doProduce()
+        RunnableConsumerProducer.this.doProduce()
       }
     }
 
-    override def createConsumerC: RunnableConsumer = new RunnableConsumer
+    override def createConsumerC: ConsumerC = new RunnableConsumer
 
-    override def createProducerP: RunnableProducer = new RunnableProducer
+    override def createProducerP: ProducerP = new RunnableProducer
 
-    override def getConsumer: RunnableConsumer = {
-      super.getConsumer.asInstanceOf[RunnableConsumer]
+    override def getConsumer: com.resolvix.ccs.api.Consumer[C] = {
+      super.getConsumer
     }
 
-    override def getProducer: RunnableProducer = {
-      super.getProducer.asInstanceOf[RunnableProducer]
+    override def getProducer: com.resolvix.ccs.api.Producer[P] = {
+      super.getProducer
     }
   }
 
@@ -53,12 +53,12 @@ trait ConsumerProducer[CP <: api.ConsumerProducer[CP, C, P], C, P]
 
   def doProduce(): Try[P]
 
-  override def getConsumer: Consumer[C] = {
-    consumerProducer.getConsumer.asInstanceOf[Consumer[C]]
+  override def getConsumer: RunnableConsumer[C] = {
+    consumerProducer.getConsumer.asInstanceOf[RunnableConsumer[C]]
   }
 
-  override def getProducer: Producer[P] = {
-    consumerProducer.getProducer.asInstanceOf[Producer[P]]
+  override def getProducer: RunnableProducer[P] = {
+    consumerProducer.getProducer.asInstanceOf[RunnableProducer[P]]
   }
 
   override def register[CP2 <: com.resolvix.ccs.api.Consumer[P]](

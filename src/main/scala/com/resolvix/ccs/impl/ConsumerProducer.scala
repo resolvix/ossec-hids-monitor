@@ -1,5 +1,6 @@
-package com.resolvix.ccs
+package com.resolvix.ccs.impl
 
+import com.resolvix.ccs.api
 import com.resolvix.ccs.api.Configuration
 import com.resolvix.mq.api.Writer
 
@@ -126,13 +127,13 @@ trait ConsumerProducer[CP <: api.ConsumerProducer[CP, C, P], C, P]
     *
     * @return
     */
-  def getConsumer: Consumer[C] = this.consumerC
+  def getConsumer: api.Consumer[C] = this.consumerC
 
   /**
     *
     * @return
     */
-  def getProducer: Producer[P] = this.producerP
+  def getProducer: api.Producer[P] = this.producerP
 
   override def register[CP2 <: api.Consumer[P]](
     consumer: CP2

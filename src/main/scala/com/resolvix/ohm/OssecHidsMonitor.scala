@@ -7,7 +7,6 @@ import java.time.temporal.ChronoUnit
 import java.lang.Thread
 import java.util.NoSuchElementException
 
-import com.resolvix.ccs.runnable.api.{Consumer, ConsumerProducer, Producer, ProducerConsumer}
 import com.resolvix.log.Loggable
 import com.resolvix.ohm.OssecHidsMonitor.{AvailableModuleType, ModuleType}
 import com.resolvix.ohm.api.AlertStatus
@@ -225,8 +224,8 @@ object OssecHidsMonitor
     * @tparam A
     * @tparam M
     */
-  class ProducerConsumer[A <: Alert, M <: AlertStatus]
-    extends com.resolvix.ccs.runnable.ProducerConsumer[ProducerConsumer[A, M], A, M]
+  class RunnableProducerConsumer[A <: Alert, M <: AlertStatus]
+    extends com.resolvix.ccs.impl.RunnableProducerConsumer[RunnableProducerConsumer[A, M], A, M]
   {
     override def doConsume(c: M): Try[Boolean] = ???
 

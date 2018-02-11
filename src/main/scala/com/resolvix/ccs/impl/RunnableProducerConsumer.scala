@@ -1,40 +1,40 @@
-package com.resolvix.ccs.runnable
+package com.resolvix.ccs.impl
 
 import scala.util.Try
 
 /**
   * Created by rwbisson on 11/11/16.
   */
-trait ProducerConsumer[PC <: ProducerConsumer[PC, P, C], P, C]
-  extends com.resolvix.ccs.runnable.api.ProducerConsumer[PC, P, C]
+trait RunnableProducerConsumer[PC <: RunnableProducerConsumer[PC, P, C], P, C]
+  extends com.resolvix.ccs.api.RunnableProducerConsumer[PC, P, C]
 {
 
   private class ProducerConsumerPC
-    extends com.resolvix.ccs.ProducerConsumer[ProducerConsumerPC, P, C] {
+    extends com.resolvix.ccs.impl.ProducerConsumer[ProducerConsumerPC, P, C] {
 
     class RunnableConsumer
       extends ConsumerC
-        with Consumer[C]
+        with com.resolvix.ccs.impl.RunnableConsumer[C]
     {
       /**
         *
         * @return
         */
       override def doConsume(c: C): Try[Boolean] = {
-        ProducerConsumer.this.doConsume(c)
+        RunnableProducerConsumer.this.doConsume(c)
       }
     }
 
     class RunnableProducer
       extends ProducerP
-        with Producer[P]
+        with com.resolvix.ccs.impl.RunnableProducer[P]
     {
       /**
         *
         * @return
         */
       override def doProduce(): Try[P] = {
-        ProducerConsumer.this.doProduce()
+        RunnableProducerConsumer.this.doProduce()
       }
     }
 
@@ -57,7 +57,7 @@ trait ProducerConsumer[PC <: ProducerConsumer[PC, P, C], P, C]
 
   def doProduce(): Try[P]
 
-  override def getConsumer: Consumer[C] = {
+  override def getConsumer: RunnableConsumer[C] = {
     producerConsumer.getConsumer
   }
 

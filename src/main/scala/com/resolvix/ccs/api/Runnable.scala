@@ -1,4 +1,4 @@
-package com.resolvix.ccs.runnable.api
+package com.resolvix.ccs.api
 
 /**
   * Created by rwbisson on 16/10/16.

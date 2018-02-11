@@ -1,6 +1,7 @@
 package com.resolvix.ccs
 
 import com.resolvix.ccs.api.Configuration
+import com.resolvix.ccs.impl.{Consumer, ConsumerProducer, Producer, ProducerConsumer}
 import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.mq.impl.MessageQueue
 import org.scalatest.FunSpec

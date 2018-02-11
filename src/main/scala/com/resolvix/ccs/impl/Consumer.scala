@@ -1,11 +1,10 @@
-package com.resolvix.ccs
+package com.resolvix.ccs.impl
 
-import com.resolvix.ccs.api.{Configuration, ProducerNotRegisteredException}
+import com.resolvix.ccs.api
+import com.resolvix.ccs.api.Configuration
 import com.resolvix.mq.MessageQueueFactory
-import com.resolvix.mq.api.{Reader, Writer}
-import com.resolvix.mq.api.MessageQueue
+import com.resolvix.mq.api.Reader
 
-import scala.concurrent.duration.TimeUnit
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 

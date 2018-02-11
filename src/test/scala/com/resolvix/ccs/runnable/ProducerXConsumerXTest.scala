@@ -1,5 +1,7 @@
 package com.resolvix.ccs.runnable
 
+import com.resolvix.ccs.api.{Producer, RunnableProducer}
+import com.resolvix.ccs.impl.{RunnableConsumer, RunnableConsumerProducer, RunnableProducerConsumer}
 import com.resolvix.mq.api.{Reader, Writer}
 import org.scalatest.FunSpec
 
@@ -23,7 +25,7 @@ class ProducerXConsumerXTest
   }
 
   class PC
-    extends com.resolvix.ccs.runnable.ProducerConsumer[PC, X, Y]
+    extends RunnableProducerConsumer[PC, X, Y]
   {
     override def doConsume(c: Y): Try[Boolean] = ???
 
@@ -31,7 +33,7 @@ class ProducerXConsumerXTest
   }
 
   class CP
-    extends com.resolvix.ccs.runnable.ConsumerProducer[CP, X, Y]
+    extends RunnableConsumerProducer[CP, X, Y]
   {
     override def doConsume(c: X): Try[Boolean] = {
       println("CP::doConsume: X(" + c.x + ", " + c.y + ")")
@@ -58,13 +60,13 @@ class ProducerXConsumerXTest
 
     var readerY: Reader[Y] = null
 
-    var producerX: Producer[X] = null
+    var producerX: RunnableProducer[X] = null
 
-    var consumerX: Consumer[X] = null
+    var consumerX: RunnableConsumer[X] = null
 
-    var producerY: Producer[Y] = null
+    var producerY: RunnableProducer[Y] = null
 
-    var consumerY: Consumer[Y] = null
+    var consumerY: RunnableConsumer[Y] = null
 
     var thread1: Thread = null
 

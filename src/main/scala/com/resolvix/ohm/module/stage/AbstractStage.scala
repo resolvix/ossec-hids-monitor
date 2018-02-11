@@ -1,14 +1,15 @@
 package com.resolvix.ohm.module.stage
 import com.resolvix.ccs.api.{Consumer, Producer}
+import com.resolvix.ccs.impl.RunnableConsumerProducer
 import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.ohm.module.api.ModuleDescriptor
 
 import scala.util.{Failure, Success, Try}
 
 object AbstractStage {
-  class LocalConsumerProducer[I, O]
-    extends com.resolvix.ccs.api.ConsumerProducer[LocalConsumerProducer[I, O], I, O]
-      with com.resolvix.ccs.runnable.ConsumerProducer[LocalConsumerProducer[I, O], I, O] {
+  class LocalRunnableConsumerProducer[I, O]
+    extends com.resolvix.ccs.api.ConsumerProducer[LocalRunnableConsumerProducer[I, O], I, O]
+      with RunnableConsumerProducer[LocalRunnableConsumerProducer[I, O], I, O] {
     override def doConsume(c: I): Try[Boolean] = {
       Success(false)
 
@@ -29,8 +30,8 @@ object AbstractStage {
 abstract class AbstractStage[AI <: AbstractStage[AI, I, O, R], I, O, R <: api.StageResult[_]]
   extends api.Stage[I, O, R] {
 
-  private val localConsumerProducer: AbstractStage.LocalConsumerProducer[I, O]
-    = new AbstractStage.LocalConsumerProducer[I, O]();
+  private val localConsumerProducer: AbstractStage.LocalRunnableConsumerProducer[I, O]
+    = new AbstractStage.LocalRunnableConsumerProducer[I, O]();
 
   private val consumer: Consumer[I] = localConsumerProducer.getConsumer
 

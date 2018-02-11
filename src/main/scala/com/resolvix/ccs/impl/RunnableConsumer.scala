@@ -1,4 +1,4 @@
-package com.resolvix.ccs.runnable
+package com.resolvix.ccs.impl
 
 import java.util.concurrent.TimeUnit
 
@@ -7,8 +7,8 @@ import com.resolvix.mq.api.Reader
 import scala.concurrent.TimeoutException
 import scala.util.{Failure, Success, Try}
 
-trait Consumer[V]
-  extends api.Consumer[V]
+trait RunnableConsumer[V]
+  extends com.resolvix.ccs.api.RunnableConsumer[V]
 {
   /**
     *

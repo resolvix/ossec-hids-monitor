@@ -1,5 +1,7 @@
 package com.resolvix.ohm.api
 
+import com.resolvix.ccs.impl.Producer
+
 import scala.util.Try
 
 /**
@@ -7,7 +9,7 @@ import scala.util.Try
   */
 @deprecated("Not used at present", "2017/03/17")
 abstract class ProducerX[P]
-  extends com.resolvix.ccs.Producer[P]
+  extends Producer[P]
 {
 
 }

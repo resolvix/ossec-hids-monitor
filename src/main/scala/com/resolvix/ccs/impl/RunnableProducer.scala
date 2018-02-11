@@ -1,4 +1,4 @@
-package com.resolvix.ccs.runnable
+package com.resolvix.ccs.impl
 
 import com.resolvix.mq.api.Writer
 
@@ -7,8 +7,8 @@ import scala.util.{Failure, Success}
 /**
   * Created by rwbisson on 11/11/16.
   */
-trait Producer[V]
-  extends api.Producer[V]
+trait RunnableProducer[V]
+  extends com.resolvix.ccs.api.RunnableProducer[V]
 {
 
   /**

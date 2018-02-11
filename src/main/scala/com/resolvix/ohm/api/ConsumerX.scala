@@ -1,5 +1,7 @@
 package com.resolvix.ohm.api
 
+import com.resolvix.ccs.impl.Consumer
+
 import scala.util.Try
 
 /**
@@ -7,7 +9,7 @@ import scala.util.Try
   */
 @deprecated("Not used at present", "2017/03/17")
 abstract class ConsumerX[C]
-  extends com.resolvix.ccs.Consumer[C]
+  extends Consumer[C]
 {
 
 }

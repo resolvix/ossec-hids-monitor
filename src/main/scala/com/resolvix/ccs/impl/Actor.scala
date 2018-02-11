@@ -1,5 +1,6 @@
-package com.resolvix.ccs
+package com.resolvix.ccs.impl
 
+import com.resolvix.ccs.api
 import com.resolvix.ccs.api.Configuration
 
 import scala.util.control.NonFatal
