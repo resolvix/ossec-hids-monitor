@@ -874,7 +874,7 @@ class OssecHidsMonitor(
         List[Alert]()
     }
 
-    val ns: NewStage = new NewStage(ossecHidsDAO, locationMap, signatureMap)
+    // val ns: NewStage = new NewStage(ossecHidsDAO, locationMap, signatureMap)
   }
 
   /**

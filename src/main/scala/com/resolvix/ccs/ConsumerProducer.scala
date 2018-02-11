@@ -1,6 +1,7 @@
 package com.resolvix.ccs
 
 import com.resolvix.ccs.api.Configuration
+import com.resolvix.mq.api.Writer
 
 import scala.util.control.NonFatal
 import scala.util.{Success, Try}
@@ -56,9 +57,13 @@ trait ConsumerProducer[CP <: api.ConsumerProducer[CP, C, P], C, P]
       */
     override protected def getSelf: ConsumerC = this
 
+
+    override def open(producer: api.Producer[C]): Try[Writer[C]] = ???
+
     /**
       *
       * @param configuration
+ *
       * @return
       */
     override def initialise(

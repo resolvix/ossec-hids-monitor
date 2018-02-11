@@ -1,7 +1,5 @@
 package com.resolvix.ohm.module.stage.api
 
-import com.resolvix.ccs.api.Consumer
-
 import scala.collection.mutable.MutableList
 import scala.util.Try
 

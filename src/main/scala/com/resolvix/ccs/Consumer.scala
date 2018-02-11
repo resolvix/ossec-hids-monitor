@@ -1,8 +1,9 @@
 package com.resolvix.ccs
 
 import com.resolvix.ccs.api.{Configuration, ProducerNotRegisteredException}
+import com.resolvix.mq.MessageQueueFactory
 import com.resolvix.mq.api.{Reader, Writer}
-import com.resolvix.mq.impl.MessageQueue
+import com.resolvix.mq.api.MessageQueue
 
 import scala.concurrent.duration.TimeUnit
 import scala.util.control.NonFatal
@@ -58,7 +59,7 @@ trait Consumer[V]
         messageQueueReader
 
       case _ =>
-        val messageQueue = new MessageQueue[V]()
+        val messageQueue = MessageQueueFactory.newMessageQueue[V]()
         this.messageQueueReader = messageQueue.getReader(getSelf)
         this.messageQueueReader
     }

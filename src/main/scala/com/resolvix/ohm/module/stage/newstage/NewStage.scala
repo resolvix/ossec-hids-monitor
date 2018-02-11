@@ -4,7 +4,7 @@ import java.time.Instant
 
 import com.resolvix.log.Loggable
 import com.resolvix.ohm.api.AlertStatus
-import com.resolvix.ohm.module.api.Alert
+import com.resolvix.ohm.module.api.{Alert, ModuleDescriptor}
 import com.resolvix.ohm.module.stage.AbstractStage
 import com.resolvix.ohm.module.stage.api.{Stage, StageResult}
 import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
@@ -30,7 +30,8 @@ class NewStage(
   with Loggable
 {
 
-
+  //val p = new Packet[V](this.getId, reader.getId, v)
+  //messageWriter.write(p)
 
   /*class AugmentedAlert(
     private val alert: Alert,
@@ -88,6 +89,21 @@ class NewStage(
     )
   }*/
   override def consume(input: Alert): Try[StageResult[AlertStatus]] = {
-    super.consume(input)
+    //super.consume(input)
+    Failure(new Exception)
   }
+
+  override def close(): Try[Boolean] = ???
+
+  override def flush(): Try[StageResult[AlertStatus]] = ???
+
+  override def getId: Int = ???
+
+  override def getDescriptor: ModuleDescriptor[Alert, NewStageAlert, StageResult[AlertStatus]] = ???
+
+  override def initialise(): Try[Boolean] = ???
+
+  override def open(): Try[Boolean] = ???
+
+  override def terminate(): Try[Boolean] = ???
 }

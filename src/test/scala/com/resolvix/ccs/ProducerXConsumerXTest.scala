@@ -36,6 +36,9 @@ class ProducerXConsumerXTest
       */
     override def initialise(configuration: Configuration): Try[Boolean] = ???
 
+
+    override def open(producer: api.Producer[X]): Try[Writer[X]] = ???
+
     override protected def getSelf: C = this
   }
 
