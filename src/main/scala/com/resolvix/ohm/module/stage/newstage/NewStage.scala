@@ -2,10 +2,15 @@ package com.resolvix.ohm.module.stage.newstage
 
 import java.time.Instant
 
+import com.resolvix.log.Loggable
 import com.resolvix.ohm.api.AlertStatus
 import com.resolvix.ohm.module.api.Alert
+import com.resolvix.ohm.module.stage.AbstractStage
+import com.resolvix.ohm.module.stage.api.{Stage, StageResult}
 import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
 import com.resolvix.ohm.module.{Classifiable, Summarizable}
+
+import scala.util.Try
 
 //import com.resolvix.concurrent.api.RunnableConsumerProducer
 import com.resolvix.ohm.dao.api.OssecHidsDAO
@@ -20,8 +25,14 @@ class NewStage(
   val ossecHidsDAO: OssecHidsDAO,
   val locationMap: Map[Int, Location],
   val signatureMap: Map[Int, Signature]
-) extends /*RunnableConsumerProducer[Alert, NewStageAlert]*/ {
-  class AugmentedAlert(
+) extends AbstractStage[NewStage, Alert, NewStageAlert, StageResult[AlertStatus]]
+  with Stage[Alert, NewStageAlert, StageResult[AlertStatus]]
+  with Loggable
+{
+
+
+
+  /*class AugmentedAlert(
     private val alert: Alert,
     private val location: Option[Location],
     private val signature: Option[Signature],
@@ -55,8 +66,6 @@ class NewStage(
     def getSignature: Option[Signature] = signature
   }
 
-  //override val pipe: Pipe[Alert] = new Pipe[Alert]()
-
   def apply(alert: Alert): AugmentedAlert = {
     val moduleAlertStatuses: List[AlertStatus]
       = ossecHidsDAO.getModuleAlertStatusesById(
@@ -77,5 +86,8 @@ class NewStage(
       signatureMap.get(alert.getRuleId),
       moduleAlertStatuses
     )
+  }*/
+  override def consume(input: Alert): Try[StageResult[AlertStatus]] = {
+    super.consume(input)
   }
 }

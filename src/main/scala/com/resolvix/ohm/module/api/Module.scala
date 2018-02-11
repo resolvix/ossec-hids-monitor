@@ -17,23 +17,26 @@ import scala.util.Try
   */
 trait Module[I, O, R <: Result] {
   /**
+    * Signals that the application intends to stop making calls to the
+    * 'consume' method of the module.
     *
+    * @return
+    *   a value of type [[Try[[Boolean]]] indicating whether the operation was
+    *   successful or not
     */
   def close(): Try[Boolean]
 
   /**
-    * Consumes an object of type I, and return an object of type R.
+    * Consumes an object of type I, and returns an object of type R.
     *
     * @param input
     *   an object representing the input to the module.
     *
     * @return
-    *   a value of type [[Try]] indicating whether the operation was
-    *   successful or otherwise.
+    *   a value of type [[Try[R]]] indicating whether the operation was
+    *   successful or not
     */
-  def process(
-    input: I
-  ): Try[R]
+  def consume(input: I): Try[R]
 
   /**
     * Flushes any buffers maintained by the instance in the course of
@@ -41,8 +44,8 @@ trait Module[I, O, R <: Result] {
     * [[Result]] trait.
     *
     * @return
-    *    a value of type [[Try]] indicating whether the operation was
-    *    successful or otherwise.
+    *   a value of type [[Try[R]]] indicating whether the operation was
+    *   successful or not
     */
   def flush(): Try[R]
 
@@ -61,14 +64,19 @@ trait Module[I, O, R <: Result] {
   def getDescriptor: ModuleDescriptor[I, O, R]
 
   /**
+    * Initialises the module.
     *
     * @return
     */
-  def initialise(): Try[Boolean]
+  def initialise(): Try[Boolean];
 
   /**
-    * Instantiate the consumer for the module.
+    * Signals that the application intends to begin making calls to the
+    * 'consume' method of the module.
     *
+    * @return
+    *   a value of type [[Try[Boolean]]] indicating whether the open operation
+    *   was successful or not
     */
   def open(): Try[Boolean]
 

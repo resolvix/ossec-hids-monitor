@@ -21,7 +21,7 @@ class JiraEndpoint(
     */
   override def close(): Try[Boolean] = ???
 
-  override def process(input: NewStageAlert): Try[EndpointResult[AlertStatus]] = ???
+  override def consume(input: NewStageAlert): Try[EndpointResult[AlertStatus]] = ???
 
   override def flush(): Try[EndpointResult[AlertStatus]] = ???
 

@@ -11,7 +11,7 @@ import scala.util.{Success, Try}
 /**
   * Created by rwbisson on 10/10/16.
   */
-class TestOssecHidsDAO
+class MockOssecHidsDAO
   extends api.OssecHidsDAO
 {
 

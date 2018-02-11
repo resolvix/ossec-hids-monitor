@@ -200,8 +200,8 @@ object OssecHidsMonitor
       module.initialise()
     }
 
-    override def process(input: I): Try[R] = {
-      module.process(input)
+    override def consume(input: I): Try[R] = {
+      module.consume(input)
     }
 
     override def getDescriptor: ModuleDescriptor[I, O, R] = {
@@ -949,7 +949,7 @@ class OssecHidsMonitor(
         })
 
         if (moduleAlertStatus.isEmpty) {
-            activeModule.process(alert) match {
+            activeModule.consume(alert) match {
               case Success(er: EndpointResult) => {
                 log.debug(er.getClass.getName())
                 er.getAlertStatuses.map(

@@ -1,8 +1,10 @@
 package com.resolvix.ohm.module.endpoint.api
 
+import scala.util.Try
+
 /**
   * Defines an endpoint variant module that accepts an input and generates an
-  * output in the form of a [[com.resolvix.ohm.module.endpoint.api.EndpointResult]] derivative.
+  * output in the form of a [[com.resolvix.ohm.module.endpoint.api.EndpointResult]].
   *
   * @tparam I
   *   the input data type

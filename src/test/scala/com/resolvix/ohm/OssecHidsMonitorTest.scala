@@ -3,7 +3,7 @@ package com.resolvix.ohm
 import java.time.LocalDateTime
 
 import com.resolvix.ohm.OssecHidsMonitor.AvailableModuleType
-import com.resolvix.ohm.dao.TestOssecHidsDAO
+import com.resolvix.ohm.dao.MockOssecHidsDAO
 import org.scalatest.{FlatSpec, FunSpec}
 
 import scala.util.{Failure, Success}
@@ -14,7 +14,7 @@ import scala.util.{Failure, Success}
 class OssecHidsMonitorTest
   extends FunSpec
 {
-  val testOssecHidsDAO: dao.api.OssecHidsDAO = new TestOssecHidsDAO
+  val mockOssecHidsDAO: dao.api.OssecHidsDAO = new MockOssecHidsDAO
   var ossecHidsMonitor: OssecHidsMonitor = _
   var alerts: List[module.api.Alert] = _
   var modules: List[AvailableModuleType] = _
@@ -25,11 +25,11 @@ class OssecHidsMonitorTest
   describe("OssecHidsMonitor") {
 
     it("should accept a DAO to enable it to initialise itself") {
-      ossecHidsMonitor = new OssecHidsMonitor(testOssecHidsDAO)
+      ossecHidsMonitor = new OssecHidsMonitor(mockOssecHidsDAO)
     }
 
     it("should obtain a list of alerts for a given period ") {
-      alerts = testOssecHidsDAO.getAlertsForPeriod(
+      alerts = mockOssecHidsDAO.getAlertsForPeriod(
         1,
         fromDateTime,
         toDateTime

@@ -21,7 +21,7 @@ class SinkEndpoint(
     Success(false)
   }
 
-  override def process(input: Alert): Try[EndpointResult[AlertStatus]] = {
+  override def consume(input: Alert): Try[EndpointResult[AlertStatus]] = {
     log.debug(
       "AID: "
         + input.getId
