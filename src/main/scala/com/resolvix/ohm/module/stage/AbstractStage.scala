@@ -7,24 +7,22 @@ import com.resolvix.ohm.module.stage
 
 import scala.util.{Failure, Success, Try}
 
-private object AbstractStage {
+/**
+  *
+  * @tparam AS
+  * @tparam I
+  * @tparam O
+  * @tparam R
+  */
+private[stage] abstract class AbstractStage[AS <: AbstractStage[AS, I, O, R], I, O, R <: api.StageResult[_]]
+  extends api.Stage[I, O, R] {
   /**
-    * Provides a generic implementation of a runnable consumer producer
-    * message queue pair for use by the front end processing element of
-    * the abstract stage.
-    *
-    * @tparam I
-    *   indicates the type of inputs the consumer producer is expected
-    *   to enable the consumer to read
-    *
-    * @tparam O
-    *   indicates the type of outputs the consumer producer is expected
-    *   to enable the producer to write
+    * Provides an implementation of a runnable consumer producer message queue
+    * pair for use by the front end processing element of the abstract stage.
     */
-  class FrontEndRunnableConsumerProducer[I, R <: api.StageResult[_]](
-    private val stage: api.Stage[I, _, R]
-  ) extends com.resolvix.ccs.api.ConsumerProducer[FrontEndRunnableConsumerProducer[I, R], I, R]
-      with com.resolvix.ccs.impl.RunnableConsumerProducer[FrontEndRunnableConsumerProducer[I, R], I, R] {
+  private class FrontEndRunnableConsumerProducer
+    extends com.resolvix.ccs.api.ConsumerProducer[FrontEndRunnableConsumerProducer, I, R]
+    with com.resolvix.ccs.impl.RunnableConsumerProducer[FrontEndRunnableConsumerProducer, I, R] {
 
     /**
       * Consumes an object of type [[I]] upon receipt.
@@ -33,7 +31,7 @@ private object AbstractStage {
       * @return
       */
     override def doConsume(c: I): Try[Boolean] = {
-      val tryR: Try[R] = stage.consume(c)
+      val tryR: Try[R] = AbstractStage.this.consume(c)
       tryR match {
         case Success(r: R @unchecked) =>
           //Try(produce(r));
@@ -49,10 +47,13 @@ private object AbstractStage {
     }
   }
 
-  class BackEndRunnableProducerConsumer[O, R <: api.StageResult[_]](
-    private val stage: api.Stage[_, O, R]
-  ) extends com.resolvix.ccs.api.ProducerConsumer[BackEndRunnableProducerConsumer[O, R], O, R]
-      with com.resolvix.ccs.impl.RunnableProducerConsumer[BackEndRunnableProducerConsumer[O, R], O, R] {
+  /**
+    * Provides an implementation of a runnable producer consumer message queue
+    * pair for use by the back end processing element of the abstract stage.
+    */
+  private class BackEndRunnableProducerConsumer
+    extends com.resolvix.ccs.api.ProducerConsumer[BackEndRunnableProducerConsumer, O, R]
+    with com.resolvix.ccs.impl.RunnableProducerConsumer[BackEndRunnableProducerConsumer, O, R] {
     override def doConsume(c: R): Try[Boolean] = {
       Failure(new UnsupportedOperationException)
     }
@@ -60,26 +61,13 @@ private object AbstractStage {
     override def doProduce(): Try[O] = {
       Failure(new UnsupportedOperationException)
     }
-
-    //override def crossregister[PC <: ProducerConsumer[PC, O, R]](producerConsumer: PC): Try[Boolean] = ???
   }
-}
 
-/**
-  *
-  * @tparam AS
-  * @tparam I
-  * @tparam O
-  * @tparam R
-  */
-private[stage] abstract class AbstractStage[AS <: AbstractStage[AS, I, O, R], I, O, R <: api.StageResult[_]]
-  extends api.Stage[I, O, R] {
+  private val frontEndConsumerProducer: FrontEndRunnableConsumerProducer
+    = new FrontEndRunnableConsumerProducer
 
-  private val frontEndConsumerProducer: AbstractStage.FrontEndRunnableConsumerProducer[I, R]
-    = new AbstractStage.FrontEndRunnableConsumerProducer[I, R](this)
-
-  private val backEndConsumerProducer: AbstractStage.BackEndRunnableProducerConsumer[O, R]
-    = new AbstractStage.BackEndRunnableProducerConsumer[O, R](this)
+  private val backEndConsumerProducer: BackEndRunnableProducerConsumer
+    = new BackEndRunnableProducerConsumer
 
   private val consumer: Consumer[I] = frontEndConsumerProducer.getConsumer
 
