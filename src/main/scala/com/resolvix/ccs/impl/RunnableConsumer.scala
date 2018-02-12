@@ -35,8 +35,8 @@ package impl {
 
       while (isRunning) {
         reader.read(5000, TimeUnit.MILLISECONDS) match {
-          case Success(x: (Int, V@unchecked)) =>
-            doConsume(x._2)
+          case Success((i: Int, v: V@unchecked)) =>
+            doConsume(v)
 
           case Failure(e: TimeoutException) =>
           //

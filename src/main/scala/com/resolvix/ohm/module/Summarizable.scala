@@ -3,6 +3,7 @@ package com.resolvix.ohm.module
 
 import com.resolvix.ohm.module.api.Alert
 
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
 
@@ -154,15 +155,10 @@ trait Summarizable
     def getFunctionByRuleId[S <: Alert](
       ruleId: Int
     ): Try[SummarizableAlertFunction[S]] = {
-      try {
-        Success(
+      Try(
           FunctionMap(ruleId)
             .asInstanceOf[SummarizableAlertFunction[S]]
         )
-      } catch {
-        case t: Throwable =>
-          Failure(t)
-      }
     }
   }
 
@@ -180,7 +176,7 @@ trait Summarizable
       case e: NoSuchElementException =>
         Failure(e)
 
-      case t: Throwable =>
+      case NonFatal(t: Throwable) =>
         Failure(t)
     }
   }

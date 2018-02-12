@@ -96,13 +96,12 @@ package impl {
       * @return
       */
     def open: Try[Writer[V]] = {
-      try {
+      Try({
         writerMap = actors.collect({
-          case x: (Int, api.Consumer[V]) => {
-            x._2.open(getSelf) match {
+          case (i: Int, c: api.Consumer[V]) => {
+            c.open(getSelf) match {
               case Success(w: Writer[V]) =>
-                println(w)
-                (x._1, w)
+                (i, w)
 
               case Failure(t: Throwable) =>
                 throw t
@@ -113,11 +112,8 @@ package impl {
           }
         })
 
-        Success(new MulticastWriter(writerMap))
-      } catch {
-        case NonFatal(t) =>
-          Failure(t)
-      }
+        new MulticastWriter(writerMap)
+      })
     }
 
     /**
