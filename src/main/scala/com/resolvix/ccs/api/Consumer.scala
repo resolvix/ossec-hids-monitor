@@ -25,7 +25,7 @@ import scala.util.Try
   *
   */
 trait Consumer[V]
-  extends Actor[Consumer[V], Producer[V], V]
+  extends Actor[Consumer[V], Producer[V]]
 {
 
   /**

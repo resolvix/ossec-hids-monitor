@@ -29,22 +29,17 @@ package impl {
   }
 
   /**
+    * Provides basic Actor-Actor relationship management including
+    * registration, and deregistration.
     *
     * @tparam L
     *   refers to the type of the local actor
     *
     * @tparam R
     *   refers to the type of the remote actor
-    *
-    * @tparam V
-    *   refers to the type of values to be transmitted between the local and
-    *   remote actors
     */
-  private[impl] abstract class Actor[
-    L <: api.Actor[L, R, V],
-    R <: api.Actor[R, L, V],
-    V
-  ] extends api.Actor[L, R, V] {
+  private[impl] trait Actor[L <: api.Actor[L, R], R <: api.Actor[R, L]]
+    extends api.Actor[L, R] {
     //
     //
     //
@@ -54,20 +49,6 @@ package impl {
       *
       */
     protected var actors: Map[Int, R] = Map[Int, R]()
-
-    /*protected def findRemoteActor(
-    actor: R
-  ): Try[RemoteActor] = {
-    actors.find(
-      { case (id: Int, ra: RemoteActor) => ra.getActor.equals(actor) }
-    ) match {
-      case Some((id: Int, remoteActor: RemoteActor)) =>
-        Success(remoteActor)
-
-      case None =>
-        Failure(new NoSuchElementException())
-    }
-  }*/
 
     override def getId: Int = {
       id

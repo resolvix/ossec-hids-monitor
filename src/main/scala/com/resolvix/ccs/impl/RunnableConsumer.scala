@@ -1,4 +1,4 @@
-package com.resolvix.ccs.impl
+package com.resolvix.ccs
 
 import java.util.concurrent.TimeUnit
 
@@ -7,41 +7,45 @@ import com.resolvix.mq.api.Reader
 import scala.concurrent.TimeoutException
 import scala.util.{Failure, Success, Try}
 
-trait RunnableConsumer[V]
-  extends com.resolvix.ccs.api.RunnableConsumer[V]
-{
-  /**
-    *
-    * @return
-    */
-  def doConsume(v: V): Try[Boolean]
+package impl {
 
-  /**
-    *
-    */
-  override def run(): Unit = {
-    start()
+  trait RunnableConsumer[V]
+    extends Consumer[V]
+    with Runnable
+    with api.RunnableConsumer[V] {
+    /**
+      *
+      * @return
+      */
+    def doConsume(v: V): Try[Boolean]
 
-    val reader: Reader[V] = open match {
-      case Success(reader: Reader[V]) =>
-        reader
+    /**
+      *
+      */
+    override def run(): Unit = {
+      start()
 
-      case Failure(t: Throwable) =>
-        throw t
-    }
+      val reader: Reader[V] = open match {
+        case Success(reader: Reader[V]) =>
+          reader
 
-    while (isRunning) {
-      reader.read(5000, TimeUnit.MILLISECONDS) match {
-        case Success(x: (Int, V @unchecked)) =>
-          doConsume(x._2)
+        case Failure(t: Throwable) =>
+          throw t
+      }
 
-        case Failure(e: TimeoutException) =>
+      while (isRunning) {
+        reader.read(5000, TimeUnit.MILLISECONDS) match {
+          case Success(x: (Int, V@unchecked)) =>
+            doConsume(x._2)
+
+          case Failure(e: TimeoutException) =>
           //
           //  Do nothing
           //
 
-        case Failure(t: Throwable) =>
-          throw t
+          case Failure(t: Throwable) =>
+            throw t
+        }
       }
     }
   }

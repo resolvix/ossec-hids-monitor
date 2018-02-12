@@ -1,93 +1,51 @@
-package com.resolvix.ccs.impl
+package com.resolvix.ccs
 
 import scala.util.Try
 
-trait RunnableConsumerProducer[CP <: com.resolvix.ccs.api.RunnableConsumerProducer[CP, C, P], C, P]
-  extends com.resolvix.ccs.api.RunnableConsumerProducer[CP, C, P]
-{
+package impl {
 
-  /**
-    *
-    */
-  private class ConsumerProducerCP
-    extends ConsumerProducer[ConsumerProducerCP, C, P]
-  {
+  trait RunnableConsumerProducer[CP <: api.RunnableConsumerProducer[CP, C, P], C, P]
+    extends ConsumerProducer[CP, C, P]
+    with api.RunnableConsumerProducer[CP, C, P] {
 
-    private class RunnableConsumer
+    class RunnableConsumerC
       extends ConsumerC
-        with com.resolvix.ccs.impl.RunnableConsumer[C]
-    {
-      override def doConsume(c: C): Try[Boolean] = {
-        RunnableConsumerProducer.this.doConsume(c)
-      }
+      with RunnableConsumer[C] {
+
+      override def doConsume(v: C): Try[Boolean] = RunnableConsumerProducer.this.doConsume(v)
+
     }
 
-    class RunnableProducer
+    class RunnableProducerP
       extends ProducerP
-        with com.resolvix.ccs.impl.RunnableProducer[P]
-    {
-      override def doProduce(): Try[P] = {
-        RunnableConsumerProducer.this.doProduce()
-      }
+      with RunnableProducer[P] {
+
+      override def doProduce(): Try[P] = RunnableConsumerProducer.this.doProduce()
+
     }
 
-    override def createConsumerC: ConsumerC = new RunnableConsumer
+    protected def newRunnableConsumerC: api.RunnableConsumer[C] = new RunnableConsumerC
 
-    override def createProducerP: ProducerP = new RunnableProducer
+    protected def newRunnableProducerP: api.RunnableProducer[P] = new RunnableProducerP
 
-    override def getConsumer: com.resolvix.ccs.api.Consumer[C] = {
-      super.getConsumer
+    private val runnableConsumerC: api.RunnableConsumer[C] = getConsumer
+
+    private val runnableProducerP: api.RunnableProducer[P] = getProducer
+
+    def doConsume(c: C): Try[Boolean]
+
+    def doProduce(): Try[P]
+
+    override def getConsumer: api.RunnableConsumer[C] = {
+      if (runnableConsumerC != null)
+        return runnableConsumerC
+      newRunnableConsumerC
     }
 
-    override def getProducer: com.resolvix.ccs.api.Producer[P] = {
-      super.getProducer
+    override def getProducer: api.RunnableProducer[P] = {
+      if (runnableProducerP != null)
+        return runnableProducerP
+      newRunnableProducerP
     }
-  }
-
-  /**
-    *
-    */
-  private val consumerProducer: ConsumerProducerCP = new ConsumerProducerCP
-
-  def doConsume(c: C): Try[Boolean]
-
-  def doProduce(): Try[P]
-
-  override def getConsumer: RunnableConsumer[C] = {
-    consumerProducer.getConsumer.asInstanceOf[RunnableConsumer[C]]
-  }
-
-  override def getProducer: RunnableProducer[P] = {
-    consumerProducer.getProducer.asInstanceOf[RunnableProducer[P]]
-  }
-
-  override def register[CP2 <: com.resolvix.ccs.api.Consumer[P]](
-    consumer: CP2
-  ): Try[Boolean] = {
-    consumerProducer.register(consumer)
-  }
-
-  override def registerPP[PC2 <: com.resolvix.ccs.api.Producer[C]](
-    producer: PC2
-  ): Try[Boolean] = {
-    consumerProducer.registerPP(producer)
-  }
-
-  override def registerP[CP2 <: com.resolvix.ccs.api.ConsumerProducer[CP2, P, _]](
-    consumerProducer: CP2
-  ): Try[Boolean] = {
-    this.consumerProducer.registerP(consumerProducer)
-  }
-
-  override def registerC[PC <: com.resolvix.ccs.api.ProducerConsumer[PC, C, _]](
-    producerConsumer: PC
-  ): Try[Boolean] = {
-    consumerProducer.registerC(producerConsumer)
-  }
-
-  override def crossregister[PC <: com.resolvix.ccs.api.ProducerConsumer[PC, C, P]](
-    producerConsumer: PC
-  ): Try[Boolean] = {
-    consumerProducer.crossregister(producerConsumer)
   }
 }

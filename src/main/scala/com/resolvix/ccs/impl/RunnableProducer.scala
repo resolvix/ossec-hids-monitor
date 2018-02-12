@@ -1,38 +1,42 @@
-package com.resolvix.ccs.impl
+package com.resolvix.ccs
 
 import com.resolvix.mq.api.Writer
 
 import scala.util.{Failure, Success}
 
-/**
-  * Created by rwbisson on 11/11/16.
-  */
-trait RunnableProducer[V]
-  extends com.resolvix.ccs.api.RunnableProducer[V]
-{
+package impl {
 
   /**
-    *
+    * Created by rwbisson on 11/11/16.
     */
-  override def run(): Unit = {
-    super.start()
+  trait RunnableProducer[V]
+    extends Producer[V]
+    with Runnable
+    with api.RunnableProducer[V] {
 
-    val writer: Writer[V] = open.get
+    /**
+      *
+      */
+    override def run(): Unit = {
+      start()
 
-    while (isRunning) {
-      doProduce() match {
-        case Success(t) =>
-          writer.write(t)
+      val writer: Writer[V] = open.get
 
-        case Failure(e: Exception) =>
-        //
-        //  Do nothing
-        //
+      while (isRunning) {
+        doProduce() match {
+          case Success(t) =>
+            writer.write(t)
 
-        case Failure(t: Throwable) =>
-        //
-        //  Do nothing
-        //
+          case Failure(e: Exception) =>
+          //
+          //  Do nothing
+          //
+
+          case Failure(t: Throwable) =>
+          //
+          //  Do nothing
+          //
+        }
       }
     }
   }

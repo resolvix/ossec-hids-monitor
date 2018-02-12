@@ -5,11 +5,7 @@ import scala.util.Try
 /**
   * Created by rwbisson on 09/11/16.
   */
-trait ConsumerProducer[
-  CP <: ConsumerProducer[CP, C, P],
-  C,
-  P
-] {
+trait ConsumerProducer[CP <: ConsumerProducer[CP, C, P], C, P] {
 
   /**
     *
@@ -23,55 +19,20 @@ trait ConsumerProducer[
     */
   def getProducer: Producer[P]
 
-  /**
-    *
-    * @param consumer
-    * @tparam CP2
-    * @return
-    */
-  def register[CP2 <: Consumer[P]](
-    consumer: CP2
+  def register(
+    consumer: Consumer[P]
+  ): Try[Boolean]
+
+  def register(
+    producer: Producer[C]
   ): Try[Boolean]
 
   /**
-    *
-    * @param producer
-    * @tparam PC2
+    * @param consumerProducerPC
+    * @tparam CPPC
     * @return
     */
-  def registerPP[PC2 <: Producer[C]](
-    producer: PC2
-  ): Try[Boolean]
-
-  /**
-    *
-    * @param consumerProducer
-    * @tparam CP2
-    * @return
-    */
-  def registerP[CP2 <: ConsumerProducer[CP2, P, _]](
-    consumerProducer: CP2
-  ): Try[Boolean]
-
-  /**
-    * Register a ProducerConsumer to enable the consumption of ProducerConsumer
-    * generated produce by the instant ConsumerProducer.
-    *
-    * @param producerConsumer
-    * @tparam PC
-    * @return
-    */
-  def registerC[PC <: ProducerConsumer[PC, C, _]](
-    producerConsumer: PC
-  ): Try[Boolean]
-
-  /**
-    *
-    * @param producerConsumer
-    * @tparam PC
-    * @return
-    */
-  def crossregister[PC <: ProducerConsumer[PC, C, P]](
-    producerConsumer: PC
+  def crossregister[CPPC <: ConsumerProducer[CPPC, P, C]](
+    consumerProducerPC: CPPC
   ): Try[Boolean]
 }

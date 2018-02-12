@@ -1,7 +1,7 @@
 package com.resolvix.ccs.runnable
 
-import com.resolvix.ccs.api.{Producer, RunnableProducer}
-import com.resolvix.ccs.impl.{RunnableConsumer, RunnableConsumerProducer, RunnableProducerConsumer}
+import com.resolvix.ccs.api.{Producer, RunnableConsumer, RunnableProducer}
+import com.resolvix.ccs.impl.{RunnableConsumerProducer, RunnableProducerConsumer}
 import com.resolvix.mq.api.{Reader, Writer}
 import org.scalatest.FunSpec
 
@@ -72,8 +72,8 @@ class ProducerXConsumerXTest
 
     var thread2: Thread = null
 
-    it("should be possible to cross-registered the ProducerConsumer with the ConsumerProducer") {
-      val b1: Try[Boolean] = producerConsumer.crossRegister(consumerProducer)
+    it("should be possible to cross-register the ProducerConsumer with the ConsumerProducer") {
+      val b1: Try[Boolean] = producerConsumer.crossregister(consumerProducer)
     }
 
     it("should be possible to open the producer and consumer channels") {

@@ -1,44 +1,21 @@
 package com.resolvix.ccs.api
 
-/**
-  * Created by rwbisson on 16/10/16.
-  */
 trait Runnable
   extends java.lang.Runnable
 {
+  def finish(): Unit
 
-  private var status: Int = 0
+  def finished(): Unit
 
-  def finish(): Unit = {
-    this.synchronized { status = 2 }
-  }
+  def isFinished: Boolean
 
-  def finished(): Unit = {
-    this.synchronized { status = 3 }
-  }
+  def isFinishing: Boolean
 
-  def isFinished: Boolean = {
-    this.synchronized { status == 3 }
-  }
+  def isRunning: Boolean
 
-  def isFinishing: Boolean = {
-    this.synchronized { status == 2 }
-  }
+  def isStopped: Boolean
 
-  def isRunning: Boolean = {
-    this.synchronized { status == 1 }
-  }
-
-  def isStopped: Boolean = {
-    this.synchronized { status == 0 }
-  }
-
-  /**
-    *
-    */
   def run(): Unit
 
-  def start(): Unit = {
-    this.synchronized { status = 1 }
-  }
+  def start(): Unit
 }

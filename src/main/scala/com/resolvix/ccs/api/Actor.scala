@@ -5,23 +5,16 @@ import scala.util.Try
 package api {
 
   /**
+    * Provides basic Actor-Actor relationship management including
+    * registration, and deregistration.
     *
     * @tparam L
     * refers to the type of the local actor
     *
     * @tparam R
     * refers to the type of the remote actor
-    *
-    * @tparam V
-    * refers to the type of values to be transmitted between the local and
-    * remote actors
-    *
     */
-  private[ccs] trait Actor[
-  L <: Actor[L, R, V],
-  R <: Actor[R, L, V],
-  V
-  ] {
+  private[ccs] trait Actor[L <: Actor[L, R], R <: Actor[R, L]] {
 
     /**
       *

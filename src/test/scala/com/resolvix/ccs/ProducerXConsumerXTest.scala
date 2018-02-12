@@ -3,7 +3,6 @@ package com.resolvix.ccs
 import com.resolvix.ccs.api.Configuration
 import com.resolvix.ccs.impl.{Consumer, ConsumerProducer, Producer, ProducerConsumer}
 import com.resolvix.mq.api.{Reader, Writer}
-import com.resolvix.mq.impl.MessageQueue
 import org.scalatest.FunSpec
 
 import scala.util.{Failure, Success, Try}
@@ -146,7 +145,7 @@ class ProducerXConsumerXTest
     var consumerY: Consumer[Y] = null
 
     it("should be possible to cross-register the ProducerConsumer with the ConsumerProducer") {
-      val b1: Try[Boolean] = producerConsumer.crossRegister(consumerProducer)
+      val b1: Try[Boolean] = producerConsumer.crossregister(consumerProducer)
       //val b2: Try[Boolean] = consumerProducer.crossregister(producerConsumer)
     }
 
