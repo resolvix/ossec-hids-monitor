@@ -4,6 +4,7 @@ import scala.util.Try
 
 package impl {
 
+  import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation
   import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation.Operation
 
   object RunnableConsumerProducer {
@@ -38,7 +39,7 @@ package impl {
 
     }
 
-    protected val operation: Operation
+    protected val operation: Operation = Operation.SynchronousConsumerSynchronousProducer
 
     protected def newRunnableConsumerC: api.RunnableConsumer[C] = new RunnableConsumerC
 

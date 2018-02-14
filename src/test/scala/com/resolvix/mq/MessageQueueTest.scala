@@ -2,12 +2,8 @@ package com.resolvix.mq
 
 import java.util.concurrent.TimeUnit
 
-import com.resolvix.mq.api.Identifiable
-import com.resolvix.mq.api.{Reader, Writer}
-import com.resolvix.mq.api.MessageQueue
-import org.junit.Assert
-import org.scalatest.{FunSpec, Matchers}
-import org.scalatest.matchers.Matcher
+import com.resolvix.mq.api.{Identifiable, Reader, Writer, MessageQueue}
+import org.scalatest.{FunSpec}
 
 import scala.util.{Failure, Success}
 
