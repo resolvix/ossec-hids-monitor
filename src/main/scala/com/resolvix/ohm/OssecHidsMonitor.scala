@@ -224,13 +224,13 @@ object OssecHidsMonitor
     * @tparam A
     * @tparam M
     */
-  class RunnableProducerConsumer[A <: Alert, M <: AlertStatus]
+  /*class RunnableProducerConsumer[A <: Alert, M <: AlertStatus]
     extends com.resolvix.ccs.impl.RunnableProducerConsumer[RunnableProducerConsumer[A, M], A, M]
   {
     override def doConsume(c: M): Try[Boolean] = ???
 
     override def doProduce(): Try[A] = ???
-  }
+  }*/
 
   //
   //

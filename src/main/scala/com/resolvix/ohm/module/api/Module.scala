@@ -27,16 +27,32 @@ trait Module[I, O, R <: Result] {
   def close(): Try[Boolean]
 
   /**
-    * Consumes an object of type I, and returns an object of type R.
+    * Consumes an input object of type [[I]], and returns an object of type
+    * [[Try[Boolean]]] indicating whether the operation had been successful
+    * and, if not, the reason for the failure.
     *
     * @param input
-    *   an object representing the input to the module.
+    *   the input object of type [[I]]
     *
     * @return
-    *   a value of type [[Try[R]]] indicating whether the operation was
-    *   successful or not
+    *   a value of type [[Try[Boolean]]] indicating whether the operation
+    *   was successful or not
     */
-  def consume(input: I): Try[R]
+  def consume(input: I): Try[Boolean]
+
+  /**
+    * Consumers a result object of type [[R]], and returns an object of type
+    * [[Try[Boolean]]] indicating whether the operation had been successful
+    * and, if not, the reason for the failure.
+    *
+    * @param result
+    *   the result object of type [[R]]
+    *
+    * @return
+    *   a value of type [[Try[Boolean]]] indicating whether the operation
+    *   was successful or not
+    */
+  def consume(result: R): Try[Boolean]
 
   /**
     * Flushes any buffers maintained by the instance in the course of

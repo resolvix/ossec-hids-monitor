@@ -1,6 +1,8 @@
 package com.resolvix.ohm.module.stage
 import com.resolvix.ccs.api.{Consumer, Producer, ProducerConsumer, RunnableProducerConsumer}
 import com.resolvix.ccs.impl.RunnableConsumerProducer
+import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation
+import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation.Operation
 import com.resolvix.mq.api.{Reader, Writer}
 import com.resolvix.ohm.module.api.ModuleDescriptor
 import com.resolvix.ohm.module.stage
@@ -20,30 +22,25 @@ private[stage] abstract class AbstractStage[AS <: AbstractStage[AS, I, O, R], I,
     * Provides an implementation of a runnable consumer producer message queue
     * pair for use by the front end processing element of the abstract stage.
     */
-  private class FrontEndRunnableConsumerProducer
-    extends com.resolvix.ccs.api.ConsumerProducer[FrontEndRunnableConsumerProducer, I, R]
-    with com.resolvix.ccs.impl.RunnableConsumerProducer[FrontEndRunnableConsumerProducer, I, R] {
+  private class InputRunnableConsumerProducer
+    extends com.resolvix.ccs.api.ConsumerProducer[InputRunnableConsumerProducer, I, R]
+    with com.resolvix.ccs.impl.RunnableConsumerProducer[InputRunnableConsumerProducer, I, R] {
+
+    override val operation: Operation = Operation.AsynchronousConsumerSynchronousProducer
 
     /**
-      * Consumes an object of type [[I]] upon receipt.
+      * Consumes an input object of type [[I]] upon receipt.
       *
       * @param c
+      *   the consumable input object
+      *
       * @return
+      *   a value of type [[Try[Boolean]]] indicating whether consumption of
+      *   the input object was successful and, if not, indicating the cause
+      *   of any failure
       */
     override def doConsume(c: I): Try[Boolean] = {
-      val tryR: Try[R] = AbstractStage.this.consume(c)
-      tryR match {
-        case Success(r: R @unchecked) =>
-          //Try(produce(r));
-          Failure(new UnsupportedOperationException)
-
-        case _ =>
-          Failure(new Exception)
-      }
-    }
-
-    override def doProduce(): Try[R] = {
-      Failure(new Exception())
+      AbstractStage.this.consume(c)
     }
   }
 
@@ -51,33 +48,72 @@ private[stage] abstract class AbstractStage[AS <: AbstractStage[AS, I, O, R], I,
     * Provides an implementation of a runnable producer consumer message queue
     * pair for use by the back end processing element of the abstract stage.
     */
-  private class BackEndRunnableProducerConsumer
-    extends com.resolvix.ccs.api.ProducerConsumer[BackEndRunnableProducerConsumer, O, R]
-    with com.resolvix.ccs.impl.RunnableProducerConsumer[BackEndRunnableProducerConsumer, O, R] {
-    override def doConsume(c: R): Try[Boolean] = {
-      Failure(new UnsupportedOperationException)
-    }
+  private class OutputRunnableProducerConsumer
+    extends com.resolvix.ccs.api.ProducerConsumer[OutputRunnableProducerConsumer, O, R]
+    with com.resolvix.ccs.impl.RunnableProducerConsumer[OutputRunnableProducerConsumer, O, R] {
 
-    override def doProduce(): Try[O] = {
-      Failure(new UnsupportedOperationException)
+    override val operation: Operation = Operation.AsynchronousConsumerSynchronousProducer
+
+    /**
+      * Consumes a result object of type [[R]] upon receipt.
+      *
+      * @param r
+      *   the consumable result object
+      *
+      * @return
+      *   a value of type [[Try[Boolean]]] indicating whether consumption of
+      *   the result object was successful and, if not, indicating the cause
+      *   of any failure
+      */
+    override def doConsume(r: R): Try[Boolean] = {
+      AbstractStage.this.consume(r)
     }
   }
 
-  private val frontEndConsumerProducer: FrontEndRunnableConsumerProducer
-    = new FrontEndRunnableConsumerProducer
+  private val inputConsumerProducer:  InputRunnableConsumerProducer
+    = new  InputRunnableConsumerProducer
 
-  private val backEndConsumerProducer: BackEndRunnableProducerConsumer
-    = new BackEndRunnableProducerConsumer
+  private val outputConsumerProducer: OutputRunnableProducerConsumer
+    = new OutputRunnableProducerConsumer
 
-  private val consumer: Consumer[I] = frontEndConsumerProducer.getConsumer
+  //private val consumerI: Consumer[I] = inputConsumerProducer.getConsumer
 
-  private val reader: Reader[I] = consumer.open.get
+  //private val readerI: Reader[I] = consumerI.open.get
 
-  private val producer: Producer[O] = backEndConsumerProducer.getProducer
+  private val producerR: Producer[R] = inputConsumerProducer.getProducer
 
-  private val writer: Writer[O] = producer.open.get
+  private val writerR: Writer[R] = producerR.open.get
 
-  override protected def produce(output: O): Try[Boolean] = {
-    Success(true)
+  private val producerO: Producer[O] = outputConsumerProducer.getProducer
+
+  private val writerO: Writer[O] = producerO.open.get
+
+  //private val consumerR: Consumer[R] = outputConsumerProducer.getConsumer
+
+  //private val readerR: Reader[R] = consumerR.open.get
+
+  protected def transform(input: I): Try[O]
+
+  def consume(input: I): Try[Boolean] = {
+    transform(input) match {
+      case Success(output: O @unchecked) =>
+        //produce(output)
+
+      case Failure(t: Throwable) =>
+        Failure(t)
+
+    }
+  }
+
+  private def produce(result: R): Try[Boolean] = {
+    writerR.write(result)
+  }
+
+  private def produce(output: O): Try[Boolean] = {
+    writerO.write(output)
+  }
+
+  def consume(result: R): Try[Boolean] = {
+    produce(result)
   }
 }

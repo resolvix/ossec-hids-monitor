@@ -8,15 +8,7 @@ import scala.util.Try
   */
 trait Stage[I, O, R <: StageResult[_]]
   extends com.resolvix.ohm.module.api.Module[I, O, R] {
-  /**
-    *
-    *
-    * @param output
-    *   an object of type [[O]]
-    *
-    * @return
-    *   a [[Try]] object indicating whether the product operation was
-    *   successful
-    */
-  protected def produce(output: O): Try[Boolean]
+
+
+
 }

@@ -4,6 +4,20 @@ import scala.util.Try
 
 package impl {
 
+  import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation.Operation
+
+  object RunnableConsumerProducer {
+
+    object Operation extends Enumeration {
+      type Operation = Value
+
+      val SynchronousConsumerSynchronousProducer,
+        AsynchronousConsumerSynchronousProducer,
+        AsynchronousProducerSynchronousConsumer,
+        AsynchronousProducerAsynchronousConsumer = Value
+    }
+  }
+
   trait RunnableConsumerProducer[CP <: api.RunnableConsumerProducer[CP, C, P], C, P]
     extends ConsumerProducer[CP, C, P]
     with api.RunnableConsumerProducer[CP, C, P] {
@@ -24,6 +38,8 @@ package impl {
 
     }
 
+    protected val operation: Operation
+
     protected def newRunnableConsumerC: api.RunnableConsumer[C] = new RunnableConsumerC
 
     protected def newRunnableProducerP: api.RunnableProducer[P] = new RunnableProducerP
@@ -32,9 +48,9 @@ package impl {
 
     private val runnableProducerP: api.RunnableProducer[P] = getProducer
 
-    def doConsume(c: C): Try[Boolean]
+    def doConsume(c: C): Try[Boolean] = ???
 
-    def doProduce(): Try[P]
+    def doProduce(): Try[P] = ???
 
     override def getConsumer: api.RunnableConsumer[C] = {
       if (runnableConsumerC != null)
