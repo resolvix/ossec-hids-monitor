@@ -1,5 +1,8 @@
-package com.resolvix.ccs.impl
+package com.resolvix.ccs
 
-class DuplexProducerConsumer
+package impl {
 
+  trait DuplexProducerConsumer[DPC <: DuplexProducerConsumer[DPC, LP, LC, RP, RC], LP, LC, RP, RC]
+    extends DuplexConsumerProducer[DPC, LC, LP, RC, RP]
 
+}
