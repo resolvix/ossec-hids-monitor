@@ -30,8 +30,6 @@ package ohm {
 
   import OssecHidsMonitor.ActiveModule
 
-
-
   /**
     *
     */

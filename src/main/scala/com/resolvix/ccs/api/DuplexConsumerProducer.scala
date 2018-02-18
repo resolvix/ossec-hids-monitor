@@ -2,7 +2,7 @@ package com.resolvix.ccs.api
 
 import scala.util.Try
 
-trait DuplexConsumerProducer[DCP <: DuplexConsumerProducer[DCP, LC, LP, RC, LP], LC, LP, RC, RP] {
+trait DuplexConsumerProducer[DCP <: DuplexConsumerProducer[DCP, LC, LP, RC, RP], LC, LP, RC, RP] {
 
   def getLeftConsumer: Consumer[LC]
 
