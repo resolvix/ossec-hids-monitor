@@ -2,10 +2,10 @@ package com.resolvix.ccs
 
 import scala.util.Try
 
-package impl {
+import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation
+import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation.Operation
 
-  import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation
-  import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation.Operation
+package impl {
 
   object RunnableConsumerProducer {
 

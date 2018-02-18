@@ -29,12 +29,7 @@ class StreamImpl[V]
     override def write(
       v: V
     ): Try[Boolean] = {
-      try {
-        Success(queue.offer(v))
-      } catch {
-        case NonFatal(t) =>
-          Failure(t)
-      }
+      Try(queue.offer(v))
     }
   }
 
@@ -49,12 +44,7 @@ class StreamImpl[V]
       * @return
       */
     override def read: Try[V] = {
-      try {
-        Success(queue.take)
-      } catch {
-        case e: InterruptedException =>
-          Failure(e)
-      }
+      Try(queue.take)
     }
 
     /**
@@ -67,17 +57,12 @@ class StreamImpl[V]
       timeout: Int,
       unit: TimeUnit
     ): Try[V] = {
-      try {
+      Try({
         val t: V = queue.poll(timeout, unit)
-        if (t != null) {
-          Success(t)
-        } else {
-          Failure(new TimeoutException)
-        }
-      } catch {
-        case e: InterruptedException =>
-          Failure(e)
-      }
+        if (t == null)
+          throw new TimeoutException()
+        t
+      })
     }
   }
 

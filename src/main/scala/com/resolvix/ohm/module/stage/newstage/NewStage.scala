@@ -10,13 +10,10 @@ import com.resolvix.ohm.module.stage.api.{Stage, StageResult}
 import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
 import com.resolvix.ohm.module.{Classifiable, Summarizable, stage}
 
-import scala.util.Try
-
-//import com.resolvix.concurrent.api.RunnableConsumerProducer
 import com.resolvix.ohm.dao.api.OssecHidsDAO
 import com.resolvix.ohm.{Location, Signature}
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by rwbisson on 16/10/16.

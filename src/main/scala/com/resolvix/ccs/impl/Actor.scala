@@ -75,33 +75,23 @@ package impl {
     override def register(
       actor: R
     ): Try[Boolean] = {
-      try {
+      Try({
         actors += ((actor.getId, actor))
-        if (!actor.isRegistered(this.asInstanceOf[L])) {
+        if (!actor.isRegistered(this.asInstanceOf[L]))
           actor.register(this.asInstanceOf[L])
-        }
-
-        Success(true)
-      } catch {
-        case NonFatal(t: Throwable) =>
-          Failure(t)
-      }
+        true
+      })
     }
 
     override def unregister(
       actor: R
     ): Try[Boolean] = {
-      try {
+      Try({
         if (isRegistered(actor)) {
           actors -= (id)
-          Success(true)
-        } else {
-          Success(false)
-        }
-      } catch {
-        case NonFatal(t: Throwable) =>
-          Failure(t)
-      }
+          true
+        } else false
+      })
     }
   }
 }
