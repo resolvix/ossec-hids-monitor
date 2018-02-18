@@ -21,7 +21,9 @@ abstract class AbstractEndpoint[AI <: AbstractEndpoint[AI, I, O, R], I, O <: Ale
     Success(false)
   }
 
-  override def consume(input: I): Try[R] = ???
+  override def consume(input: I): Try[Boolean] = ???
+
+  override def consume(result: R): Try[Boolean] = ???
 
   override def flush(): Try[R] = ???
 

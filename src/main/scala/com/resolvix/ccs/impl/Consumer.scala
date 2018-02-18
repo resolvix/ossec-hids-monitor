@@ -32,13 +32,9 @@ package impl {
     override def close(
       producer: api.Producer[V]
     ): Try[Boolean] = {
-      /*getReader.getWriter.close(producer) match {
-      case Success(b: Boolean) =>
-        Success(b)
-
-      case Failure(t: Throwable) =>
-        Failure(t)
-    }*/
+      // TODO Provide implementation - close(producer)
+      //
+      // getWriter.close(producer)
       Success(true)
     }
 
@@ -98,12 +94,7 @@ package impl {
       * @return
       */
     def open: Try[Reader[V]] = {
-      try {
-        Success(getReader)
-      } catch {
-        case NonFatal(t) =>
-          Failure(t)
-      }
+      Try(getReader)
     }
 
     /**

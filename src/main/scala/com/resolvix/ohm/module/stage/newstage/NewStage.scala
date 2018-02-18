@@ -8,7 +8,7 @@ import com.resolvix.ohm.module.api.{Alert, ModuleDescriptor}
 import com.resolvix.ohm.module.stage.AbstractStage
 import com.resolvix.ohm.module.stage.api.{Stage, StageResult}
 import com.resolvix.ohm.module.stage.newstage.api.NewStageAlert
-import com.resolvix.ohm.module.{Classifiable, Summarizable}
+import com.resolvix.ohm.module.{Classifiable, Summarizable, stage}
 
 import scala.util.Try
 
@@ -33,7 +33,7 @@ class NewStage(
   //val p = new Packet[V](this.getId, reader.getId, v)
   //messageWriter.write(p)
 
-  /*class AugmentedAlert(
+  class AugmentedAlert(
     private val alert: Alert,
     private val location: Option[Location],
     private val signature: Option[Signature],
@@ -67,7 +67,7 @@ class NewStage(
     def getSignature: Option[Signature] = signature
   }
 
-  def apply(alert: Alert): AugmentedAlert = {
+  def transform(alert: Alert): Try[(AugmentedAlert, StageResult[AlertStatus])] = {
     val moduleAlertStatuses: List[AlertStatus]
       = ossecHidsDAO.getModuleAlertStatusesById(
         alert.getId
@@ -81,16 +81,23 @@ class NewStage(
 
     println("convert: ")
 
-    new AugmentedAlert(
-      alert,
-      locationMap.get(alert.getLocationId),
-      signatureMap.get(alert.getRuleId),
-      moduleAlertStatuses
-    )
-  }*/
-  override def consume(input: Alert): Try[StageResult[AlertStatus]] = {
-    //super.consume(input)
-    Failure(new Exception)
+    Success((
+      new AugmentedAlert(
+        alert,
+        locationMap.get(alert.getLocationId),
+        signatureMap.get(alert.getRuleId),
+        moduleAlertStatuses
+      ),
+      null // TODO return an appropriate StageResult
+    ))
+  }
+
+  override def consume(input: Alert): Try[Boolean] = {
+    super.consume(input)
+  }
+
+  override def consume(result: StageResult[AlertStatus]): Try[Boolean] = {
+    Success(true)
   }
 
   override def close(): Try[Boolean] = ???

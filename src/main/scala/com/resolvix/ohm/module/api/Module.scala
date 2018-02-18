@@ -41,7 +41,7 @@ trait Module[I, O, R <: Result] {
   def consume(input: I): Try[Boolean]
 
   /**
-    * Consumers a result object of type [[R]], and returns an object of type
+    * Consumes a result object of type [[R]], and returns an object of type
     * [[Try[Boolean]]] indicating whether the operation had been successful
     * and, if not, the reason for the failure.
     *

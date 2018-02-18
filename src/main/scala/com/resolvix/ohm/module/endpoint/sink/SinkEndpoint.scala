@@ -21,7 +21,8 @@ class SinkEndpoint(
     Success(false)
   }
 
-  override def consume(input: Alert): Try[EndpointResult[AlertStatus]] = {
+  override def consume(input: Alert): Try[Boolean] = {
+    // Try[EndpointResult[AlertStatus]] =// {
     log.debug(
       "AID: "
         + input.getId
@@ -39,7 +40,7 @@ class SinkEndpoint(
     /*val f = Promise[ModuleAlertStatus]()
     f.success(new MAS(alert.getId, getId, "refer-" + alert.getId, 0x00))
     f*/
-    Success(
+    /*Success(
       new EndpointResult(
         Array[AlertStatus](
           new LocalAlertStatus(
@@ -50,7 +51,8 @@ class SinkEndpoint(
           )
         )
       ).asInstanceOf[EndpointResult[AlertStatus]]
-    )
+    )*/
+    Success(true)
   }
 
   override def flush(): Try[EndpointResult[AlertStatus]] = {

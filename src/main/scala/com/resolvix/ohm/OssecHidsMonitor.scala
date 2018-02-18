@@ -30,6 +30,8 @@ package ohm {
 
   import OssecHidsMonitor.ActiveModule
 
+  import scala.util.control.NonFatal
+
   /**
     *
     */
@@ -201,8 +203,15 @@ package ohm {
         module.initialise()
       }
 
-      override def consume(input: I): Try[R] = {
+      override def consume(input: I): Try[Boolean] = {
         module.consume(input)
+      }
+
+      override def consume(result: R): Try[Boolean] = {
+        //
+        // TODO Implement consume(R) to update values of type StageResult
+        //
+        Success(true)
       }
 
       override def getDescriptor: ModuleDescriptor[I, O, R] = {
@@ -956,13 +965,20 @@ package ohm {
           })
 
           if (moduleAlertStatus.isEmpty) {
-            activeModule.consume(alert) match {
+            activeModule.consume(alert)
+
+            /*match {
               case Success(er: EndpointResult) => {
                 log.debug(er.getClass.getName())
                 er.getAlertStatuses.map(
                   (as: AlertStatus) =>
                     updateModuleAlertStatus(as)
                 )
+              }
+
+              case Success(sr: StageResult) => {
+                log.debug(sr: )
+
               }
 
               case Success(r: Result) => {
@@ -973,7 +989,7 @@ package ohm {
               //
               //  TODO: Log the failure
               //
-            }
+            }*/
           }
         } catch {
           case t: Throwable =>

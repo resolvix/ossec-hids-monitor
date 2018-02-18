@@ -92,12 +92,17 @@ private[stage] abstract class AbstractStage[AS <: AbstractStage[AS, I, O, R], I,
 
   //private val readerR: Reader[R] = consumerR.open.get
 
-  protected def transform(input: I): Try[O]
+  protected def transform(input: I): Try[(O, R)]
 
   def consume(input: I): Try[Boolean] = {
     transform(input) match {
-      case Success(output: O @unchecked) =>
-        //produce(output)
+      case Success((output: O @unchecked, result: R @unchecked)) =>
+        Try({
+          // TODO Implement logic to return Failure on first failure; possibly a for comprehension
+          produce(result)
+          produce(output)
+          true
+        })
 
       case Failure(t: Throwable) =>
         Failure(t)
