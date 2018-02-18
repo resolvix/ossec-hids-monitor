@@ -1,10 +1,10 @@
 package com.resolvix.ohm.module
 
+import scala.util.Try
+
 import com.resolvix.ohm.module.api.{Module, Result}
 
 package connector {
-
-  import scala.util.Try
 
   abstract class AbstractConnector[IM <: Module[_, O, R], OM <: Module[O, _, R], O, R <: Result](
     //

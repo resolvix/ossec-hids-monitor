@@ -77,18 +77,10 @@ package impl {
     override def open(
       consumer: api.Consumer[V]
     ): Try[Reader[V]] = {
-      if (super.isRegistered(consumer)) {
-        try {
-          Success(
-            consumer.open.get
-          )
-        } catch {
-          case NonFatal(t) =>
-            Failure(t)
-        }
-      } else {
+      if (super.isRegistered(consumer))
+        Try(consumer.open.get)
+      else
         Failure(new api.ConsumerNotRegisteredException)
-      }
     }
 
     /**

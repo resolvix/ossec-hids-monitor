@@ -4,7 +4,6 @@ import scala.util.Try
 
 import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation
 import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation.Operation
-import com.resolvix.ohm.module.stage.AbstractStage
 
 package impl {
 
