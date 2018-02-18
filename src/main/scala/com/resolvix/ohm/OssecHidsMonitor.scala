@@ -30,7 +30,7 @@ package ohm {
 
   import OssecHidsMonitor.ActiveModule
 
-  import scala.util.control.NonFatal
+
 
   /**
     *
