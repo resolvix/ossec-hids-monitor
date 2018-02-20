@@ -163,22 +163,16 @@ trait Summarizable
   }
 
   def summarize: Try[String] = {
-    try {
+     Try({
       val f: SummarizableAlert.SummarizableAlertFunction[Alert] = SummarizableAlert.getFunctionByRuleId(getRuleId) match {
         case Success(f: SummarizableAlert.SummarizableAlertFunction[_]) =>
           f.asInstanceOf[SummarizableAlert.SummarizableAlertFunction[Alert]]
 
-        case Failure(t: Throwable) =>
+        case NonFatal(t: Throwable) =>
           throw t
       }
-      Success(f.apply(this))
-    } catch {
-      case e: NoSuchElementException =>
-        Failure(e)
-
-      case NonFatal(t: Throwable) =>
-        Failure(t)
-    }
+      f.apply(this)
+    })
   }
 
 }

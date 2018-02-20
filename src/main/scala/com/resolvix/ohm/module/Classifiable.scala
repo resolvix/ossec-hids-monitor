@@ -11,16 +11,9 @@ import scala.util.{Failure, Success, Try}
   */
 trait Classifiable {
 
-  class Classification {
-
-  }
+  class Classification
 
   def classify: Try[Classification] = {
-    try {
-      Success(null)
-    } catch {
-      case NonFatal(t: Throwable) =>
-        Failure(t)
-    }
+    Try(null)
   }
 }
