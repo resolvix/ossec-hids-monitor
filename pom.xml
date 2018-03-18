@@ -148,6 +148,13 @@
 
         <dependency>
             <groupId>org.scalamock</groupId>
+            <artifactId>scalamock_2.11</artifactId>
+            <version>(version)</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalamock</groupId>
             <artifactId>scalamock-scalatest-support_2.11</artifactId>
             <version>${scalamock.version}</version>
             <scope>test</scope>
