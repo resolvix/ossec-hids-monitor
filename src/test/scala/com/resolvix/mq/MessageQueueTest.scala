@@ -33,7 +33,7 @@ class MessageQueueTest
   }
 
   describe("A MessageQueue") {
-    it("XX") {
+    describe("when configured with multiple consumers and producers") {
 
       val mq: MessageQueue[Int] = MessageQueueFactory.newMessageQueue()
 
@@ -52,23 +52,16 @@ class MessageQueueTest
       val c1Int: Reader[Int] = mq.getReader(c1)
       val c2Int: Reader[Int] = mq.getReader(c2)
 
-      p1c1Int.write(11)
-
-      p1c2Int.write(12)
-
-      p2c1Int.write(21)
-
-      p2c2Int.write(22)
-
-      p1c1Int.write(13)
-
-      p1c2Int.write(14)
-
-      p2c1Int.write(23)
-
-      p2c2Int.write(24)
-
       def RR: (Int, Int) = c1Int.read(5, TimeUnit.SECONDS) match {
+        case Success(tt: (Int, Int)) =>
+          tt
+
+        case Failure(t: Throwable) =>
+          throw t
+
+      }
+
+      def RR2: (Int, Int) = c2Int.read(5, TimeUnit.SECONDS) match {
         case Success(tt: (Int, Int)) =>
           tt
 
@@ -83,24 +76,37 @@ class MessageQueueTest
         assert(actual._2.equals(expected._2))
       }
 
-      check((1, 11), RR)
-      check((3, 21), RR)
-      check((1, 13), RR)
-      check((3, 23), RR)
-
-      def RR2: (Int, Int) = c2Int.read(5, TimeUnit.SECONDS) match {
-        case Success(tt: (Int, Int)) =>
-          tt
-
-        case Failure(t: Throwable) =>
-          throw t
-
+      it("producer 1 writes values (11 and 12) to the message queue for consumer 1 and 2 respectively") {
+        p1c1Int.write(11)
+        p1c2Int.write(12)
       }
 
-      check((4, 12), RR2)
-      check((6, 22), RR2)
-      check((4, 14), RR2)
-      check((6, 24), RR2)
+      it("producer 2 writes values (21 and 22) to the message queue for consumer 1 and 2 respectively") {
+        p2c1Int.write(21)
+        p2c2Int.write(22)
+      }
+
+      it("producer 1 writes further values (13 and 14) to the message queue for consumer 1 and 2 respectively") {
+        p1c1Int.write(13)
+        p1c2Int.write(14)
+      }
+
+      it("producer 2 writes further values (23 and 24) to the message queue for consumer 1 and 2 respectively") {
+        p2c1Int.write(23)
+        p2c2Int.write(24)
+      }
+
+      it("contains the correct values, queued for the relevant consumers") {
+        check((1, 11), RR)
+        check((3, 21), RR)
+        check((1, 13), RR)
+        check((3, 23), RR)
+
+        check((4, 12), RR2)
+        check((6, 22), RR2)
+        check((4, 14), RR2)
+        check((6, 24), RR2)
+      }
     }
   }
 
