@@ -15,6 +15,10 @@
 
         <typesafe.config.version>1.3.1</typesafe.config.version>
 
+        <!-- SLF4J Logging library -->
+
+        <slf4j.version>1.7.25</slf4j.version>
+
         <!-- Apache frameworks -->
 
         <apache.commons-cli.version>1.3.1</apache.commons-cli.version>
@@ -26,10 +30,10 @@
 
         <!-- Unit test frameworks -->
         <junit.version>4.12</junit.version>
-        <scala.version>2.11.8</scala.version>
-        <scalactic.version>3.0.0</scalactic.version>
+        <scala.version>2.12.6</scala.version>
+        <scalactic.version>3.0.5</scalactic.version>
         <scalamock.version>3.6.0</scalamock.version>
-        <scalatest.version>3.0.3</scalatest.version>
+        <scalatest.version>3.0.5</scalatest.version>
     </properties>
 
     <repositories>
@@ -89,7 +93,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.23</version>
+            <version>${slf4j.version}</version>
         </dependency>
 
         <!-- Apache Commons CLI -->
@@ -133,13 +137,14 @@
 
         <dependency>
             <groupId>org.scalactic</groupId>
-            <artifactId>scalactic_2.11</artifactId>
+            <artifactId>scalactic_2.12</artifactId>
             <version>${scalactic.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.11</artifactId>
+            <artifactId>scalatest_2.12</artifactId>
             <version>${scalatest.version}</version>
             <scope>test</scope>
         </dependency>
@@ -148,14 +153,14 @@
 
         <dependency>
             <groupId>org.scalamock</groupId>
-            <artifactId>scalamock_2.11</artifactId>
-            <version>(version)</version>
+            <artifactId>scalamock_2.12</artifactId>
+            <version>${scalamock.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.scalamock</groupId>
-            <artifactId>scalamock-scalatest-support_2.11</artifactId>
+            <artifactId>scalamock-scalatest-support_2.12</artifactId>
             <version>${scalamock.version}</version>
             <scope>test</scope>
         </dependency>
@@ -168,6 +173,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
                 <configuration>
                     <excludes>
 
