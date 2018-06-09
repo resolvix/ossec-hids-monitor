@@ -168,7 +168,7 @@ trait Summarizable
         case Success(f: SummarizableAlert.SummarizableAlertFunction[_]) =>
           f.asInstanceOf[SummarizableAlert.SummarizableAlertFunction[Alert]]
 
-        case NonFatal(t: Throwable) =>
+        case Failure(NonFatal(t: Throwable)) =>
           throw t
       }
       f.apply(this)
