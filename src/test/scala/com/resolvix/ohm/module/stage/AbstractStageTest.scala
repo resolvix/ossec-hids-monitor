@@ -1,6 +1,7 @@
 package com.resolvix.ohm.module.stage
 
 import com.resolvix.ohm.module.api.{Module, ModuleDescriptor}
+import com.resolvix.ohm.module.endpoint.{AbstractEndpoint, AbstractEndpointDescriptor}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 
@@ -11,6 +12,7 @@ class AbstractStageTest extends FlatSpec with MockFactory {
   class MockResult(
     val results: Array[Boolean]
   ) extends StageResult[Boolean](results)
+
 
   class OddEvenStageDescriptor extends AbstractStageDescriptor[Integer, Integer, MockResult] {
     override protected def getConfigurations: Array[String] = ???
@@ -55,6 +57,7 @@ class AbstractStageTest extends FlatSpec with MockFactory {
 
   "An OddEvenStage" should "generate true if provided with an odd value as input" in {
     val tried: Try[Boolean] = oddEvenStage.consume(1)
+
   }
 
   it should "generate false if provided with an even value as input" in {

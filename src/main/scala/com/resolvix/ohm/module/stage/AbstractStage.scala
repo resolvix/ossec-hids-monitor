@@ -4,7 +4,8 @@ import com.resolvix.ccs.impl.RunnableConsumerProducer
 import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation
 import com.resolvix.ccs.impl.RunnableConsumerProducer.Operation.Operation
 import com.resolvix.mq.api.{Reader, Writer}
-import com.resolvix.ohm.module.api.ModuleDescriptor
+import com.resolvix.ohm.module.api.ConnectorLocation.ConnectorLocation
+import com.resolvix.ohm.module.api.{Connector, Module, ModuleDescriptor, Result}
 import com.resolvix.ohm.module.stage
 
 import scala.util.{Failure, Success, Try}
@@ -75,7 +76,7 @@ private[stage] abstract class AbstractStage[AS <: AbstractStage[AS, I, O, R], I,
   }
 
   private val inputConsumerProducer:  InputRunnableConsumerProducer
-    = new  InputRunnableConsumerProducer
+    = new InputRunnableConsumerProducer
 
   private val outputConsumerProducer: OutputRunnableProducerConsumer
     = new OutputRunnableProducerConsumer
@@ -90,11 +91,22 @@ private[stage] abstract class AbstractStage[AS <: AbstractStage[AS, I, O, R], I,
 
   protected def transform(input: I): Try[(O, R)]
 
+  override def connect[OO, RR <: Result](connector: Connector[Module[_, OO, RR], Module[OO, _, RR], OO, RR]): Try[Boolean] = {
+
+  }
+
+  override def connect[OO, RR <: Result](
+    location: ConnectorLocation,
+    connector: Connector[Module[_, _, _], Module[_, _, _], OO, RR]): Try[Boolean] = {
+
+  }
+
   def consume(input: I): Try[Boolean] = {
     transform(input) match {
       case Success((output: O @unchecked, result: R @unchecked)) =>
         Try({
           // TODO Implement logic to return Failure on first failure; possibly a for comprehension
+          // TODO possibly adopt a commit / rollback model for consumer / producer
           produce(result)
           produce(output)
           true

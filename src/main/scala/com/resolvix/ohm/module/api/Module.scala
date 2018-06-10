@@ -2,8 +2,11 @@ package com.resolvix.ohm.module.api
 
 import scala.util.Try
 
+import com.resolvix.ohm.module.api.ConnectorLocation._
+
 /**
-  * Defines a generic form of module for use as part of a modular data pipeline.
+  * Defines a generic form of module for use as part of a modular data
+  * transformation and processing pipeline.
   *
   * @tparam I
   *   the input data type
@@ -16,6 +19,7 @@ import scala.util.Try
   *   trait
   */
 trait Module[I, O, R <: Result] {
+
   /**
     * Signals that the application intends to stop making calls to the
     * 'consume' method of the module.
@@ -25,6 +29,43 @@ trait Module[I, O, R <: Result] {
     *   successful or not
     */
   def close(): Try[Boolean]
+
+  /**
+    * Establishes a connection between this module and other modules, with
+    * implicit determination of whether the connector is to be connected as
+    * an input to the module, or as an output to the module.
+    *
+    * @param connector
+    *   the connector
+    *
+    * @tparam OO
+    *   the output type
+    *
+    * @tparam RR
+    *   the result type
+    *
+    */
+  def connect[OO, RR <: Result](connector: Connector[Module[_, OO, RR], Module[OO, _, RR], OO, RR]): Try[Boolean]
+
+  /**
+    * Establishes a connection between this module and other modules, with explici
+    *
+    * @param location
+    *   the connector location
+    *
+    * @param connector
+    *   the connector
+    *
+    * @tparam OO
+    *   the output type
+    *
+    * @tparam RR
+    *   the result type
+    *
+    */
+  def connect[OO, RR <: Result](
+    location: ConnectorLocation,
+    connector: Connector[Module[_, _, _], Module[_, _, _], OO, RR]): Try[Boolean]
 
   /**
     * Consumes an input object of type [[I]], and returns an object of type
@@ -66,8 +107,10 @@ trait Module[I, O, R <: Result] {
   def flush(): Try[R]
 
   /**
+    * Returns the unique identifier for the module instance.
     *
     * @return
+    *   the unique identifier
     */
   def getId: Int
 
